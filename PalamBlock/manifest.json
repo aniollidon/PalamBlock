@@ -36,7 +36,7 @@
         "matches": ["<all_urls>"]
       }
     ],
-    "Background": {
+    "background": {
       "service_worker": "background.js"
     }
   }

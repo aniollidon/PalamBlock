@@ -3,17 +3,19 @@ function conteAlguna(text, paraules) {
 }
 
 chrome.storage.sync.get(['alumne'], function(result) {
-    
-  if(!result.alumne){
+
+    if(!result.alumne){
       window.location.href = chrome.runtime.getURL("login.html")
       return;
-  }
+    }
 
-  console.log('Alumne: ' + result.alumne);
-
-  //Notifica a l'script de fons que s'ha carregat la pagina
-  var url = window.location.href;
-  chrome.runtime.sendMessage({url:url, alumne:result.alumne}, function(response) {
-      console.log(response);
-  });
+    const url = window.location.href;
+    chrome.runtime.sendMessage({
+        url:url,
+        alumne:result.alumne
+    }).then((message)=>{
+        console.log(JSON.stringify(message));
+    }).catch((error)=>{
+        console.error(error);
+    });
 });
