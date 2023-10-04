@@ -1,7 +1,3 @@
-function conteAlguna(text, paraules) {
-  return paraules.some(paraula => text.includes(paraula));
-}
-
 chrome.storage.sync.get(['alumne'], function(result) {
 
     if(!result.alumne){
@@ -9,12 +5,23 @@ chrome.storage.sync.get(['alumne'], function(result) {
       return;
     }
 
-    const url = window.location.href;
+    const host = window.location.hostname;
+    const protocol = window.location.protocol;
+    const search = window.location.search;
+    const pathname = window.location.pathname;
+    const title = document.title;
+
     chrome.runtime.sendMessage({
-        url:url,
+        host:host,
+        protocol:protocol,
+        search:search,
+        pathname:pathname,
+        title:title,
         alumne:result.alumne
     }).then((message)=>{
-        console.log(JSON.stringify(message));
+        if(message.blocked){
+            window.location.href = chrome.runtime.getURL("blocked.html")
+        }
     }).catch((error)=>{
         console.error(error);
     });
