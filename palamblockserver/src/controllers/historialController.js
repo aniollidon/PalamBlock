@@ -10,7 +10,7 @@ const getHistorial = (req , res) => {
     if(req.params.id !== undefined) {
         const Historials = historialService.getHistorial(req.params.id);
         res.send({ status: "OK", data: Historials });
-    }else res.send({ status: "ERROR", data:"Falta l'id del Historial"})
+    }else res.status(500).send({ status: "ERROR", data:"Falta l'id del Historial"})
 }
 
 const postHistorial = (req, res) => {
