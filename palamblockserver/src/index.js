@@ -6,9 +6,12 @@ const express = require("express");
 const v1Router = require("./v1/routes");
 const bodyParser = require('body-parser');
 const mongoose= require('mongoose');
+const http = require('http');
 const cors = require("cors")
+const initializeWebSocket = require('./v1/ws');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 4000;
 const mongoString = process.env.DATABASE_URL;
 
@@ -26,13 +29,19 @@ database.once('connected', () => {
 })
 
 
+// API
 app.use(cors())
-
 app.use(bodyParser.json());
 app.use("/api/v1", v1Router);
+app.use('/admin', express.static(path.join(__dirname, '/v1/admin')))
 
-app.use('/admin', express.static(path.join(__dirname, 'admin')))
+// WebSocket
+initializeWebSocket(server);
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`API is listening on port ${PORT}`);
 });
+
+
+
+

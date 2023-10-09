@@ -98,6 +98,15 @@ const HistorialSchema = new mongoose.Schema({
     title: {
         type: String
     },
+    browser: {
+        type: String
+    },
+    tab_id: {
+        type: String
+    },
+    incognito: {
+        type: Boolean
+    },
     alumneid: {
         type: String
     }

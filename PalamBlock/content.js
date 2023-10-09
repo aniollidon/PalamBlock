@@ -1,37 +1,3 @@
-window.addEventListener("beforeunload", function (e) {
-    sessionStorage.closedLastTab = '1';
-    alert ("Tancant la pestanya");
-});
-
-
-function getBrowser() {
-    let userAgent = navigator.userAgent;
-    let browser = "Unknown";
-
-    // Detect Chrome
-    if (/Chrome/.test(userAgent) && !/Chromium/.test(userAgent)) {
-        browser = "Google Chrome family";
-    }
-    // Detect Chromium-based Edge
-    else if (/Edg/.test(userAgent)) {
-        browser = "Microsoft Edge";
-    }
-    // Detect Firefox
-    else if (/Firefox/.test(userAgent)) {
-        browser = "Mozilla Firefox";
-    }
-    // Detect Safari
-    else if (/Safari/.test(userAgent)) {
-        browser = "Apple Safari";
-    }
-    // Detect Internet Explorer
-    else if (/Trident/.test(userAgent)) {
-        browser = "Internet Explorer";
-    }
-
-    return browser;
-}
-
 chrome.storage.sync.get(['alumne'], function(result) {
 
     if(!result.alumne){
@@ -39,21 +5,9 @@ chrome.storage.sync.get(['alumne'], function(result) {
       return;
     }
 
-    const host = window.location.hostname;
-    const protocol = window.location.protocol;
-    const search = window.location.search;
-    const pathname = window.location.pathname;
-    const title = document.title;
-
     chrome.runtime.sendMessage({
         type: 'validacio',
-        host:host,
-        protocol:protocol,
-        search:search,
-        pathname:pathname,
-        title:title,
-        alumne:result.alumne,
-        browser: getBrowser(),
+        alumne:result.alumne
     }).then((message)=>{
         if(message.do === "block"){
             window.location.href = chrome.runtime.getURL("blocked.html")

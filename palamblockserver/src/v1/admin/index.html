@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PalamBlock Admin</title>
+    <link href="css/tabs.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+</head>
+<body>
+    <h1>PalamBlock Admin</h1>
+    <p>
+
+    <div id="alumnesList"> </div>
+
+    <!-- Styles to prevent flash after JS initialization -->
+    <style>
+        .chrome-tabs .chrome-tab {
+            width: 258px
+        }
+
+        .chrome-tabs .chrome-tab:nth-child(1) {
+            transform: translate3d(0px, 0, 0)
+        }
+
+        .chrome-tabs .chrome-tab:nth-child(2) {
+            transform: translate3d(239px, 0, 0)
+        }
+    </style>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <script src="https://unpkg.com/draggabilly@2.2.0/dist/draggabilly.pkgd.min.js"></script>
+    <script src="js/tabs.js"></script>
+    <script src="js/admin.js"></script>
+
+</body>
+</html>
