@@ -47,7 +47,22 @@ const postNorma = (req, res) => {
     }
 }
 
+function addNorma(who, whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
+                  titles_list, enabled_on) {
+    if(who === "grup") {
+        normaService.creaNormaGrup(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
+            titles_list, enabled_on).then((alumne) => {
+                console.log("Norma afegida de grup");
+        });
+    } else if(who === "alumne"){
+        normaService.creaNormaAlumne(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
+            titles_list, enabled_on).then((alumne) => {
+                console.log("Norma afegida d'alumne");
+        });
+    }
+}
 
 module.exports = {
-    postNorma
+    postNorma,
+    addNorma
 }

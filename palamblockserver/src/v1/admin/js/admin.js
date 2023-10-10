@@ -59,12 +59,53 @@ socket.on('browsingActivity', function (data) {
                     browserTabsBottomBar.setAttribute("class", "chrome-tabs-bottom-bar");
                     browserDiv.appendChild(browserTabsBottomBar);
 
+                    // opcions del menu
+
+                    const obreUrl = (info) => {
+                        console.log("obre");
+                        const url = info.webPage.protocol + "//" + info.webPage.host + info.webPage.pathname + info.webPage.search
+                        window.open(url, '_blank').focus();
+
+                    }
+                    const onBloqueja = (info) => {
+                        console.log("bloqueja");
+                        socket.emit("addNorma", {
+                            who: "alumne",
+                            whoid: alumne,
+                            severity: "block",
+                            mode: "blacklist",
+                            hosts_list: [info.webPage.host],
+                            //protocols_list: [info.webPage.protocol],
+                            //searches_list: [info.webPage.search],
+                            pathnames_list: [info.webPage.pathname],
+                            //titles_list: [info.webPage.title],
+                            //enabled_on: undefined
+                        })
+                    }
+
+                    const onBloquejaGrup = (info) => {
+                        console.log("bloqueja");
+                    }
+
+                    const onAfegeixLlistaBlanca = (info) => {
+                        console.log("bloqueja");
+                    }
+                    const menu_options = {
+                        "Obre aquí": obreUrl,
+                        "Bloqueja": onBloqueja,
+                        "Bloqueja al grup": onBloquejaGrup,
+                        "Afegeix a llista blanca": onAfegeixLlistaBlanca,
+                    }
+
                     // init chrome tabs
                     let chromeTabs = new ChromeTabs()
-                    chromeTabs.init(browserDiv)
-                    browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
-                    browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
-                    browserDiv.addEventListener('tabRemove', ({ detail }) => console.log('Tab removed', detail.tabEl))
+                    chromeTabs.init(browserDiv, menu_options)
+                    //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
+                    //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
+                    browserDiv.addEventListener('tabRemove', ({ detail }) => {
+                        console.log('Tab removed', detail.tabEl)
+                        socket.emit("closeTab", { alumne: alumne, browser: browserInfo.browser, browserId: browserInfo.browser_id, tab: detail.tabEl.info.tabId })
+                    });
 
                     for (const tab in browserInfo.tabs) {
                         if (Object.hasOwnProperty.call(browserInfo.tabs, tab)) {
@@ -79,6 +120,7 @@ socket.on('browsingActivity', function (data) {
                             chromeTabs.addTab({
                                 title: tabInfo.webPage.title,
                                 favicon: tabInfo.webPage.favicon,
+                                info: tabInfo,
                             }, {
                                 background: !tabInfo.active
                             })
@@ -90,3 +132,4 @@ socket.on('browsingActivity', function (data) {
     }
 
 });
+

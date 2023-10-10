@@ -263,10 +263,15 @@ function registerOnUpdateCallback(callback) {
     allAlumnesStatus.registerCallback(callback);
 }
 
+function remoteCloseTab(alumne, browser, browserId, tab) {
+    // TODO. Enviar un missatge al alumne per tancar la tab
+}
+
 module.exports = {
     register,
     registerAction,
     registerPing,
     getAlumnesBrowsingActivity,
-    registerOnUpdateCallback
+    registerOnUpdateCallback,
+    remoteCloseTab
 }

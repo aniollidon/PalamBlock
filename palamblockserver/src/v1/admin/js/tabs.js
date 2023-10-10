@@ -52,7 +52,8 @@
 
     const defaultTapProperties = {
         title: 'New tab',
-        favicon: false
+        favicon: false,
+        info: {}
     }
 
     let instanceId = 0
@@ -62,8 +63,9 @@
             this.draggabillies = []
         }
 
-        init(el) {
+        init(el, menu_options) {
             this.el = el
+            this.menu_options = menu_options
 
             this.instanceId = instanceId
             this.el.setAttribute('data-chrome-tabs-instance-id', this.instanceId)
@@ -95,11 +97,13 @@
                 this.layoutTabs()
             })
 
-            this.el.addEventListener('dblclick', event => {
+            /*this.el.addEventListener('dblclick', event => {
                 if ([this.el, this.tabContentEl].includes(event.target)) this.addTab()
-            })
+            })*/
 
             this.tabEls.forEach((tabEl) => this.setTabCloseEventListener(tabEl))
+            this.tabEls.forEach((tabEl) => this.setTabClickEventListener(tabEl))
+
         }
 
         get tabEls() {
@@ -199,8 +203,10 @@
             }
 
             tabProperties = Object.assign({}, defaultTapProperties, tabProperties)
+            tabEl.info = tabProperties.info;
             this.tabContentEl.appendChild(tabEl)
             this.setTabCloseEventListener(tabEl)
+            this.setTabClickEventListener(tabEl)
             this.updateTab(tabEl, tabProperties)
             this.emit('tabAdd', { tabEl })
             if (!background) this.setCurrentTab(tabEl)
@@ -210,7 +216,18 @@
         }
 
         setTabCloseEventListener(tabEl) {
-            tabEl.querySelector('.chrome-tab-close').addEventListener('click', _ => this.removeTab(tabEl))
+            tabEl.querySelector('.chrome-tab-close').addEventListener('click', e => {
+                this.removeTab(tabEl);
+                closeMenu(e);
+            } )
+        }
+
+        setTabClickEventListener(tabEl) {
+            tabEl.querySelector('.chrome-tab-content').addEventListener('click', e => {
+                // Opcions del menu
+
+                openMenu(e, this.menu_options, tabEl.info);
+            })
         }
 
         get activeTabEl() {
@@ -277,6 +294,8 @@
         }
 
         setupDraggabilly() {
+            return
+
             const tabEls = this.tabEls
             const tabPositions = this.tabPositions
 
@@ -370,3 +389,61 @@
 
     return ChromeTabs
 })
+
+
+//**/
+
+const menu = document.querySelector(".menu");
+let menuClickCoords = {};
+
+const openMenu = (e, options, tabinfo) => {
+    console.log("openMenu", e);
+    e.preventDefault();
+    const origin = {
+        left: e.pageX,
+        top: e.pageY
+    };
+
+    if(menuClickCoords.left === origin.left && menuClickCoords.top === origin.top)
+        return closeMenu(e);
+
+    menuClickCoords = origin;
+
+    const ul = menu.querySelector(".menu-options");
+    ul.innerHTML = "";
+
+    for(let option in options) {
+        let menuOption = document.createElement("li");
+        menuOption.setAttribute("class", "menu-option");
+        menuOption.innerHTML = option;
+        menuOption.addEventListener("click", ()=>options[option](tabinfo));
+        ul.appendChild(menuOption);
+    }
+    setPosition(origin);
+    return false;
+}
+
+const closeMenu = (e) => {
+    e.preventDefault();
+    const origin = {
+        left: e.pageX,
+        top: e.pageY
+    };
+    menuClickCoords = origin;
+    toggleMenu("hide");
+}
+const toggleMenu = command => {
+    menu.style.display = command === "show" ? "block" : "none";
+};
+
+const setPosition = ({ top, left }) => {
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    toggleMenu("show");
+};
+
+window.addEventListener("click", e => {
+    if(menuClickCoords.left === e.pageX && menuClickCoords.top === e.pageY) return;
+    toggleMenu("hide");
+});
+

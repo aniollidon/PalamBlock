@@ -6,60 +6,60 @@ const API_REGISTER = API_URL + 'alumne';
 importScripts('ua-parser.min.js')
 
 async function getInstanceID() {
-    try{
+    try {
         return await chrome.instanceID.getID()
-    }
-    catch (e) {
+    } catch (e) {
         console.log("Error getting instanceID: " + e)
         return "unknown"
     }
 }
+
 function getBrowser() {
-    try{
+    try {
         if (navigator.brave.isBrave())
             return "Brave"
+    } catch (e) {
     }
-    catch (e) {}
     const uap = new UAParser();
     return uap.getBrowser().name;
 }
-async function handleMessage(request, sender, sendResponse) {
-    if(request.type === 'validacio') {
 
-        const url = new URL(sender.url)
-
-        fetch(API_VALIDACIO, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                host: url.host,
-                protocol: url.protocol,
-                search: url.search,
-                pathname: url.pathname,
-                title: sender.tab.title,
-                favicon: sender.tab.favIconUrl,
-                alumne: request.alumne,
-                browser: getBrowser(),
-                browserId: await getInstanceID(),
-                tabId: sender.tab.id,
-                incognito: sender.tab.incognito
-            })
-        }).then((response) => {
-            response.json().then((data) => {
-                if (response.status === 200) {
-                    sendResponse({do: data.do});
-                } else {
-                    sendResponse({do: "allow"});
-                }
+function handleMessage(request, sender, sendResponse) {
+    if (request.type === 'validacio') {
+        getInstanceID().then((instanceID) => {
+            const url = new URL(sender.url)
+            fetch(API_VALIDACIO, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    host: url.host,
+                    protocol: url.protocol,
+                    search: url.search,
+                    pathname: url.pathname,
+                    title: sender.tab.title,
+                    favicon: sender.tab.favIconUrl,
+                    alumne: request.alumne,
+                    browser: getBrowser(),
+                    browserId: instanceID,
+                    tabId: sender.tab.id,
+                    incognito: sender.tab.incognito
+                })
+            }).then((response) => {
+                response.json().then((data) => {
+                    if (response.status === 200) {
+                        sendResponse({do: data.do});
+                    } else {
+                        sendResponse({do: "allow"});
+                    }
+                });
+            }).catch((error) => {
+                console.error(error);
+                sendResponse({do: "allow", aim: "error"});
             });
-        }).catch((error) => {
-            console.error(error);
-            sendResponse({do: "allow", aim: "error"});
         });
-    }
-    else if(request.type === 'register') {
+    } else if (request.type === 'register') {
         fetch(API_REGISTER, {
             method: 'POST',
             headers: {
@@ -72,28 +72,28 @@ async function handleMessage(request, sender, sendResponse) {
                 nom: "",
                 cognoms: ""
             })
-            }).then((response) => {
-                response.json().then((data) => {
-                    if (response.status === 200) {
-                        sendResponse({status: "OK"});
-                    } else {
-                        sendResponse({status: "FAILED"});
-                    }
-                });
-            }).catch((error) => {
-                console.error(error);
-                sendResponse({status: "FAILED"});
+        }).then((response) => {
+            response.json().then((data) => {
+                if (response.status === 200) {
+                    sendResponse({status: "OK"});
+                } else {
+                    sendResponse({status: "FAILED"});
+                }
             });
-        }
-
+        }).catch((error) => {
+            console.error(error);
+            sendResponse({status: "FAILED"});
+        });
+    }
     return true;
 }
-chrome.tabs.onRemoved.addListener(function(tabid, removed) {
+
+chrome.tabs.onRemoved.addListener(function (tabid, removed) {
 
     console.log("tab closed" + tabid)
 
-    chrome.storage.sync.get(['alumne'], async function(result) {
-        if(!result.alumne){
+    chrome.storage.sync.get(['alumne'], async function (result) {
+        if (!result.alumne) {
             return
         }
 
@@ -114,13 +114,13 @@ chrome.tabs.onRemoved.addListener(function(tabid, removed) {
         }).catch((error) => {
             console.error(error);
         });
-});
+    });
 });
 
-chrome.tabs.onActivated.addListener(function(activeInfo) {
-    chrome.tabs.get(activeInfo.tabId, async function(tab) {
-        chrome.storage.sync.get(['alumne'], async function(result) {
-            if(!result.alumne){
+chrome.tabs.onActivated.addListener(function (activeInfo) {
+    chrome.tabs.get(activeInfo.tabId, async function (tab) {
+        chrome.storage.sync.get(['alumne'], async function (result) {
+            if (!result.alumne) {
                 return
             }
             fetch(API_INFO, {
@@ -147,13 +147,13 @@ chrome.runtime.onMessage.addListener(handleMessage);
 
 // Send ping to server every minute
 function pingMessage() {
-    chrome.storage.sync.get(['alumne'], async function(result) {
-        if(!result.alumne){
+    chrome.storage.sync.get(['alumne'], async function (result) {
+        if (!result.alumne) {
             return
         }
 
         // Get tabs ids
-        chrome.tabs.query({}, async function(tabs) {
+        chrome.tabs.query({}, async function (tabs) {
             let tabsIds = [];
             let tabActive = null;
             for (let i = 0; i < tabs.length; i++) {
@@ -183,4 +183,5 @@ function pingMessage() {
         });
     });
 }
+
 setInterval(pingMessage, 60000); // 1 minute

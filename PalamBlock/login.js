@@ -3,6 +3,8 @@ function save_options() {
     let grup = document.getElementById('grup').value;
     let clau = document.getElementById('clau').value;
 
+    chrome.storage.sync.set({ alumne: alumne, grup:grup}); //NONONO
+
     chrome.runtime.sendMessage({
         type: 'register',
         alumne: alumne,

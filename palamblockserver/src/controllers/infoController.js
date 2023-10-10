@@ -41,8 +41,13 @@ function registerOnUpdateCallback(callback) {
     infoService.registerOnUpdateCallback(callback);
 }
 
+function remoteCloseTab(alumne, browser, browserId, tab) {
+    infoService.remoteCloseTab(alumne, browser, browserId, tab);
+}
+
 module.exports = {
     postInfo,
     getAlumnesBrowsingActivity,
-    registerOnUpdateCallback
+    registerOnUpdateCallback,
+    remoteCloseTab,
 }
