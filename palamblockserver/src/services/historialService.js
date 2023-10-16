@@ -1,6 +1,6 @@
 const db = require("../database/db");
 
-function save(alumne, timestamp, host, protocol, search, pathname, title, browser, tab_id, incognito) {
+function save(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito) {
     db.Historial.create({
         alumneid: alumne,
         timestamp: timestamp,
@@ -10,7 +10,7 @@ function save(alumne, timestamp, host, protocol, search, pathname, title, browse
         pathname: pathname,
         title: title,
         browser: browser,
-        tab_id: tab_id,
+        tabId: tabId,
         incognito: incognito
     });
 }

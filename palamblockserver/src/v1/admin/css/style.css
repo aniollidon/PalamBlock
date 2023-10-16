@@ -21,3 +21,7 @@
     height: 100%;
     background: #e8eaed;
 }
+
+.chrome-tab-blocked{
+    text-decoration: line-through;
+}

@@ -28,7 +28,7 @@ socket.on('browsingActivity', function (data) {
                     let tbrowserDiv = document.createElement("div");
                     tbrowserDiv.setAttribute("class", "browser");
                     tbrowserDiv.setAttribute("id", browser);
-                    tbrowserDiv.innerHTML = browserInfo.browser + " " + browserInfo.browser_id;
+                    tbrowserDiv.innerHTML = browserInfo.browser + " " + browserInfo.browserId;
                     alumneBrowsersDiv.appendChild(tbrowserDiv);
                     let tbrowserTabsDiv = document.createElement("div");
                     tbrowserTabsDiv.setAttribute("class", "tabs");
@@ -62,13 +62,11 @@ socket.on('browsingActivity', function (data) {
                     // opcions del menu
 
                     const obreUrl = (info) => {
-                        console.log("obre");
                         const url = info.webPage.protocol + "//" + info.webPage.host + info.webPage.pathname + info.webPage.search
                         window.open(url, '_blank').focus();
 
                     }
                     const onBloqueja = (info) => {
-                        console.log("bloqueja");
                         socket.emit("addNorma", {
                             who: "alumne",
                             whoid: alumne,
@@ -104,7 +102,7 @@ socket.on('browsingActivity', function (data) {
                     //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
                     browserDiv.addEventListener('tabRemove', ({ detail }) => {
                         console.log('Tab removed', detail.tabEl)
-                        socket.emit("closeTab", { alumne: alumne, browser: browserInfo.browser, browserId: browserInfo.browser_id, tab: detail.tabEl.info.tabId })
+                        socket.emit("closeTab", { alumne: alumne, browser: browserInfo.browser, browserId: browserInfo.browserId, tabId: detail.tabEl.info.tabId })
                     });
 
                     for (const tab in browserInfo.tabs) {

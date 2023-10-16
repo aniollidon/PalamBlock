@@ -196,6 +196,11 @@
 
         addTab(tabProperties, { animate = true, background = false } = {}) {
             const tabEl = this.createNewTabEl()
+            const tabContentEl = tabEl.querySelector('.chrome-tab-content')
+            if(tabProperties.info.status === 'block')
+                tabContentEl.classList.add('chrome-tab-blocked')
+            else
+                tabContentEl.classList.remove('chrome-tab-blocked')
 
             if (animate) {
                 tabEl.classList.add('chrome-tab-was-just-added')
@@ -397,7 +402,6 @@ const menu = document.querySelector(".menu");
 let menuClickCoords = {};
 
 const openMenu = (e, options, tabinfo) => {
-    console.log("openMenu", e);
     e.preventDefault();
     const origin = {
         left: e.pageX,

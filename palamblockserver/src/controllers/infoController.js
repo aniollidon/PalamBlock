@@ -1,17 +1,25 @@
 const infoService = require("../services/infoService");
 
-const postInfo = (req, res) => {
-    const alumne = req.body.alumne;
+const postTabInfo = (req, res) => {
     const action = req.body.action;
+    const host = req.body.host;
+    const protocol = req.body.protocol;
+    const search = req.body.search;
+    const pathname = req.body.pathname;
+    const title = req.body.title;
+    const alumne = req.body.alumne;
+    const browser = req.body.browser
+    const browserId = req.body.browserId;
     const tabId = req.body.tabId;
-    const browser = req.body.browser;
-    const browser_id = req.body.browserId;
-    const tabsIds = req.body.tabsIds;
+    const incognito = req.body.incognito;
+    const favicon = req.body.favicon;
+    const active = req.body.active;
 
-    const timestamp = new Date().toLocaleString("es-CA", { timeZone: "Europe/Madrid" });
 
-    if(action !== "active" && action !== "close" && action !== "ping") {
-        res.status(500).send({status: "ERROR", data: "Action incorrecte. Ha de ser active, close, ping"});
+    const timestamp = new Date();
+
+    if(action !== "active" && action !== "close" && action !== "update") {
+        res.status(500).send({status: "ERROR", data: "Action incorrecte. Ha de ser active, close o update"});
         return;
     }
 
@@ -20,17 +28,29 @@ const postInfo = (req, res) => {
         return;
     }
 
-    if(action === "ping" && !tabsIds) {
-        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar tabsIds" })
+    if (action === "active" || action === "close" || action === "update") {
+        infoService.registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active);
+    }
+
+    res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser, browserId) });
+}
+
+const postBrowserInfo = (req, res) => {
+    const alumne = req.body.alumne;
+    const browser = req.body.browser;
+    const browserId = req.body.browserId;
+    const timestamp = new Date();
+    const tabsInfos = req.body.tabsInfos;
+    const activeTab = req.body.activeTab;
+
+    if (!alumne || !browser || !browserId) {
+        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar alumne, browser, browserId." })
         return;
     }
 
-    if (action === "active" || action === "close")
-        infoService.registerAction(alumne, action, tabId, browser, browser_id, timestamp);
-    else if (action === "ping")
-        infoService.registerPing(alumne, tabsIds, tabId, browser, browser_id, timestamp);
+    infoService.registerBrowserInfo(alumne, browser, browserId, tabsInfos, activeTab, timestamp);
 
-    res.send({ status: "OK" });
+    res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser, browserId) });
 }
 
 function getAlumnesBrowsingActivity() {
@@ -46,7 +66,8 @@ function remoteCloseTab(alumne, browser, browserId, tab) {
 }
 
 module.exports = {
-    postInfo,
+    postTabInfo,
+    postBrowserInfo,
     getAlumnesBrowsingActivity,
     registerOnUpdateCallback,
     remoteCloseTab,

@@ -14,8 +14,11 @@ const infoController = require("../../controllers/infoController");
 //router.patch("/historials", historialController.modifyHistorial);
 //router.delete("/historials/:id", historialController.deleteHistorial);
 
-router.post("/validacio", validacioController.postValidacio);
-router.post("/alumne", alumneController.postAlumne);
+router.post("/alumne", alumneController.postAlumne); // TODO moure al socket
+router.post("/autentificacio", alumneController.autentificaAlumne);
 router.post("/norma", normaController.postNorma);
-router.post("/info", infoController.postInfo);
+router.post("/validacio/tab", validacioController.postValidacio);
+router.post("/info/tab", infoController.postTabInfo);
+router.post("/info/browser", infoController.postBrowserInfo);
+
 module.exports = router;

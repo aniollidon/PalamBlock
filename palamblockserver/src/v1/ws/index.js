@@ -6,8 +6,6 @@ function initializeWebSocket(server) {
     const io = new Server(server)
 
     io.on('connection', (socket) => {
-        console.log('a user connected');
-
         socket.emit('browsingActivity', infoController.getAlumnesBrowsingActivity());
 
         infoController.registerOnUpdateCallback(() => {
@@ -16,8 +14,7 @@ function initializeWebSocket(server) {
 
         // on message closeTab
         socket.on('closeTab', (msg) => {
-            console.log('closeTab', msg);
-            infoController.remoteCloseTab(msg.alumne, msg.browser, msg.browserId, msg.tab);
+            infoController.remoteCloseTab(msg.alumne, msg.browser, msg.browserId, msg.tabId);
         });
 
         socket.on('addNorma', (msg) => {

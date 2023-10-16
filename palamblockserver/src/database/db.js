@@ -59,7 +59,12 @@ const GrupSchema = new mongoose.Schema({
 const AlumneSchema = new mongoose.Schema({
     alumneId: {
         type: String,
-        unique: true
+        unique: true,
+        required: true
+    },
+    clauEncriptada: {
+        type: String,
+        required: true
     },
     nom: {
         type: String
@@ -101,7 +106,7 @@ const HistorialSchema = new mongoose.Schema({
     browser: {
         type: String
     },
-    tab_id: {
+    tabId: {
         type: String
     },
     incognito: {
