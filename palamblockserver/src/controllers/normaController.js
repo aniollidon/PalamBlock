@@ -62,7 +62,22 @@ function addNorma(who, whoid, severity, mode, hosts_list, protocols_list, search
     }
 }
 
+const getAllNormes = () => {
+    return normaService.getAllNormes();
+}
+
+const removeNorma = (who, whoid, normaid) => {
+    normaService.removeNorma(who, whoid, normaid);
+}
+
+const registerOnUpdateCallback = (callback) => {
+    normaService.registerOnUpdateCallback(callback);
+}
+
 module.exports = {
     postNorma,
-    addNorma
+    addNorma,
+    getAllNormes,
+    removeNorma,
+    registerOnUpdateCallback,
 }

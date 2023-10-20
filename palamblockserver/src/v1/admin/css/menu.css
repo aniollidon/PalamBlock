@@ -32,22 +32,6 @@
 
 
 
-button{
-    background: grey;
-    border: none;
-
-    .next{
-        color:green;
-    }
-
-    &[disabled="false"]:hover{
-        .next{
-            color: red;
-            animation: move 0.5s;
-            animation-iteration-count: 2;
-        }
-    }
-}
 
 @keyframes move{
     from{

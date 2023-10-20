@@ -1,3 +1,3 @@
 document.getElementById('login').addEventListener('click',()=>{
-    window.location.href = chrome.runtime.getURL("login.html")
+    window.open('login.html', '_blank');
 });

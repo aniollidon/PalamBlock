@@ -1,3 +1,6 @@
+const validacioService = require('./validacioService');
+
+require('dotenv').config();
 
 class WebPage {
     constructor(host, protocol, search, pathname, title, favicon) {
@@ -21,6 +24,7 @@ class TabStatus {
         this.status = tabPropierties.actionStatus;
         this.webPage = webPage;
         this.active = tabPropierties.active;
+        this.audible = tabPropierties.audible;
         this.opened = true;
         this.startedAt = timestamp;
         this.updatedAt = timestamp;
@@ -45,8 +49,24 @@ class TabStatus {
             changed = this.active;
         }
 
+        if(tabPropierties.audible !== undefined && this.audible !== tabPropierties.audible) {
+            this.audible = tabPropierties.audible;
+            changed = true;
+        }
+
+
         if(webPage && this.webPage.join() !== webPage.join()) {
             this.webPage = webPage;
+            changed = true;
+        }
+
+        if (webPage && this.webPage.title !== webPage.title) {
+            this.webPage.title = webPage.title;
+            changed = true;
+        }
+
+        if(webPage && webPage.favicon && this.webPage.favicon !== webPage.favicon) {
+            this.webPage.favicon = webPage.favicon;
             changed = true;
         }
 
@@ -82,15 +102,41 @@ class TabStatus {
 
 
 class BrowserStatus {
-    constructor(browser, browserId, timestamp) {
+    constructor(browser, browserId, timestamp, onUpdateCallback) {
         this.browser = browser;
         this.browserId = browserId;
         this.tabs = {};
         this.startedAt = timestamp;
         this.updatedAt = timestamp;
+        this._passiveupdatedAt = timestamp;
+        this._onUpdateCallback = onUpdateCallback;
+        this.opened = true;
+
+        // Comprova si el browser s'ha desconnectat
+        const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
+        setInterval(() => {
+            if(this.opened && this._passiveupdatedAt && (new Date() - this._passiveupdatedAt) > NOCONN_TIME) {
+                console.log("Browser " + this.browser + " " + this.browserId + " disconnected");
+                for (const tab in this.tabs) {
+                    this.tabs[tab].close(new Date());
+                }
+                this.opened = false;
+                this._onUpdateCallback();
+            }
+        }, NOCONN_TIME);
+    }
+
+    setAlive(timestamp) {
+        this._passiveupdatedAt = timestamp;
+        this.opened = true;
+    }
+
+    registerCallback(onUpdateCallback) {
+        this._onUpdateCallback = onUpdateCallback;
     }
 
     register(tabId, tabPropierties, webPage, timestamp){
+        this.setAlive(timestamp);
         tabId = tabId.toString();
         // Check if tab exists
         if(!this.tabs[tabId]) {
@@ -103,6 +149,7 @@ class BrowserStatus {
     }
 
     update(tabId, tabPropierties, webPage, timestamp){
+        this.setAlive(timestamp);
         let changes = false;
         tabId = tabId.toString();
 
@@ -123,6 +170,7 @@ class BrowserStatus {
     }
 
     closeTab(tabId, timestamp) {
+        this.setAlive(timestamp);
         tabId = tabId.toString();
 
         if(!this.tabs[tabId]) {
@@ -135,6 +183,7 @@ class BrowserStatus {
     }
 
     setActiveTab(tabId, timestamp) {
+        this.setAlive(timestamp);
         let changes = false;
         tabId = tabId.toString();
 
@@ -158,6 +207,8 @@ class BrowserStatus {
     }
 
     checkTabs(tabsInfos, activeTab, timestamp) {
+        this.setAlive(timestamp);
+
         let changes = false;
         activeTab = activeTab.toString();
 
@@ -171,7 +222,8 @@ class BrowserStatus {
                 const tabPropierties = {
                     incognito: tabsInfos[tab].incognito,
                     actionStatus: undefined,
-                    active: tabsInfos[tab].active
+                    active: tabsInfos[tab].active,
+                    audible: tabsInfos[tab].audible
                 };
                 changes = this.tabs[tab].update(tabPropierties, webPage, timestamp);
             }
@@ -183,7 +235,8 @@ class BrowserStatus {
                 const tabPropierties = {
                     incognito: tabsInfos[tab].incognito,
                     actionStatus: undefined,
-                    active: tabsInfos[tab].active
+                    active: tabsInfos[tab].active,
+                    audible: tabsInfos[tab].audible
                 };
                 this.tabs[tab.toString()] = new TabStatus(tab, tabPropierties, webPage, timestamp);
                 changes = true;
@@ -198,15 +251,16 @@ class BrowserStatus {
 }
 
 class AlumneStatus {
-    constructor(alumne) {
+    constructor(alumne, onUpdateCallback) {
         this.alumne = alumne;
         this.browsers = {};
+        this._onUpdateCallback = onUpdateCallback;
     }
 
     register(browser, browserId, tabId, tabPropierties, webPage, timestamp) {
         // Check if browser exists
         if(!this.browsers[browser+browserId]) {
-            this.browsers[browser+browserId] = new BrowserStatus(browser, browserId, timestamp);
+            this.browsers[browser+browserId] = new BrowserStatus(browser, browserId, timestamp, this._onUpdateCallback);
         }
 
         this.browsers[browser+browserId].register(tabId, tabPropierties, webPage, timestamp);
@@ -215,7 +269,7 @@ class AlumneStatus {
     update(browser, browserId, tabId, tabPropierties, webPage, timestamp) {
         // Check if browser exists
         if(!this.browsers[browser+browserId]) {
-            this.browsers[browser+browserId] = new BrowserStatus(browser, browserId, timestamp);
+            this.browsers[browser+browserId] = new BrowserStatus(browser, browserId, timestamp, this._onUpdateCallback);
         }
 
         return this.browsers[browser+browserId].update(tabId, tabPropierties, webPage, timestamp);
@@ -231,10 +285,17 @@ class AlumneStatus {
 
     checkTabs(browser, browserId, tabsInfos, activeTab, timestamp){
         if(!this.browsers[browser+browserId]) {
-            this.browsers[browser+browserId] = new BrowserStatus(browser, browserId, timestamp);
+            this.browsers[browser+browserId] = new BrowserStatus(browser, browserId, timestamp, this._onUpdateCallback);
         }
 
         return this.browsers[browser+browserId].checkTabs(tabsInfos, activeTab, timestamp);
+    }
+
+    updateCallbacks(callback) {
+        this._onUpdateCallback = callback;
+        for (const browser in this.browsers) {
+            this.browsers[browser].registerCallback(callback);
+        }
     }
 }
 
@@ -242,30 +303,31 @@ class AllAlumnesStatus{
     constructor(onUpdateCallback = ()=>{}) {
         this.alumnesStat = {};
         this.pendingBrowserActions = {};
+        this._onSavePending = false;
         this._onUpdateCallback = onUpdateCallback;
-        this.lastPingUpdate = undefined;
 
-        setInterval(() => {
-            // Todo check if last ping update is too old
-        }, 120000); // 2 minuts
     }
 
     registerCallback(onUpdateCallback) {
         this._onUpdateCallback = onUpdateCallback;
+        for (const alumne in this.alumnesStat) {
+            this.alumnesStat[alumne].updateCallbacks(onUpdateCallback);
+        }
     }
 
-    register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, action) {
+    register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, action, audible) {
 
         const webPage = new WebPage(host, protocol, search, pathname, title, favicon);
         const tabPropierties = {
             incognito: incognito,
             actionStatus: action,
-            active: active
+            active: active,
+            audible: audible
         };
 
         // Check if alumne exists
         if(!this.alumnesStat[alumne]) {
-            this.alumnesStat[alumne] = new AlumneStatus(alumne);
+            this.alumnesStat[alumne] = new AlumneStatus(alumne, this._onUpdateCallback);
         }
 
         this.alumnesStat[alumne].register(browser, browserId, tabId, tabPropierties, webPage, timestamp);
@@ -275,7 +337,7 @@ class AllAlumnesStatus{
 
     closeTab(alumne, tabId, browser, browserId, timestamp) {
         if(!this.alumnesStat[alumne]) {
-            this.alumnesStat[alumne] = new AlumneStatus(alumne);
+            this.alumnesStat[alumne] = new AlumneStatus(alumne, this._onUpdateCallback);
         }
 
         this.alumnesStat[alumne].closeTab(browser, browserId, tabId, timestamp);
@@ -299,24 +361,25 @@ class AllAlumnesStatus{
 
     checkTabs(alumne, browser, browserId, tabsInfos, activeTab, timestamp) {
         if(!this.alumnesStat[alumne]) {
-            this.alumnesStat[alumne] = new AlumneStatus(alumne);
+            this.alumnesStat[alumne] = new AlumneStatus(alumne, this._onUpdateCallback);
         }
 
         const changes = this.alumnesStat[alumne].checkTabs(browser, browserId, tabsInfos, activeTab, timestamp);
         if(changes) this._onUpdateCallback();
     }
 
-    update(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active) {
+    update(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, audible) {
         const webPage = new WebPage(host, protocol, search, pathname, title, favicon);
         const tabPropierties = {
             incognito: incognito,
             actionStatus: undefined,
-            active: active
+            active: active,
+            audible: audible
         };
 
         // Check if alumne exists
         if(!this.alumnesStat[alumne]) {
-            this.alumnesStat[alumne] = new AlumneStatus(alumne);
+            this.alumnesStat[alumne] = new AlumneStatus(alumne, this._onUpdateCallback);
         }
 
         const changes = this.alumnesStat[alumne].update(browser, browserId, tabId, tabPropierties, webPage, timestamp);
@@ -328,24 +391,23 @@ class AllAlumnesStatus{
 
 const allAlumnesStatus = new AllAlumnesStatus();
 
-function registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active) {
+function registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, audible) {
 
     if (action === "close") {
         allAlumnesStatus.closeTab(alumne, tabId, browser, browserId, timestamp);
     }
     else if (action === "update" || action === "active") {
-        allAlumnesStatus.update(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active);
+        allAlumnesStatus.update(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, audible);
     }
 }
 
-function register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, action) {
-    allAlumnesStatus.register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, action);
+function register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, action, audible) {
+    allAlumnesStatus.register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, action, audible);
 }
 
 
 function registerBrowserInfo(alumne, browser, browserId, tabsInfos, activeTab, timestamp) {
     allAlumnesStatus.checkTabs(alumne, browser, browserId, tabsInfos, activeTab, timestamp);
-    allAlumnesStatus.lastPingUpdate = timestamp;
 }
 function getAlumnesBrowsingActivity() {
     return allAlumnesStatus.alumnesStat;
@@ -372,8 +434,34 @@ function getBrowserPendingActions(alumne, browser, browserId) {
     if(!allAlumnesStatus.pendingBrowserActions[alumne]) return undefined;
     if(!allAlumnesStatus.pendingBrowserActions[alumne][browser+browserId]) return undefined;
     const pending = allAlumnesStatus.pendingBrowserActions[alumne][browser+browserId];
-    delete allAlumnesStatus.pendingBrowserActions[alumne][browser+browserId];
+
+    if(!allAlumnesStatus._onSavePending)
+        delete allAlumnesStatus.pendingBrowserActions[alumne][browser+browserId];
+
     return pending;
+}
+
+async function normesHasChanged() {
+    for (const alumne in allAlumnesStatus.alumnesStat) {
+        const validacio = new validacioService.Validacio(alumne);
+        for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
+            for(const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
+                const action = {action:'refresh', tabId: tab};
+                const webPage = allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].webPage;
+                const permition = await validacio.check(webPage.host, webPage.protocol, webPage.search, webPage.pathname, webPage.title);
+
+                if(permition !== "allow"){
+                    allAlumnesStatus._onSavePending = true;
+                    if(!allAlumnesStatus.pendingBrowserActions[alumne])
+                        allAlumnesStatus.pendingBrowserActions[alumne] = {};
+                    if(!allAlumnesStatus.pendingBrowserActions[alumne][browser])
+                        allAlumnesStatus.pendingBrowserActions[alumne][browser] = [];
+                    allAlumnesStatus.pendingBrowserActions[alumne][browser].push(action)
+                    allAlumnesStatus._onSavePending = false;
+                }
+            }
+        }
+    }
 }
 
 
@@ -384,5 +472,6 @@ module.exports = {
     getAlumnesBrowsingActivity,
     registerOnUpdateCallback,
     remoteCloseTab,
-    getBrowserPendingActions
+    getBrowserPendingActions,
+    normesHasChanged
 }

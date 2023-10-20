@@ -2,6 +2,11 @@ function save_options() {
     let alumne = document.getElementById('alumne').value;
     let clau = document.getElementById('clau').value;
 
+    if(alumne === '' || clau === ''){
+        alert("Cal especificar alumne i clau");
+        return;
+    }
+
     chrome.runtime.sendMessage({
         type: 'autentificacio',
         alumne: alumne,

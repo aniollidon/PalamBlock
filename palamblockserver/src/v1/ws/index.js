@@ -5,8 +5,9 @@ const normaController = require("../../controllers/normaController");
 function initializeWebSocket(server) {
     const io = new Server(server)
 
-    io.on('connection', (socket) => {
+    io.on('connection', async (socket) => {
         socket.emit('browsingActivity', infoController.getAlumnesBrowsingActivity());
+        socket.emit('normesList', await normaController.getAllNormes());
 
         infoController.registerOnUpdateCallback(() => {
             socket.emit('browsingActivity', infoController.getAlumnesBrowsingActivity());
@@ -21,6 +22,16 @@ function initializeWebSocket(server) {
             console.log('addNorma', msg);
             normaController.addNorma(msg.who, msg.whoid, msg.severity, msg.mode, msg.hosts_list,
                 msg.protocols_list, msg.searches_list, msg.pathnames_list, msg.titles_list, msg.enabled_on);
+        });
+
+        socket.on('removeNorma', (msg) => {
+            console.log('removeNorma', msg);
+            normaController.removeNorma(msg.who, msg.whoid, msg.normaId);
+        });
+
+        normaController.registerOnUpdateCallback(async () => {
+            infoController.normesHasChanged();
+            socket.emit('normesList', await normaController.getAllNormes());
         });
     });
 

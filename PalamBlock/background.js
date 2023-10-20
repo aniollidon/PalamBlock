@@ -42,7 +42,8 @@ async function customTabInfo(chromeTab) {
                     browserId: instanceID,
                     tabId: chromeTab.id,
                     incognito: chromeTab.incognito,
-                    active: chromeTab.active
+                    active: chromeTab.active,
+                    audible: chromeTab.audible,
                 }
                 resolve(basetab_info);
             });
@@ -91,7 +92,8 @@ async function customTabsInfo(chromeTabs) {
                         browserId: instanceID,
                         tabId: chromeTab.id,
                         incognito: chromeTab.incognito,
-                        active: chromeTab.active
+                        active: chromeTab.active,
+                        audible: chromeTab.audible,
                     };
                 }
                 resolve({
@@ -237,6 +239,9 @@ function pingMessage() {
                     data.actions.forEach((action) => {
                         if (action.action === "close") {
                             chrome.tabs.remove(parseInt(action.tabId));
+                        }
+                        else if (action.action === "refresh") {
+                            chrome.tabs.reload(parseInt(action.tabId));
                         }
                     });
             });

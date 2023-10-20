@@ -11,15 +11,11 @@
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
-        "48": "images/icon48.png",
-        "64": "images/icon64.png",
-        "128": "images/icon128.png"
+        "36": "images/icon36.png"
       }
     },
     "icons": {
-      "48": "images/icon48.png",
-      "64": "images/icon64.png",
-      "128": "images/icon128.png"
+      "36": "images/icon36.png"
     },
     "content_scripts": [
       {

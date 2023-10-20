@@ -14,6 +14,7 @@ const postTabInfo = (req, res) => {
     const incognito = req.body.incognito;
     const favicon = req.body.favicon;
     const active = req.body.active;
+    const audible = req.body.audible;
 
 
     const timestamp = new Date();
@@ -29,7 +30,7 @@ const postTabInfo = (req, res) => {
     }
 
     if (action === "active" || action === "close" || action === "update") {
-        infoService.registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active);
+        infoService.registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, audible);
     }
 
     res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser, browserId) });
@@ -65,10 +66,15 @@ function remoteCloseTab(alumne, browser, browserId, tab) {
     infoService.remoteCloseTab(alumne, browser, browserId, tab);
 }
 
+function normesHasChanged() {
+    infoService.normesHasChanged();
+}
+
 module.exports = {
     postTabInfo,
     postBrowserInfo,
     getAlumnesBrowsingActivity,
     registerOnUpdateCallback,
     remoteCloseTab,
+    normesHasChanged
 }

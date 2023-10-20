@@ -15,6 +15,7 @@ const postValidacio = (req, res) => {
     const incognito = req.body.incognito;
     const favicon = req.body.favicon;
     const active = req.body.active;
+    const audible = req.body.audible;
 
     const timestamp = new Date();
 
@@ -26,7 +27,7 @@ const postValidacio = (req, res) => {
         console.log("Do: " + status);
         res.status(200).send({ do:status} );
         historialService.save(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito);
-        infoService.register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, status);
+        infoService.register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, status, audible);
 
     }).catch((err) => {
         console.error(err);

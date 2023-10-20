@@ -3,24 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <title>PalamBlock Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link href="css/tabs.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <link href="css/menu.css" rel="stylesheet">
 
 </head>
 <body>
-    <h1>PalamBlock Admin</h1>
-    <p>
 
-    <div class="menu">
-        <ul class="menu-options">
-            <li class="menu-option">Bloqueja</li>
-            <li class="menu-option">Bloqueja al grup</li>
-            <li class="menu-option">Afegeix a llista blanca</li>
-        </ul>
+<!-- Modal Normes-->
+<div id="normesModal" tabindex="-1" role="dialog" aria-labelledby="normesModalLabel" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pbk_modal_normes_title" >Normes per ALUMNE</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="pbk_modal_normes"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tanca</button>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div id="alumnesList"> </div>
+<!-- Modal Bloqueja-->
+<div id="bloquejaModal" tabindex="-1" role="dialog" aria-labelledby="bloquejaModalLabel" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <div class="modal-content">
+            <!-- nav options -->
+            <ul class="nav nav-pills mb-3 shadow-sm" id="pills-tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="pills-blocalumn-tab" data-bs-toggle="pill" href="#pills-blocalumn" role="tab" aria-controls="pills-blocalumn" aria-selected="true">Bloqueja ALUMNE</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-blocgrup-tab" data-bs-toggle="pill" href="#pills-blocgrup" role="tab" aria-controls="pills-blocgrup" aria-selected="false">Bloqueja GRUP</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-llistablanca-tab" data-bs-toggle="pill" href="#pills-llistablanca" role="tab" aria-controls="pills-llistablanca" aria-selected="false">Crea llista blanca GRUP</a>
+                </li>
+            </ul>
+            <!-- content -->
+            <div class="tab-content" id="pills-tabContent p-3">
+                <div class="tab-pane marge fade show active" id="pills-blocalumn" role="tabpanel" aria-labelledby="pills-blocalumn-tab">
+                    Crea una nova norma de bloqueig per l'alumne. Aquesta norma s'aplicarà a tots els navegadors de l'alumne.
+                </div>
+                <div class="tab-pane marge fade" id="pills-blocgrup" role="tabpanel" aria-labelledby="pills-blocgrup-tab">
+                    Crea una nova norma de bloqueig per el grup. Aquesta norma s'aplicarà a tots els navegadors dels alumnes del grup.
+                </div>
+                <div class="tab-pane marge fade" id="pills-llistablanca" role="tabpanel" aria-labelledby="pills-llistablanca-tab">
+                    Crea una nova norma llista blanca per el grup. Aquesta norma s'aplicarà a tots els navegadors dels alumnes del grup.
+                    No es recomana crear llistes blanques si hi ha altres normes de bloqueig actives.
+
+                </div>
+            </div>
+
+            <div class="form marge">
+                <div class="form-group" style="margin-bottom: 10px">
+                    <label for="pbk_modal_severity">Tipus de bloqueig</label>
+                    <select class="form-control round" id="pbk_modal_severity">
+                        <option value="block">Bloca</option>
+                        <option value="warn">Només avís</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div style="display: flex;justify-content: space-between;">
+                        <label for="pbk_modal_host">host</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="pbk_modal_host_switch" checked>
+                        </div>
+                    </div>
+                    <input class="form-control" placeholder="example.com" id="pbk_modal_host"/>
+
+                    <div style="display: flex;justify-content: space-between;">
+                        <label for="pbk_modal_pathname">path</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="pbk_modal_pathname_switch" checked>
+                        </div>
+                    </div>
+
+                    <input class="form-control" placeholder="/path/" id="pbk_modal_pathname"/>
+
+                    <div style="display: flex;justify-content: space-between;">
+                        <label for="pbk_modal_search">cerca</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="pbk_modal_search_switch">
+                        </div>
+                    </div>
+
+                    <input class="form-control" placeholder="" id="pbk_modal_search"/>
+
+                    <div style="display: flex;justify-content: space-between;">
+                        <label for="pbk_modal_title">titol</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="pbk_modal_title_switch">
+                        </div>
+                    </div>
+
+                    <input class="form-control" placeholder="" id="pbk_modal_title"/>
+                    <p></p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tanca</button>
+                <button type="button" class="btn btn-primary" id="pbk_modal_creanorma">Crea norma</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Menu -->
+<div class="menu">
+    <ul class="menu-options">
+        <li class="menu-option">Bloqueja</li>
+        <li class="menu-option">Bloqueja al grup</li>
+        <li class="menu-option">Afegeix a llista blanca</li>
+    </ul>
+</div>
+
+<main>
+    <!-- Sidebar Historial -->
+    <div id="historialSidebar" class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 380px;">
+        <a href="/" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
+            <svg class="bi me-2" width="30" height="24"><use xlink:href="#bootstrap"></use></svg>
+            <span class="fs-5 fw-semibold">List group</span>
+        </a>
+        <div class="list-group list-group-flush border-bottom scrollarea">
+            <a href="#" class="list-group-item list-group-item-action active py-3 lh-tight" aria-current="true">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small>Wed</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Tues</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Mon</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight" aria-current="true">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Wed</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Tues</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Mon</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight" aria-current="true">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Wed</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Tues</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Mon</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight" aria-current="true">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Wed</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Tues</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">List group item heading</strong>
+                    <small class="text-muted">Mon</small>
+                </div>
+                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
+            </a>
+        </div>
+    </div>
+    <div id="sidebarDivider" class="b-divider"></div>
+    <!-- Main content -->
+    <div class="main-content d-flex flex-column">
+        <h1>PalamBlock Admin</h1>
+
+        <!-- Browsers d'alumnes -->
+        <div id="alumnesList"> </div>
+    </div>
 
     <!-- Styles to prevent flash after JS initialization -->
     <style>
@@ -37,11 +241,15 @@
         }
     </style>
 
+    <!-- Boostrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <!-- Chrome pbk-modal-tabs JS -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-
     <script src="https://unpkg.com/draggabilly@2.2.0/dist/draggabilly.pkgd.min.js"></script>
     <script src="js/tabs.js"></script>
+    <!-- Admin JS -->
     <script src="js/admin.js"></script>
 
+</main>
 </body>
 </html>

@@ -202,6 +202,15 @@
             else
                 tabContentEl.classList.remove('chrome-tab-blocked')
 
+            if(tabProperties.info.audible) {
+                tabContentEl.classList.add('chrome-tab-audible');
+                tabContentEl.classList.add('-on')
+            }
+            else {
+                tabContentEl.classList.remove('chrome-tab-audible')
+                tabContentEl.classList.remove('-on')
+            }
+
             if (animate) {
                 tabEl.classList.add('chrome-tab-was-just-added')
                 setTimeout(() => tabEl.classList.remove('chrome-tab-was-just-added'), 500)
