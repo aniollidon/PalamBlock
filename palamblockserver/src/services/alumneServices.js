@@ -47,7 +47,26 @@ async function autentificaAlumne(alumneId, clau){
     return alumne;
 }
 
+async function getGrupAlumnesList(){
+    const list = {};
+    for (let alumne of await db.Alumne.find()) {
+
+        if(!list[alumne.grup])
+            list[alumne.grup] = {}
+
+        list[alumne.grup][alumne.alumneId] = {
+            alumneId: alumne.alumneId,
+            nom: alumne.nom,
+            cognoms: alumne.cognoms,
+            status: alumne.status,
+            grup: alumne.grup
+        }
+    }
+    return list;
+}
+
 module.exports = {
     creaAlumne,
-    autentificaAlumne
+    autentificaAlumne,
+    getGrupAlumnesList
 }

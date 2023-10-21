@@ -112,6 +112,9 @@ const HistorialSchema = new mongoose.Schema({
     incognito: {
         type: Boolean
     },
+    favicon: {
+        type: String
+    },
     alumneid: {
         type: String
     }

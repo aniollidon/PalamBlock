@@ -26,7 +26,7 @@ const postValidacio = (req, res) => {
         console.log("host: " + host + " protocol: " + protocol + " search: " + search + " pathname: " + pathname + " title: " + title + " alumne: " + alumne + " browser: " + browser + " tabId: " + tabId + "incognito: " + incognito + " timestamp: " + timestamp);
         console.log("Do: " + status);
         res.status(200).send({ do:status} );
-        historialService.save(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito);
+        historialService.save(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
         infoService.register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, status, audible);
 
     }).catch((err) => {

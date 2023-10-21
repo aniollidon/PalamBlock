@@ -4,20 +4,59 @@ const blockModal = new bootstrap.Modal(hblockModal)
 const hnormesModal = document.getElementById('normesModal')
 const normesModal = new bootstrap.Modal(hnormesModal)
 let normesInfo = {}
+let grupAlumnesList = {}
+let visibilityAlumnes = {}
+function getGrup(alumneId){
+    for(let grup in grupAlumnesList){
+        if(alumneId in grupAlumnesList[grup])
+            return grup;
+    }
 
+    return undefined
+}
+function creaOpcionMenuContextual(alumne) {
+    // Opcions del menu contextual
+    const obreUrl = (info) => {
+        const url = info.webPage.protocol + "//" + info.webPage.host + info.webPage.pathname + info.webPage.search
+        window.open(url, '_blank').focus();
 
+    }
+    const onBloqueja = (info) => {
+        obreDialogBloqueja(info, alumne, "blocalumn");
+    }
+
+    const onBloquejaGrup = (info) => {
+        obreDialogBloqueja(info, alumne, "blocgrup");
+    }
+
+    const onAfegeixLlistaBlanca = (info) => {
+        obreDialogBloqueja(info, alumne, "llistablanca");
+    }
+    return  {
+        "Obre aquí": obreUrl,
+        "Bloqueja": onBloqueja,
+        "Bloqueja al grup": onBloquejaGrup,
+        "Afegeix a llista blanca": onAfegeixLlistaBlanca,
+    }
+}
 function toogleHistorial(alumne){
     const historialSidebar = document.getElementById("historialSidebar");
 
-    if (historialSidebar.style.display.includes("none"))
+    if (historialSidebar.style.display.includes("none")) {
+        socket.emit("getHistorial", { alumne: alumne });
+        const historialSideBarTitle = document.getElementById("historialSidebarTitle");
+        const historialSideBarContent = document.getElementById("historialSidebarContent");
+        historialSideBarTitle.innerHTML = `Historial de l'alumne ${alumne}`;
+        historialSideBarContent.innerHTML = "";
         historialSidebar.style.display = "";
+    }
     else
         historialSidebar.style.setProperty('display', 'none', 'important');
 
 
 }
 function obreDialogBloqueja(info, alumne, action, severity = "block") {
-    const ugrup = "FPB1"; // TODO: agafar el grup de l'alumne
+    const ugrup = getGrup(alumne);
     const ualumne = alumne.toUpperCase();
     const blocalumnLink = document.getElementById("pills-blocalumn-tab");
     const blocgrupLink = document.getElementById("pills-blocgrup-tab");
@@ -56,8 +95,17 @@ function obreDialogBloqueja(info, alumne, action, severity = "block") {
     searchInput.value = info.webPage.search;
     titleInput.value = info.webPage.title;
 
+
+    if(info.webPage.pathname === "/" || info.webPage.pathname === ""){
+        pathnameSwitch.checked = false;
+        pathnameInput.setAttribute("disabled", "disabled");
+    }
+    else {
+        pathnameSwitch.checked = true;
+        pathnameInput.removeAttribute("disabled");
+    }
+
     hostSwitch.checked = true;
-    pathnameSwitch.checked = true;
     searchSwitch.checked = false;
     searchInput.setAttribute("disabled", "disabled");
     titleSwitch.checked = false;
@@ -128,7 +176,6 @@ function obreDialogBloqueja(info, alumne, action, severity = "block") {
 
     blockModal.show();
 }
-
 function obreDialogNormes(alumne){
     const modalTitle = document.getElementById("pbk_modal_normes_title");
     const container =  document.getElementById("pbk_modal_normes");
@@ -216,6 +263,7 @@ socket.on('browsingActivity', function (data) {
             let alumneDiv = document.createElement("div");
             alumneDiv.setAttribute("class", "alumne-browser-container");
             alumneDiv.setAttribute("id", alumne + "-browser-container");
+            alumneDiv.style.display = visibilityAlumnes[alumne] ? "" : "none";
 
             let alumneDivHeader = document.createElement("div");
             alumneDivHeader.setAttribute("class", "alumne-browser-header");
@@ -251,6 +299,7 @@ socket.on('browsingActivity', function (data) {
                   <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
                 </svg> Historial`
             historialButton.appendChild(historialInner);
+
             historialButton.onclick = () =>toogleHistorial(alumne)
             alumneDiv.appendChild(historialButton);
 
@@ -298,30 +347,7 @@ socket.on('browsingActivity', function (data) {
                     browserTabsBottomBar.setAttribute("class", "chrome-tabs-bottom-bar");
                     browserDiv.appendChild(browserTabsBottomBar);
 
-                    // opcions del menu
-
-                    const obreUrl = (info) => {
-                        const url = info.webPage.protocol + "//" + info.webPage.host + info.webPage.pathname + info.webPage.search
-                        window.open(url, '_blank').focus();
-
-                    }
-                    const onBloqueja = (info) => {
-                        obreDialogBloqueja(info, alumne, "blocalumn");
-                    }
-
-                    const onBloquejaGrup = (info) => {
-                        obreDialogBloqueja(info, alumne, "blocgrup");
-                    }
-
-                    const onAfegeixLlistaBlanca = (info) => {
-                        obreDialogBloqueja(info, alumne, "llistablanca");
-                    }
-                    const menu_options = {
-                        "Obre aquí": obreUrl,
-                        "Bloqueja": onBloqueja,
-                        "Bloqueja al grup": onBloquejaGrup,
-                        "Afegeix a llista blanca": onAfegeixLlistaBlanca,
-                    }
+                    const menu_options = creaOpcionMenuContextual(alumne);
 
                     // init chrome tabs
                     let chromeTabs = new ChromeTabs()
@@ -345,7 +371,8 @@ socket.on('browsingActivity', function (data) {
                             tbrowserTabsDiv.appendChild(ttabDiv);*/
                             chromeTabs.addTab({
                                 title: tabInfo.webPage.title,
-                                favicon: tabInfo.webPage.favicon,
+                                favicon: tabInfo.webPage.favicon ?  tabInfo.webPage.favicon :
+                                    (tabInfo.webPage.protocol === "chrome:" ? undefined : "img/undefined_favicon.png"),
                                 info: tabInfo
                             }, {
                                 background: !tabInfo.active
@@ -356,9 +383,170 @@ socket.on('browsingActivity', function (data) {
             }
         }
     }
-
 });
 
+socket.on('grupAlumnesList', function (data) {
+    grupAlumnesList = data;
+
+    // Prepara visibilitat
+    for(let grup in grupAlumnesList){
+        for(let alumne in grupAlumnesList[grup]){
+            visibilityAlumnes[alumne] = false;
+        }
+    }
+
+    // Prepara el selector de grups
+    const grupSelector = document.getElementById("grupSelector");
+    grupSelector.innerHTML = "";
+    const option = document.createElement("option");
+    option.innerHTML = "Selecciona un grup";
+    option.setAttribute("selected", "selected");
+    option.setAttribute("disabled", "disabled");
+    grupSelector.appendChild(option);
+
+    for(let grup in grupAlumnesList){
+        const option = document.createElement("option");
+        option.setAttribute("value", grup);
+        option.innerHTML = grup;
+        grupSelector.onchange = (ev) =>{
+            for(let g in grupAlumnesList){
+                for(let a in grupAlumnesList[g]){
+                    visibilityAlumnes[a] = (g===grupSelector.value);
+                    const browserContainer = document.getElementById(a + "-browser-container")
+                    if(browserContainer)
+                        browserContainer.style.display = visibilityAlumnes[a] ? "" : "none";
+                }
+            }
+        }
+        grupSelector.appendChild(option);
+    }
+});
 socket.on('normesList', function (data) {
     normesInfo = data;
+});
+
+socket.on('historialAlumne', function (data) {
+    const historialSidebar = document.getElementById("historialSidebar");
+    const historialSideBarTitle = document.getElementById("historialSidebarTitle");
+    const historialSideBarContent = document.getElementById("historialSidebarContent");
+    const opcionMenuContextual = creaOpcionMenuContextual(data.alumne);
+
+    let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
+
+    if(!hiddenAuxInfo)
+    {
+        hiddenAuxInfo = document.createElement("div");
+        hiddenAuxInfo.setAttribute("id", "hiddenHistorialAuxInfo");
+        hiddenAuxInfo.setAttribute("style", "display: none;");
+        historialSideBarContent.innerHTML = "";
+        hiddenAuxInfo.setAttribute("data-historial-length", 0);
+        hiddenAuxInfo.setAttribute("data-alumne", data.alumne);
+        hiddenAuxInfo.setAttribute("data-prevday", undefined);
+        hiddenAuxInfo.setAttribute("data-previd", undefined);
+        hiddenAuxInfo.setAttribute("data-prevhost", undefined);
+        historialSideBarContent.appendChild(hiddenAuxInfo);
+    }
+    
+    let prevday = hiddenAuxInfo.getAttribute("data-prevday");
+    let previd = hiddenAuxInfo.getAttribute("data-previd");
+    let prevhost = hiddenAuxInfo.getAttribute("data-prevhost");
+    const historialLength = parseInt(hiddenAuxInfo.getAttribute("data-historial-length")) + data.historial.length;
+
+    for (const webPage of data.historial) {
+        const data = new Date(webPage.timestamp);
+        const dia = data.toLocaleDateString('ca-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+        const hora = data.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+        const newDay = prevday !== dia;
+
+        if (newDay) {
+            const divHeader = document.createElement("div");
+            divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
+            divHeader.innerHTML = `<h7 class="bg-light border-top border-bottom date-historial-heading">${dia}</h7>`;
+            historialSideBarContent.appendChild(divHeader);
+            prevday = dia;
+        }
+
+        if(prevhost && previd && prevhost === webPage.host && !newDay) {
+            const dHora = document.getElementById(`historial_hora_${previd}`);
+            const dHoraEnd = dHora.getAttribute("data-hora-end");
+            if(dHoraEnd !== hora)
+                dHora.innerHTML = `${hora} - ${dHoraEnd}` ;
+            else
+                dHora.innerHTML = hora;
+            continue;
+        }
+        const a = document.createElement("a");
+        a.setAttribute("href", "#");
+        a.setAttribute("class", "list-group-item list-group-item-action lh-tight py-1"); //active
+        const tooltip = "Obert a " + webPage.browser + (webPage.incognito ? " en mode incognit" : "") + `\n${webPage.protocol}//${webPage.host}${webPage.pathname}${webPage.search}`;
+        a.setAttribute("title", tooltip);
+
+        const divHeader = document.createElement("div");
+        divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
+
+
+        const dTitile = document.createElement("strong");
+        dTitile.setAttribute("class", "mb-1 nomesunalinia");
+        const favicon = document.createElement("img");
+        favicon.setAttribute("src", webPage.favicon ? webPage.favicon : "img/undefined_favicon.png");
+        favicon.setAttribute("class", "historial-favicon");
+        dTitile.appendChild(favicon);
+
+        const text = document.createTextNode(webPage.title);
+        dTitile.appendChild(text);
+        divHeader.appendChild(dTitile);
+
+
+        const dHora = document.createElement("small");
+        dHora.id = `historial_hora_${webPage._id}`;
+        dHora.setAttribute("data-hora-end", hora);
+        dHora.innerHTML = hora;
+        divHeader.appendChild(dHora);
+
+        const divContent = document.createElement("div");
+        divContent.setAttribute("class", "col-10 mb-1 small");
+        divContent.innerHTML = `${webPage.host}`;
+
+        a.onclick = (ev) => {
+            const info = {
+                alumne: data.alumne,
+                webPage: {
+                    host: webPage.host,
+                    pathname: webPage.pathname,
+                    search: webPage.search,
+                    title: webPage.title,
+                    protocol: webPage.protocol,
+                }
+            }
+            openMenu(ev, opcionMenuContextual, info);
+        }
+        a.appendChild(divHeader);
+        a.appendChild(divContent);
+        historialSideBarContent.appendChild(a);
+
+        previd = webPage._id;
+        prevhost = webPage.host;
+    }
+
+    if(data.historial.length !== 0) {
+        // Mostra'n més
+        const a = document.createElement("a");
+        a.setAttribute("href", "#");
+        a.setAttribute("class", "list-group-item list-group-item-action list-group-item-dark lh-tight");
+        a.setAttribute("aria-current", "true");
+        a.innerHTML = `<strong class="mb-1 nomesunalinia">Mostra'n més</strong>`;
+        a.onclick = () => {
+            socket.emit("getHistorial", {alumne: data.alumne, offset: historialLength});
+            a.remove();
+        };
+
+        historialSideBarContent.appendChild(a);
+    }
+
+    hiddenAuxInfo.setAttribute("data-historial-length", historialLength);
+    hiddenAuxInfo.setAttribute("data-alumne", data.alumne);
+    hiddenAuxInfo.setAttribute("data-prevday", prevday);
+    hiddenAuxInfo.setAttribute("data-prevhost", prevhost);
+    hiddenAuxInfo.setAttribute("data-previd", previd);
+
 });

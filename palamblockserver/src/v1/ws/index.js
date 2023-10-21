@@ -1,11 +1,14 @@
 const { Server } = require("socket.io");
 const infoController = require("../../controllers/infoController");
 const normaController = require("../../controllers/normaController");
+const historialController = require("../../controllers/historialController");
+const alumneController = require("../../controllers/alumneController");
 
 function initializeWebSocket(server) {
     const io = new Server(server)
 
     io.on('connection', async (socket) => {
+        socket.emit('grupAlumnesList', await alumneController.getGrupAlumnesList());
         socket.emit('browsingActivity', infoController.getAlumnesBrowsingActivity());
         socket.emit('normesList', await normaController.getAllNormes());
 
@@ -32,6 +35,11 @@ function initializeWebSocket(server) {
         normaController.registerOnUpdateCallback(async () => {
             infoController.normesHasChanged();
             socket.emit('normesList', await normaController.getAllNormes());
+        });
+
+        socket.on('getHistorial', async (msg) => {
+            const historial = await historialController.getHistorial(msg.alumne, msg.offset);
+            socket.emit('historialAlumne', {alumne:msg.alumne, historial:historial});
         });
     });
 

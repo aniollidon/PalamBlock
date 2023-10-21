@@ -41,7 +41,12 @@ const autentificaAlumne = (req, res) => {
     } else
         res.send({ status: "ERROR", data:"Falten dades de l'Alumne"})
 }
+
+const getGrupAlumnesList = () => {
+    return alumneService.getGrupAlumnesList();
+}
 module.exports = {
     postAlumne,
-    autentificaAlumne
+    autentificaAlumne,
+    getGrupAlumnesList,
 }

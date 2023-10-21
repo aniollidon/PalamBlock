@@ -70,11 +70,12 @@ function normesHasChanged() {
     infoService.normesHasChanged();
 }
 
+
 module.exports = {
     postTabInfo,
     postBrowserInfo,
     getAlumnesBrowsingActivity,
     registerOnUpdateCallback,
     remoteCloseTab,
-    normesHasChanged
+    normesHasChanged,
 }

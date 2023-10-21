@@ -66,6 +66,7 @@ a.active {
 .form-control {
     background-color: rgb(241, 243, 247);
     border: none;
+    margin-bottom: 13px;
 }
 
 /* 3nd card */
@@ -140,7 +141,7 @@ ul {
 /* modal input disabled */
 .modal input:disabled {
     background-color: #ececec;
-    color: #5f6368;
+    color: #00000000;
 }
 
 /* main */
@@ -174,4 +175,21 @@ main {
 
 .scrollarea {
     overflow-y: auto;
+}
+
+.nomesunalinia{
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 226px;
+}
+
+.date-historial-heading{
+    width: 100%;
+    text-align: end;
+}
+.historial-favicon{
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
 }
