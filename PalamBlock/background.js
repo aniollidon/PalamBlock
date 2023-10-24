@@ -2,7 +2,7 @@ const API_URL = 'http://localhost:4000/api/v1/';
 const API_TAB_INFO = API_URL + 'info/tab';
 const API_TAB_VALIDACIO = API_URL + 'validacio/tab';
 const API_BROWSER_INFO = API_URL + 'info/browser';
-const API_REGISTER = API_URL + 'autentificacio';
+const API_REGISTER = API_URL + 'alumne/auth';
 
 importScripts('ua-parser.min.js')
 

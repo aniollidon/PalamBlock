@@ -6,6 +6,7 @@ const normesModal = new bootstrap.Modal(hnormesModal)
 let normesInfo = {}
 let grupAlumnesList = {}
 let visibilityAlumnes = {}
+let chromeTabsObjects = {}
 function getGrup(alumneId){
     for(let grup in grupAlumnesList){
         if(alumneId in grupAlumnesList[grup])
@@ -50,8 +51,13 @@ function toogleHistorial(alumne){
         historialSideBarContent.innerHTML = "";
         historialSidebar.style.display = "";
     }
-    else
+    else {
         historialSidebar.style.setProperty('display', 'none', 'important');
+        // Refresca els chrome tabs
+        if(chromeTabsObjects[alumne])
+            for(let b in chromeTabsObjects[alumne])
+                chromeTabsObjects[alumne][b].layoutTabs();
+    }
 
 
 }
@@ -252,7 +258,7 @@ function obreDialogNormes(alumne){
     }
     normesModal.show();
 }
-socket.on('browsingActivity', function (data) {
+socket.on('alumnesActivity', function (data) {
     let alumnesList = document.getElementById("alumnesList");
     alumnesList.innerHTML = "";
     //chromeTabs.removeAllTabs();
@@ -303,6 +309,67 @@ socket.on('browsingActivity', function (data) {
             historialButton.onclick = () =>toogleHistorial(alumne)
             alumneDiv.appendChild(historialButton);
 
+            // Apps List
+            let alumneAppsDiv = document.createElement("div");
+
+            // todo convert to javascript
+            alumneAppsDiv.innerHTML = `
+            <div class="w11 w11-nav-container">
+                <div class="w11 w11-first-container">
+                    <!-- windows 11 logo -->
+                    <div title="start" class="w11 windows-div">
+                        <svg class="w11 windows-logo" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" width="58" height="58" version="1.1" viewBox="0 0 48.745 48.747"><g fill="#0078d4"><rect x="2.2848e-15" y="-.00011033" width="23.105" height="23.105"></rect><rect x="25.64" y="-.00011033" width="23.105" height="23.105"></rect><rect x="2.2848e-15" y="25.642" width="23.105" height="23.105"></rect><rect x="25.64" y="25.642" width="23.105" height="23.105"></rect></g></svg>
+                    </div>
+                    <!-- search icon -->
+                    <div class="w11 search-div" title="cerca"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="magnifying-glass" class="svg-inline--fa fa-magnifying-glass" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M500.3 443.7l-119.7-119.7c27.22-40.41 40.65-90.9 33.46-144.7C401.8 87.79 326.8 13.32 235.2 1.723C99.01-15.51-15.51 99.01 1.724 235.2c11.6 91.64 86.08 166.7 177.6 178.9c53.8 7.189 104.3-6.236 144.7-33.46l119.7 119.7c15.62 15.62 40.95 15.62 56.57 0C515.9 484.7 515.9 459.3 500.3 443.7zM79.1 208c0-70.58 57.42-128 128-128s128 57.42 128 128c0 70.58-57.42 128-128 128S79.1 278.6 79.1 208z"></path></svg></div>
+                    <!-- windows 11 widget -->
+                    <div class="w11 widget-div" title="widget"><img src="./images/w11-widget-icon.png" alt=""></div>
+                </div>
+                <div class="w11 w11-second-container">
+                    <div class="w11 w11-sistema-info">
+                        <!-- wifi -->
+                        <div title="Local-WiFi" class="w11"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="wifi" class="svg-inline--fa fa-wifi" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor" d="M319.1 351.1c-35.35 0-64 28.66-64 64.01s28.66 64.01 64 64.01c35.34 0 64-28.66 64-64.01S355.3 351.1 319.1 351.1zM320 191.1c-70.25 0-137.9 25.6-190.5 72.03C116.3 275.7 115 295.9 126.7 309.2C138.5 322.4 158.7 323.7 171.9 312C212.8 275.9 265.4 256 320 256s107.3 19.88 148.1 56C474.2 317.4 481.8 320 489.3 320c8.844 0 17.66-3.656 24-10.81C525 295.9 523.8 275.7 510.5 264C457.9 217.6 390.3 191.1 320 191.1zM630.2 156.7C546.3 76.28 436.2 32 320 32S93.69 76.28 9.844 156.7c-12.75 12.25-13.16 32.5-.9375 45.25c12.22 12.78 32.47 13.12 45.25 .9375C125.1 133.1 220.4 96 320 96s193.1 37.97 265.8 106.9C592.1 208.8 600 211.8 608 211.8c8.406 0 16.81-3.281 23.09-9.844C643.3 189.2 642.9 168.1 630.2 156.7z"></path></svg></div>
+                        <!-- vulume -->
+                        <div title="Audio Disattivato" class="w11"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="volume-xmark" class="svg-inline--fa fa-volume-xmark" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M301.2 34.85c-11.5-5.188-25.02-3.122-34.44 5.253L131.8 160H48c-26.51 0-48 21.49-48 47.1v95.1c0 26.51 21.49 47.1 48 47.1h83.84l134.9 119.9c5.984 5.312 13.58 8.094 21.26 8.094c4.438 0 8.972-.9375 13.17-2.844c11.5-5.156 18.82-16.56 18.82-29.16V64C319.1 51.41 312.7 40 301.2 34.85zM513.9 255.1l47.03-47.03c9.375-9.375 9.375-24.56 0-33.94s-24.56-9.375-33.94 0L480 222.1L432.1 175c-9.375-9.375-24.56-9.375-33.94 0s-9.375 24.56 0 33.94l47.03 47.03l-47.03 47.03c-9.375 9.375-9.375 24.56 0 33.94c9.373 9.373 24.56 9.381 33.94 0L480 289.9l47.03 47.03c9.373 9.373 24.56 9.381 33.94 0c9.375-9.375 9.375-24.56 0-33.94L513.9 255.1z"></path></svg></div>
+                        <!-- battery -->
+                        <div title="Batteria Scarica" class="w11"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="battery-quarter" class="svg-inline--fa fa-battery-quarter" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M192 192H96v128h96V192zM544 192V160c0-35.35-28.65-64-64-64H64C28.65 96 0 124.7 0 160v192c0 35.35 28.65 64 64 64h416c35.35 0 64-28.65 64-64v-32c17.67 0 32-14.33 32-32V224C576 206.3 561.7 192 544 192zM480 352H64V160h416V352z"></path></svg></div>
+                    </div>
+                    <div title="23:36  23/10/2023" class="w11 w11-sistema-data">
+                        <div class="w11 w11-orario-data">23:36 </div>
+                        <div  title="dataCalendario" class="w11 calendario-data">23/10/2023 </div>
+                    </div>
+                </div>
+            </div>`
+            alumneAppsDiv.setAttribute("class", "apps");
+            alumneDiv.appendChild(alumneAppsDiv);
+
+            for (const app in alumneInfo.apps) {
+                if (Object.hasOwnProperty.call(alumneInfo.apps, app)) {
+                    const appInfo = alumneInfo.apps[app];
+                    if(!appInfo.opened) continue;
+                    let tappDiv = document.createElement("div");
+                    tappDiv.setAttribute("class", "app");
+                    tappDiv.setAttribute("id", app);
+                    if(appInfo.iconSVG) {
+                        const icon = document.createElement("div");
+                        icon.innerHTML = appInfo.iconSVG;
+                        // modify the svg to fit the container
+                        icon.firstChild.setAttribute("width", "100%");
+                        icon.firstChild.setAttribute("height", "100%");
+                        icon.setAttribute("class", "app-icon");
+                        tappDiv.appendChild(icon);
+                    }
+                    else{
+                        const defaultIcon = document.createElement("img");
+                        defaultIcon.setAttribute("src", "img/defaultapp.png");
+                        defaultIcon.setAttribute("class", "app-icon");
+                        tappDiv.appendChild(defaultIcon);
+                    }
+
+                    tappDiv.innerHTML += appInfo.app;
+                    alumneAppsDiv.appendChild(tappDiv);
+                }
+            }
 
             // Browsers List
             let alumneBrowsersDiv = document.createElement("div");
@@ -350,8 +417,11 @@ socket.on('browsingActivity', function (data) {
                     const menu_options = creaOpcionMenuContextual(alumne);
 
                     // init chrome tabs
-                    let chromeTabs = new ChromeTabs()
-                    chromeTabs.init(browserDiv, menu_options)
+                    if(!chromeTabsObjects[alumne])
+                        chromeTabsObjects[alumne] = {};
+                    chromeTabsObjects[alumne][browser] = new ChromeTabs()
+                    chromeTabsObjects[alumne][browser].init(browserDiv, menu_options)
+
                     //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
                     //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
                     browserDiv.addEventListener('tabRemove', ({ detail }) => {
@@ -369,7 +439,7 @@ socket.on('browsingActivity', function (data) {
                             const url = tabInfo.webPage.protocol + "//" + tabInfo.webPage.host + tabInfo.webPage.pathname + tabInfo.webPage.search
                             ttabDiv.innerHTML = `${tabInfo.tabId}  <a href="${url}"> ${tabInfo.webPage.title} </a> ${tabInfo.incognito ? "[INCOGNITO]" : ""} ${tabInfo.active ? "ACTIVE" : "INACTIVE"} favicon: ${tabInfo.webPage.favicon}`
                             tbrowserTabsDiv.appendChild(ttabDiv);*/
-                            chromeTabs.addTab({
+                            chromeTabsObjects[alumne][browser].addTab({
                                 title: tabInfo.webPage.title,
                                 favicon: tabInfo.webPage.favicon ?  tabInfo.webPage.favicon :
                                     (tabInfo.webPage.protocol === "chrome:" ? undefined : "img/undefined_favicon.png"),
@@ -415,6 +485,11 @@ socket.on('grupAlumnesList', function (data) {
                     const browserContainer = document.getElementById(a + "-browser-container")
                     if(browserContainer)
                         browserContainer.style.display = visibilityAlumnes[a] ? "" : "none";
+
+                    // Refresca els chrome tabs
+                    if(chromeTabsObjects[a])
+                        for(let b in chromeTabsObjects[a])
+                            chromeTabsObjects[a][b].layoutTabs();
                 }
             }
         }
@@ -548,5 +623,10 @@ socket.on('historialAlumne', function (data) {
     hiddenAuxInfo.setAttribute("data-prevday", prevday);
     hiddenAuxInfo.setAttribute("data-prevhost", prevhost);
     hiddenAuxInfo.setAttribute("data-previd", previd);
+
+    // Refresca els chrome tabs
+    if(chromeTabsObjects[data.alumne])
+        for(let b in chromeTabsObjects[data.alumne])
+            chromeTabsObjects[data.alumne][b].layoutTabs();
 
 });

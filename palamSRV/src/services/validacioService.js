@@ -105,6 +105,28 @@ class Validacio {
     }
 }
 
+async function checkApps(apps) {
+    let statusForApps = {};
+    for (const app of apps) {
+        const dbapp =  await db.App.findOne({appId: app});
+
+        if(!dbapp) {
+            statusForApps[app] = "allow";
+            // Crear nova app a la db
+            const newApp = await db.App.create({
+                appId: app,
+                status: "allow"
+            });
+        }
+        else {
+            statusForApps[app] = dbapp.status;
+        }
+    }
+
+    return statusForApps;
+}
+
 module.exports = {
-    Validacio
+    Validacio,
+    checkApps
 }

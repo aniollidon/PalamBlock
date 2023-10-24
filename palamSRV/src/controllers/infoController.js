@@ -54,8 +54,8 @@ const postBrowserInfo = (req, res) => {
     res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser, browserId) });
 }
 
-function getAlumnesBrowsingActivity() {
-    return infoService.getAlumnesBrowsingActivity();
+function getAlumnesActivity() {
+    return infoService.getAlumnesActivity();
 }
 
 function registerOnUpdateCallback(callback) {
@@ -70,12 +70,11 @@ function normesHasChanged() {
     infoService.normesHasChanged();
 }
 
-
 module.exports = {
     postTabInfo,
     postBrowserInfo,
-    getAlumnesBrowsingActivity,
+    getAlumnesActivity,
     registerOnUpdateCallback,
     remoteCloseTab,
-    normesHasChanged,
+    normesHasChanged
 }

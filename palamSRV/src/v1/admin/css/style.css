@@ -193,3 +193,60 @@ main {
     height: 16px;
     margin-right: 5px;
 }
+
+.app-icon{
+    width: 25px;
+    height: 25px;
+    margin-right: 5px;
+}
+
+.apps{
+    margin: 5px 0;
+}
+
+.app{
+    display: flex;
+    margin: 0 10px;
+}
+
+/* Windows 11 TaskBar */
+/*! CSS Used from: https://www.cssscript.com/demo/windows-11-ui/css/style.css */
+
+/*! CSS Used from: https://w11-clone.vercel.app/style.css */
+.w11{
+
+    --nav-height: 3rem;
+    --max-height: 100vh;
+    --max-width: 100vw;
+    --img-nav-height: calc(var(--nav-height) - 1.5rem);
+    --w11-logo-gradient: linear-gradient(135deg, #6bd3ff, #0079d4);
+    --bg-color-search: #1e202c;
+    --border-color-search: #292b41;
+    --bottom-border-color-search: #9dcbe3;
+    --placeholder-color-search: #a2a5ae;
+    --glass-white-color: rgba(255, 255, 255, 0.1);
+    --footer-start-height: 4em;
+    --sun-gradient: linear-gradient(135deg, #ffef80, #ecaa00);
+    font-family: poppins, monospace;
+}
+.w11-nav-container{display:flex;align-items:center;justify-content:space-between;height:var(--nav-height);     background: #212529;}
+.w11-first-container,.w11-second-container{display:flex;height:100%;width:auto;gap:0.5rem;align-items:center;justify-content:center;}
+.w11-second-container{gap:0rem!important;}
+.w11-first-container div svg,.w11-first-container div img,.w11-second-container div svg{aspect-ratio:1;height:var(--img-nav-height);width:auto;border-radius:0.1em;}
+.w11-first-container{margin:auto;}
+.w11-second-container .w11-sistema-info div{display:grid;place-content:center;}
+.w11-sistema-info{height:80%;gap:0.5em;padding:0 0.5em;border-radius:0.5em;transition-duration:0.5s;color:white;margin-right:0.5em;display:grid;grid-auto-flow:column;}
+.w11-sistema-data{height:80%;padding:0 1em!important;color:white;margin-right:0.5em;border-radius:0.5em;display:flex;flex-direction:column;font-size:0.65em;align-items:flex-end;justify-content:center;}
+.w11-sistema-info:hover,.w11-sistema-data:hover{background-color:rgba(255, 255, 255, 0.075);transition-duration:0.5s;}
+.w11-sistema-info div{margin:auto;}
+.w11-first-container div{aspect-ratio:1;border-radius:0.1rem;transition-duration:0.2s;height:85%;display:grid;place-content:center;border-top:1px solid rgba(255, 255, 255, 0.0);}
+.w11-second-container div svg{aspect-ratio:1;display:grid;place-content:center;transform:scale(0.7);}
+.w11-first-container div:hover{background-color:var(--glass-white-color);border-radius:0.5rem;transition-duration:0.1s;border-top:1px solid rgba(255, 255, 255, 0.075);}
+.w11-first-container div:nth-child(2) svg{color:#eff7ff;}
+.windows-logo{filter:brightness(1.6);}
+.w11-first-container div:active>img,.w11-first-container div:active>svg{transform:scale(0.5);transition-duration:0.5s;}
+.w11-first-container img,.w11-first-container svg{transition-duration:0.5s;}
+.w11-first-container>div[title]:hover::after,.w11-sistema-info>div[title]:hover::after,.w11-sistema-data[title]:hover::after{content:attr(title);color:white;position:absolute;transform:translateY(calc(-100% - 1em));padding:0.2em 0.5em;border:2px solid var(--glass-white-color);border-radius:0.5em;font-size:0.9em;background-color:rgba(0, 0, 68, 0.623);transition-duration:0.5s;animation:fadeIn 0.5s;}
+.w11-sistema-info>div[title]:hover::after{transform:translateY(calc(-100% - 2em));font-size:0.6em;}
+/*! CSS Used keyframes */
+@keyframes fadeIn{from{opacity:0;transform:translateY(calc(-100% - 3em));}to{opacity:1;}}

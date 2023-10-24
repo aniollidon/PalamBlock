@@ -40,6 +40,16 @@ const NormaSchema = new mongoose.Schema({
     }
 });
 
+const AppSchema = new mongoose.Schema({
+    appId: {
+        type: String,
+        unique: true
+    },
+    status: {
+        type: String // block, allow, uninstall
+    }
+});
+
 const GrupSchema = new mongoose.Schema({
     grupId: {
         type: String,
@@ -123,6 +133,7 @@ const Alumne = mongoose.model('Alumne', AlumneSchema);
 const Grup = mongoose.model('Grup', GrupSchema);
 const Norma = mongoose.model('Norma', NormaSchema);
 const Historial = mongoose.model('Historial', HistorialSchema);
+const App = mongoose.model('App', AppSchema);
 
 // Fes ids unics
 AlumneSchema.index({alumneId: 1}, {unique: true});
@@ -132,5 +143,6 @@ module.exports = {
     Norma,
     Alumne,
     Grup,
-    Historial
+    Historial,
+    App
 }

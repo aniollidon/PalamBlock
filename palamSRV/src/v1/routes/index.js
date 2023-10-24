@@ -15,10 +15,12 @@ const infoController = require("../../controllers/infoController");
 //router.delete("/historials/:id", historialController.deleteHistorial);
 
 router.post("/alumne", alumneController.postAlumne); // TODO moure al socket
-router.post("/autentificacio", alumneController.autentificaAlumne);
+router.post("/alumne/auth", alumneController.autentificaAlumne);
 router.post("/norma", normaController.postNorma);
 router.post("/validacio/tab", validacioController.postValidacio);
 router.post("/info/tab", infoController.postTabInfo);
 router.post("/info/browser", infoController.postBrowserInfo);
+
+router.post("/validacio/apps", validacioController.postApps);
 
 module.exports = router;

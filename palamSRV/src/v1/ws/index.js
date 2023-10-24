@@ -9,11 +9,11 @@ function initializeWebSocket(server) {
 
     io.on('connection', async (socket) => {
         socket.emit('grupAlumnesList', await alumneController.getGrupAlumnesList());
-        socket.emit('browsingActivity', infoController.getAlumnesBrowsingActivity());
+        socket.emit('browsingActivity', infoController.getAlumnesActivity());
         socket.emit('normesList', await normaController.getAllNormes());
 
-        infoController.registerOnUpdateCallback(() => {
-            socket.emit('browsingActivity', infoController.getAlumnesBrowsingActivity());
+        infoController.registerOnUpdateCallback((toUpdate) => {
+            socket.emit('alumnesActivity', infoController.getAlumnesActivity());
         });
 
         // on message closeTab

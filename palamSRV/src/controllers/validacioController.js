@@ -35,7 +35,21 @@ const postValidacio = (req, res) => {
     });
 }
 
+const postApps = (req, res) => {
+    const apps = req.body.apps;
+    const alumne = req.body.alumne;
+    const timestamp = new Date();
+
+    validacioService.checkApps(apps).then((status) => {
+        infoService.registerApps(apps, alumne, status, timestamp);
+        res.status(200).send({ do:status} );
+    }).catch((err) => {
+        console.error(err);
+        res.status(500).send({ error: err });
+    });
+}
 
 module.exports = {
-    postValidacio
+    postValidacio,
+    postApps
 };

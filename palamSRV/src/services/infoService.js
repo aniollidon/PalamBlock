@@ -1,6 +1,8 @@
 const validacioService = require('./validacioService');
-
+const axios = require('axios');
 require('dotenv').config();
+const fs = require("fs");
+const path = require("path");
 
 class WebPage {
     constructor(host, protocol, search, pathname, title, favicon) {
@@ -250,13 +252,88 @@ class BrowserStatus {
 
 }
 
+
+class AppStatus {
+    constructor(app, status, timestamp) {
+        this.app = app;
+        this.status = status;
+        this.startedAt = timestamp;
+        this.updatedAt = timestamp;
+        this.opened = true;
+        this.iconSVG = undefined;
+
+        this.searchFavicon(app);
+    }
+
+    update(status, timestamp) {
+        this.status = status;
+        this.updatedAt = timestamp;
+        this.opened = true;
+    }
+
+    async searchFavicon() {
+        if(this.iconSVG) return;
+
+        // check in file icons.json
+        try {
+            const cachedIcons = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'icons.json'), 'utf8'));
+
+            if (cachedIcons[this.app]) {
+                this.iconSVG = cachedIcons[this.app];
+                return;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        try {
+            // check in icons8
+            const appname = this.app.replace(".exe", "");
+            const response = await  axios.get(`https://search.icons8.com/api/iconsets/v5/search?term=${appname}&category=logos&isColor=true&amount=1&platform=color&token=${process.env.ICONS8_TOKEN}`)
+
+            if(!response.data.icons || !response.data.icons.length) return;
+            const iconId = response.data.icons[0].id;
+            const icon = await axios.get(`https://api-icons.icons8.com/publicApi/icons/icon?id=${iconId}&token=${process.env.ICONS8_TOKEN}`);
+            this.iconSVG = icon.data.icon.svg;
+            console.log("NEW ICON", appname)
+
+            // save in file icons.json
+            try {
+                const cachedIcons = JSON.parse(fs.readFileSync(path.join(__dirname, '..' , '..', 'assets' ,'icons.json'), 'utf8'));
+                cachedIcons[this.app] = this.iconSVG;
+                fs.writeFileSync(path.join(__dirname, '..' , '..', 'assets' ,'icons.json'), JSON.stringify(cachedIcons), 'utf8');
+            } catch (e) {
+                console.error(e);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    close() {
+        this.opened = false;
+    }
+}
 class AlumneStatus {
     constructor(alumne, onUpdateCallback) {
         this.alumne = alumne;
         this.browsers = {};
+        this.apps = {};
         this._onUpdateCallback = onUpdateCallback;
     }
 
+    registerApp(app, status, timestamp) {
+        if(!this.apps[app])
+            this.apps[app] = new AppStatus(app, status, timestamp);
+        else
+            this.apps[app].update(status, timestamp);
+    }
+
+    closeNotUpdatedApps(timestamp) {
+        for (const app in this.apps) {
+            if(this.apps[app].updatedAt !== timestamp)
+                this.apps[app].close();
+        }
+    }
     register(browser, browserId, tabId, tabPropierties, webPage, timestamp) {
         // Check if browser exists
         if(!this.browsers[browser+browserId]) {
@@ -305,7 +382,6 @@ class AllAlumnesStatus{
         this.pendingBrowserActions = {};
         this._onSavePending = false;
         this._onUpdateCallback = onUpdateCallback;
-
     }
 
     registerCallback(onUpdateCallback) {
@@ -333,6 +409,20 @@ class AllAlumnesStatus{
         this.alumnesStat[alumne].register(browser, browserId, tabId, tabPropierties, webPage, timestamp);
 
         this._onUpdateCallback();
+    }
+
+    registerApp(app, alumne, status, timestamp) {
+        if(!this.alumnesStat[alumne]) {
+            this.alumnesStat[alumne] = new AlumneStatus(alumne, this._onUpdateCallback);
+        }
+
+        this.alumnesStat[alumne].registerApp(app, status, timestamp);
+    }
+
+    closeNotUpdatedApps(alumne, timestamp) {
+        if(this.alumnesStat[alumne]) {
+           this.alumnesStat[alumne].closeNotUpdatedApps(timestamp);
+        }
     }
 
     closeTab(alumne, tabId, browser, browserId, timestamp) {
@@ -385,8 +475,6 @@ class AllAlumnesStatus{
         const changes = this.alumnesStat[alumne].update(browser, browserId, tabId, tabPropierties, webPage, timestamp);
         if(changes) this._onUpdateCallback();
     }
-
-
 }
 
 const allAlumnesStatus = new AllAlumnesStatus();
@@ -409,7 +497,7 @@ function register(alumne, timestamp, host, protocol, search, pathname, title, br
 function registerBrowserInfo(alumne, browser, browserId, tabsInfos, activeTab, timestamp) {
     allAlumnesStatus.checkTabs(alumne, browser, browserId, tabsInfos, activeTab, timestamp);
 }
-function getAlumnesBrowsingActivity() {
+function getAlumnesActivity() {
     return allAlumnesStatus.alumnesStat;
 }
 
@@ -464,14 +552,22 @@ async function normesHasChanged() {
     }
 }
 
+function registerApps(apps, alumne, status, timestamp) {
+    for (const app of apps) {
+        allAlumnesStatus.registerApp(app, alumne, status[app], timestamp);
+    }
+    allAlumnesStatus.closeNotUpdatedApps(alumne, timestamp);
+    allAlumnesStatus._onUpdateCallback();
+}
 
 module.exports = {
     register,
     registerTabAction,
     registerBrowserInfo,
-    getAlumnesBrowsingActivity,
+    getAlumnesActivity,
     registerOnUpdateCallback,
     remoteCloseTab,
     getBrowserPendingActions,
-    normesHasChanged
+    normesHasChanged,
+    registerApps
 }
