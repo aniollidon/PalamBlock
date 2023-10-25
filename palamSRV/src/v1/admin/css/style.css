@@ -193,13 +193,6 @@ main {
     height: 16px;
     margin-right: 5px;
 }
-
-.app-icon{
-    width: 25px;
-    height: 25px;
-    margin-right: 5px;
-}
-
 .apps{
     margin: 5px 0;
 }
@@ -207,6 +200,12 @@ main {
 .app{
     display: flex;
     margin: 0 10px;
+}
+
+.app-div{
+    --img-nav-height: calc(var(--nav-height) - 1rem) !important;
+    padding-top: 4px;
+
 }
 
 /* Windows 11 TaskBar */
@@ -241,7 +240,7 @@ main {
 .w11-sistema-info div{margin:auto;}
 .w11-first-container div{aspect-ratio:1;border-radius:0.1rem;transition-duration:0.2s;height:85%;display:grid;place-content:center;border-top:1px solid rgba(255, 255, 255, 0.0);}
 .w11-second-container div svg{aspect-ratio:1;display:grid;place-content:center;transform:scale(0.7);}
-.w11-first-container div:hover{background-color:var(--glass-white-color);border-radius:0.5rem;transition-duration:0.1s;border-top:1px solid rgba(255, 255, 255, 0.075);}
+.w11-first-container .w11:hover{background-color:var(--glass-white-color);border-radius:0.5rem;transition-duration:0.1s;border-top:1px solid rgba(255, 255, 255, 0.075);}
 .w11-first-container div:nth-child(2) svg{color:#eff7ff;}
 .windows-logo{filter:brightness(1.6);}
 .w11-first-container div:active>img,.w11-first-container div:active>svg{transform:scale(0.5);transition-duration:0.5s;}

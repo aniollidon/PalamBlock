@@ -312,20 +312,51 @@ socket.on('alumnesActivity', function (data) {
             // Apps List
             let alumneAppsDiv = document.createElement("div");
 
-            // todo convert to javascript
-            alumneAppsDiv.innerHTML = `
-            <div class="w11 w11-nav-container">
-                <div class="w11 w11-first-container">
-                    <!-- windows 11 logo -->
-                    <div title="start" class="w11 windows-div">
-                        <svg class="w11 windows-logo" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" width="58" height="58" version="1.1" viewBox="0 0 48.745 48.747"><g fill="#0078d4"><rect x="2.2848e-15" y="-.00011033" width="23.105" height="23.105"></rect><rect x="25.64" y="-.00011033" width="23.105" height="23.105"></rect><rect x="2.2848e-15" y="25.642" width="23.105" height="23.105"></rect><rect x="25.64" y="25.642" width="23.105" height="23.105"></rect></g></svg>
-                    </div>
-                    <!-- search icon -->
-                    <div class="w11 search-div" title="cerca"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="magnifying-glass" class="svg-inline--fa fa-magnifying-glass" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M500.3 443.7l-119.7-119.7c27.22-40.41 40.65-90.9 33.46-144.7C401.8 87.79 326.8 13.32 235.2 1.723C99.01-15.51-15.51 99.01 1.724 235.2c11.6 91.64 86.08 166.7 177.6 178.9c53.8 7.189 104.3-6.236 144.7-33.46l119.7 119.7c15.62 15.62 40.95 15.62 56.57 0C515.9 484.7 515.9 459.3 500.3 443.7zM79.1 208c0-70.58 57.42-128 128-128s128 57.42 128 128c0 70.58-57.42 128-128 128S79.1 278.6 79.1 208z"></path></svg></div>
-                    <!-- windows 11 widget -->
-                    <div class="w11 widget-div" title="widget"><img src="./images/w11-widget-icon.png" alt=""></div>
-                </div>
-                <div class="w11 w11-second-container">
+            // Translate to javscript
+            const w11_nav_container = document.createElement("div");
+            w11_nav_container.setAttribute("class", "w11 w11-nav-container");
+            const w11_first_container = document.createElement("div");
+            w11_first_container.setAttribute("class", "w11 w11-first-container");
+            const w11_windows_div = document.createElement("div");
+            w11_windows_div.setAttribute("class", "w11 windows-div");
+            w11_windows_div.setAttribute("title", "start");
+            w11_windows_div.innerHTML = `<svg class="w11 windows-logo" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" width="58" height="58" version="1.1" viewBox="0 0 48.745 48.747"><g fill="#0078d4"><rect x="2.2848e-15" y="-.00011033" width="23.105" height="23.105"></rect><rect x="25.64" y="-.00011033" width="23.105" height="23.105"></rect><rect x="2.2848e-15" y="25.642" width="23.105" height="23.105"></rect><rect x="25.64" y="25.642" width="23.105" height="23.105"></rect></g></svg>`
+            const w11_search_div = document.createElement("div");
+            w11_search_div.setAttribute("class", "w11 search-div");
+            w11_search_div.setAttribute("title", "cerca");
+            w11_search_div.innerHTML = `<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="magnifying-glass" class="svg-inline--fa fa-magnifying-glass" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M500.3 443.7l-119.7-119.7c27.22-40.41 40.65-90.9 33.46-144.7C401.8 87.79 326.8 13.32 235.2 1.723C99.01-15.51-15.51 99.01 1.724 235.2c11.6 91.64 86.08 166.7 177.6 178.9c53.8 7.189 104.3-6.236 144.7-33.46l119.7 119.7c15.62 15.62 40.95 15.62 56.57 0C515.9 484.7 515.9 459.3 500.3 443.7zM79.1 208c0-70.58 57.42-128 128-128s128 57.42 128 128c0 70.58-57.42 128-128 128S79.1 278.6 79.1 208z"></path></svg>`
+            w11_first_container.appendChild(w11_windows_div);
+            w11_first_container.appendChild(w11_search_div);
+            for (const app in alumneInfo.apps) {
+                if (Object.hasOwnProperty.call(alumneInfo.apps, app)) {
+                    const appInfo = alumneInfo.apps[app];
+                    if(!appInfo.opened) continue;
+                    const w11_app = document.createElement("div");
+                    w11_app.setAttribute("class", "w11 app-div");
+                    w11_app.setAttribute("title", app);
+                    if(appInfo.iconSVG) {
+                        const icon = document.createElement("div");
+                        icon.innerHTML = appInfo.iconSVG;
+                        // modify the svg to fit the container
+                        icon.firstChild.setAttribute("width", "100%");
+                        icon.firstChild.setAttribute("height", "100%");
+                        icon.setAttribute("class", "app-icon");
+                        w11_app.appendChild(icon);
+                    }
+                    else{
+                        const defaultIcon = document.createElement("img");
+                        defaultIcon.setAttribute("src", "img/defaultapp.png");
+                        defaultIcon.setAttribute("class", "app-icon");
+                        w11_app.appendChild(defaultIcon);
+                    }
+
+                    w11_first_container.appendChild(w11_app);
+                }
+            }
+
+            const w11_second_container = document.createElement("div");
+            w11_second_container.setAttribute("class", "w11 w11-second-container");
+            w11_second_container.innerHTML = `
                     <div class="w11 w11-sistema-info">
                         <!-- wifi -->
                         <div title="Local-WiFi" class="w11"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="wifi" class="svg-inline--fa fa-wifi" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor" d="M319.1 351.1c-35.35 0-64 28.66-64 64.01s28.66 64.01 64 64.01c35.34 0 64-28.66 64-64.01S355.3 351.1 319.1 351.1zM320 191.1c-70.25 0-137.9 25.6-190.5 72.03C116.3 275.7 115 295.9 126.7 309.2C138.5 322.4 158.7 323.7 171.9 312C212.8 275.9 265.4 256 320 256s107.3 19.88 148.1 56C474.2 317.4 481.8 320 489.3 320c8.844 0 17.66-3.656 24-10.81C525 295.9 523.8 275.7 510.5 264C457.9 217.6 390.3 191.1 320 191.1zM630.2 156.7C546.3 76.28 436.2 32 320 32S93.69 76.28 9.844 156.7c-12.75 12.25-13.16 32.5-.9375 45.25c12.22 12.78 32.47 13.12 45.25 .9375C125.1 133.1 220.4 96 320 96s193.1 37.97 265.8 106.9C592.1 208.8 600 211.8 608 211.8c8.406 0 16.81-3.281 23.09-9.844C643.3 189.2 642.9 168.1 630.2 156.7z"></path></svg></div>
@@ -337,39 +368,13 @@ socket.on('alumnesActivity', function (data) {
                     <div title="23:36  23/10/2023" class="w11 w11-sistema-data">
                         <div class="w11 w11-orario-data">23:36 </div>
                         <div  title="dataCalendario" class="w11 calendario-data">23/10/2023 </div>
-                    </div>
-                </div>
-            </div>`
+                    </div>`
+            w11_nav_container.appendChild(w11_first_container);
+            w11_nav_container.appendChild(w11_second_container);
+            alumneAppsDiv.appendChild(w11_nav_container);
+
             alumneAppsDiv.setAttribute("class", "apps");
             alumneDiv.appendChild(alumneAppsDiv);
-
-            for (const app in alumneInfo.apps) {
-                if (Object.hasOwnProperty.call(alumneInfo.apps, app)) {
-                    const appInfo = alumneInfo.apps[app];
-                    if(!appInfo.opened) continue;
-                    let tappDiv = document.createElement("div");
-                    tappDiv.setAttribute("class", "app");
-                    tappDiv.setAttribute("id", app);
-                    if(appInfo.iconSVG) {
-                        const icon = document.createElement("div");
-                        icon.innerHTML = appInfo.iconSVG;
-                        // modify the svg to fit the container
-                        icon.firstChild.setAttribute("width", "100%");
-                        icon.firstChild.setAttribute("height", "100%");
-                        icon.setAttribute("class", "app-icon");
-                        tappDiv.appendChild(icon);
-                    }
-                    else{
-                        const defaultIcon = document.createElement("img");
-                        defaultIcon.setAttribute("src", "img/defaultapp.png");
-                        defaultIcon.setAttribute("class", "app-icon");
-                        tappDiv.appendChild(defaultIcon);
-                    }
-
-                    tappDiv.innerHTML += appInfo.app;
-                    alumneAppsDiv.appendChild(tappDiv);
-                }
-            }
 
             // Browsers List
             let alumneBrowsersDiv = document.createElement("div");
