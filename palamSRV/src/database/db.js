@@ -13,7 +13,7 @@ const DateTimeEnabledSchema = new mongoose.Schema({
 });
 
 
-const NormaSchema = new mongoose.Schema({
+const NormaWebSchema = new mongoose.Schema({
     severity: {
         type: String // warn, block
     },
@@ -40,12 +40,12 @@ const NormaSchema = new mongoose.Schema({
     }
 });
 
-const AppSchema = new mongoose.Schema({
+const NormaAppSchema = new mongoose.Schema({
     appId: {
         type: String,
         unique: true
     },
-    status: {
+    severity: {
         type: String // block, allow, uninstall
     }
 });
@@ -58,8 +58,8 @@ const GrupSchema = new mongoose.Schema({
     nom: {
         type: String
     },
-    normes: {
-        type: [NormaSchema]
+    normesWeb: {
+        type: [NormaWebSchema]
     },
     status: {
         type: String // Blocked, RuleFree, RuleOn
@@ -88,13 +88,13 @@ const AlumneSchema = new mongoose.Schema({
     status: {
         type: String // Blocked, RuleFree, RuleOn
     },
-    normes: {
-        type: [NormaSchema]
+    normesWeb: {
+        type: [NormaWebSchema]
     },
 });
 
 
-const HistorialSchema = new mongoose.Schema({
+const HistorialWebSchema = new mongoose.Schema({
     timestamp: {
         type: Date
     },
@@ -129,20 +129,44 @@ const HistorialSchema = new mongoose.Schema({
         type: String
     }
 });
+
+const HistorialAppsSchema = new mongoose.Schema({
+    timestamp: {
+        type: Date
+    },
+    processName: {
+        type: String
+    },
+    processPath: {
+        type: String
+    },
+    caption: {
+        type: String
+    },
+    iconB64: {
+        type: String
+    },
+    alumneid: {
+        type: String
+    }
+});
 const Alumne = mongoose.model('Alumne', AlumneSchema);
 const Grup = mongoose.model('Grup', GrupSchema);
-const Norma = mongoose.model('Norma', NormaSchema);
-const Historial = mongoose.model('Historial', HistorialSchema);
-const App = mongoose.model('App', AppSchema);
+const NormaWeb = mongoose.model('NormaWeb', NormaWebSchema);
+const NormaApp = mongoose.model('NormaApp', NormaAppSchema);
+const HistorialWeb = mongoose.model('HistorialWeb', HistorialWebSchema);
+const HistorialApps = mongoose.model('HistorialApps', HistorialAppsSchema);
+
 
 // Fes ids unics
 AlumneSchema.index({alumneId: 1}, {unique: true});
 GrupSchema.index({grupId: 1}, {unique: true});
 
 module.exports = {
-    Norma,
+    NormaWeb,
+    NormaApp,
     Alumne,
     Grup,
-    Historial,
-    App
+    HistorialWeb,
+    HistorialApps,
 }

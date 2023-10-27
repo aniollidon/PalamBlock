@@ -26,7 +26,7 @@ const postValidacio = (req, res) => {
         console.log("host: " + host + " protocol: " + protocol + " search: " + search + " pathname: " + pathname + " title: " + title + " alumne: " + alumne + " browser: " + browser + " tabId: " + tabId + "incognito: " + incognito + " timestamp: " + timestamp);
         console.log("Do: " + status);
         res.status(200).send({ do:status} );
-        historialService.save(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
+        historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
         infoService.register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, status, audible);
 
     }).catch((err) => {
@@ -42,6 +42,9 @@ const postApps = (req, res) => {
 
     validacioService.checkApps(apps).then((status) => {
         infoService.registerApps(apps, alumne, status, timestamp);
+        for (const app of apps) {
+            historialService.saveApp(alumne, timestamp, app.name, app.path, app.title, app.icon);
+        }
         res.status(200).send({ do:status} );
     }).catch((err) => {
         console.error(err);

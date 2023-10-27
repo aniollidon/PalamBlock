@@ -1,7 +1,13 @@
 require('dotenv').config();
-const {exec} = require('child_process');
+const {exec, execSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { listOpenWindows } = require('@josephuspaye/list-open-windows');
+const iconExtractor = require('extract-file-icon');
+
+const axios = require("axios");
+const si = require('systeminformation');
+const {getInstalledApps} = require("get-installed-apps");
 let username = 'unknown';
 
 
@@ -13,109 +19,181 @@ try {
     require('./login-launcher')
 }
 
+async function getCurrentPrograms(){
+    // Get the list of open windows
+    const windows = listOpenWindows();
 
-// Execute the 'tasklist' command with the specified filters and format
-exec('tasklist /v /fo csv /NH /fi  "STATUS eq RUNNING" | findstr /V /I /C:"N/D"', (error, stdout, stderr) => {
-    if (error) {
-        console.error(`Error: ${error.message}`);
-        return;
+    if(windows.find((win) => { return win.className === 'ApplicationFrameWindow' })) {
+
+        // Search all process & get ApplicationFrameWindow process
+        const allProcesses = await si.processes();
+        const afw = allProcesses.list.find((proc) => proc.name === 'ApplicationFrameHost.exe');
+
+        // update the list of Windows apps
+        await updateWindowsAppDetails(windows, allProcesses, afw);
     }
 
-    if (stderr) {
-        console.error(`Error: ${stderr}`);
-        return;
+    return windows;
+}
+
+function getIcon(path){
+    let buffer = iconExtractor(path, 64);
+    if(!buffer.length)
+        buffer = iconExtractor(path, 32);
+    if(!buffer.length)
+        buffer = iconExtractor(path, 16);
+    return buffer;
+}
+
+async function updateWindowsAppDetails(winapps, allprocesses, afw){
+    if(!afw) return [];
+
+    const appsList = allprocesses.list.filter((proc) => proc.parentPid === afw.parentPid);
+
+    for (const app of winapps) {
+        if(app.className !== 'ApplicationFrameWindow') continue;
+        const appName = app.caption.toLowerCase();
+        let appData = appsList.find((proc) => path.parse(proc.name).name.toLowerCase().includes(appName));
+
+        const matchlist = {
+            'càmera': 'windowscamera',
+            'correu': 'mail',
+            'calendari': 'calendar',
+            'calculadora': 'calculator',
+            'contactes': 'people',
+            'mapes': 'maps',
+            'Microsoft Store': 'store'
+        }
+
+        if(!appData && matchlist[appName]){
+            appData = appsList.find((proc) => proc.name.toLowerCase().includes(matchlist[appName]));
+        }
+
+        if(appData) {
+
+            if(!fs.existsSync(appData.path))
+                app.processPath = path.join(appData.path, '..', appData.name);
+            else if(fs.lstatSync(appData.path).isDirectory())
+                app.processPath = path.join(appData.path, appData.name);
+            else
+                app.processPath = appData.path;
+
+            app.name = appData.name;
+            app.className = appName;
+            app.processId = appData.pid;
+        }
+    }
+}
+async function sendPrograms(){
+    const programs = await getCurrentPrograms();
+    const programsToSend = [];
+    for (let program of programs) {
+        const iconBuffer = await getIcon(program.processPath);
+        const icon = iconBuffer.toString('base64');
+        console.log(program.processPath);
+        programsToSend.push({
+            name: path.basename(program.processPath),
+            title: program.caption,
+            path: program.processPath,
+            icon: icon,
+            pid: program.processId
+        });
     }
 
-    // Split the output into lines
-    const lines = stdout.split('\r\n');
-    // Remove the last line, which is empty
-    lines.pop();
-    // Split each csv line into an array of columns
-    const processes = lines.map(line => line.split('","'));
-    // Extract the process name from each line
-    const processNames = processes.map(process => process[0].replace('"', ''));
-    const processIds = processes.map(process => process[1]);
-    const processTitles = processes.map(process => process[8].replace('"', ''));
-
-    // Load common windows processes whitelist
-    const commonWindowsProcessNames =
-        fs.readFileSync(path.join(__dirname, 'common-windows-processes.txt'), 'utf8')
-            .split('\r\n');
-    const commonWindowsProcessTitles =
-        fs.readFileSync(path.join(__dirname, 'common-windows-processes-titles.txt'), 'utf8')
-            .split('\r\n');
-
-    // create a dict with the process name as key and the process id as value
-    const processNameId = {};
-    const significativeProcesses = [];
-
-    for (let i = 0; i < processNames.length; i++) {
-        if (commonWindowsProcessNames.includes(processNames[i])) continue;
-        if (commonWindowsProcessTitles.includes(processTitles[i])) continue;
-
-        if (!processNameId[processNames[i]])
-            processNameId[processNames[i]] = []
-
-        processNameId[processNames[i]].push(processIds[i]);
-        significativeProcesses.push(processNames[i]);
-    }
-
-    // Ensure uniqueness
-    significativeProcesses.filter((value, index) => significativeProcesses.indexOf(value) === index);
-
-    console.log(significativeProcesses);
-
-    // Send processes to server to validate
-    const axios = require('axios');
-    axios.post(process.env.API_PALAMBLOCK + '/validacio/apps', {
-        apps: significativeProcesses,
+    await axios.post(process.env.API_PALAMBLOCK + '/validacio/apps', {
+        apps: programsToSend,
         alumne: username
-    })
-        .then((res) => {
-            console.log(res.data);
-            const doList = res.data.do;
+    }).then(async (res) => {
+        console.log(programsToSend)
+        console.log(res.data);
+        const doList = res.data.do;
 
-            for (const process of significativeProcesses) {
-                if (doList[process] === 'block' || doList[process] === 'uninstall') {
-                    for (const pid of processNameId[process]) {
-                        exec(`taskkill /PID ${pid} /F`, (error, stdout, stderr) => {
-                            if (error) {
-                                console.error(`Error: ${error.message}`);
-                                return;
+        for (const process of programsToSend) {
+            if (doList[process.pid] === 'close' || doList[process.pid] === 'block' || doList[process.pid].includes('uninstall')) {
+                try {
+                    // Tanca el procés
+                    const res = execSync(`taskkill /PID ${process.pid} /F`);
+                    console.log(res.toString());
+                }
+                catch (err) {
+                    console.error(err);
+                }
+            }
+            if (doList[process.pid].includes('uninstall')) {
+                const nameNoExt = path.parse(process.name).name;
+                let uninstalled = false;
+                // Primer prova de desintal·lar si s'ha instal·lat per la store
+                try {
+                    const res = execSync("powershell -command \"Get-AppxPackage | Where-Object { $_.Name -like \\\"*" + nameNoExt + "*\\\" } | ForEach-Object { Remove-AppxPackage -Package $_.PackageFullName }\"")
+                    console.log(res.toString());
+                    uninstalled = res.length > 0;
+                }
+                catch (err) {
+                    console.error(err);
+                }
+
+                if(!uninstalled){
+                    // Segon mètode: Busca i fes corre l'uninstal·lador
+                    const apps = await getInstalledApps();
+                    const appDir = path.dirname(process.path);
+                    const apptodelete = apps.find((app) =>
+                        (app.InstallLocation? app.InstallLocation : app.InstallSource) === appDir);
+                    if(apptodelete){
+                        try {
+                            if(apptodelete.UninstallString) {
+                                const res = execSync(apptodelete.UninstallString);
+                                console.log(res.toString());
+                                uninstalled = res.length > 0;
                             }
-
-                            if (stderr) {
-                                console.error(`Error: ${stderr}`);
-                                return;
+                        }
+                        catch (err) {
+                            console.error(err);
+                            // Torna a provar amb el paràmetre --force-uninstall
+                            if(apptodelete.UninstallString) {
+                                const res = execSync(apptodelete.UninstallString + " --force-uninstall");
+                                console.log(res.toString());
+                                uninstalled = res.length > 0;
                             }
-
-                            console.log(`stdout: ${stdout}`);
-                        });
+                        }
                     }
                 }
-                if (doList[process] === 'uninstall') {
-                    // TODO get uninstall command from list
-                    // read uninstall-apps.json
 
-                    exec(``, (error, stdout, stderr) => {
-                        if (error) {
-                            console.error(`Error: ${error.message}`);
-                            return;
-                        }
+                if(!uninstalled && doList[process.pid].includes('force_uninstall')){
+                    // Tercer mètode: Esborra el contingut de l'executable
 
-                        if (stderr) {
-                            console.error(`Error: ${stderr}`);
-                            return;
-                        }
+                    const protectedDirs = [ // Directoris protegits
+                        "C:\\Windows\\",
+                        "C:\\Program Files\\",
+                        "C:\\Program Files (x86)\\",
+                    ];
 
-                        console.log(`stdout: ${stdout}`);
+                    if(!protectedDirs.find((dir) => process.path.startsWith(dir))) {
+                        // Destrossa el programa ☠ UAHAHAHA!
+                        fs.writeFileSync(process.path, "");
+                        uninstalled = true;
+                    }
+                }
+
+                if(!uninstalled){
+                    // No s'ha pogut desinstal·lar
+                    axios.post(process.env.API_PALAMBLOCK + '/apps/uninstall', {
+                        app: process,
+                        status: 'error',
+                        alumne: username
+                    }).then((res) => {
+                        console.log(res.data);
+                    }).catch((err) => {
+                        console.error(err);
                     });
                 }
             }
-        }).catch((err) => {
-            console.error(err);
+        }
+    }).catch((err) => {
+        console.error(err);
     });
-});
 
 
+}
+
+sendPrograms();
 

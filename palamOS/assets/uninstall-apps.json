@@ -1,0 +1,3 @@
+{
+  "installedViaStore": "powershell -command \"Get-AppxPackage | Where-Object { $_.Name -like \\\"*[NOEXE]*\\\" } | ForEach-Object { Remove-AppxPackage -Package $_.PackageFullName }\""
+}

@@ -1,5 +1,0 @@
-{
-  "WhatsApp.exe": "powershell -command \"Get-AppxPackage | Where-Object { $_.Name -like \\\"*whatsapp*\\\" } | ForEach-Object { Remove-AppxPackage -Package $_.PackageFullName }\"",
-  "Spotify.exe": "powershell -command \"Get-AppxPackage | Where-Object { $_.Name -like \\\"*spotify*\\\" } | ForEach-Object { Remove-AppxPackage -Package $_.PackageFullName }\"",
-  "instagram.exe": "powershell -command \"Get-AppxPackage | Where-Object { $_.Name -like \\\"*instagram*\\\" } | ForEach-Object { Remove-AppxPackage -Package $_.PackageFullName }\""
-}

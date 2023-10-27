@@ -255,58 +255,20 @@ class BrowserStatus {
 
 class AppStatus {
     constructor(app, status, timestamp) {
-        this.app = app;
+        this.name = app.name;
+        this.title = app.title;
+        this.path = app.path;
         this.status = status;
         this.startedAt = timestamp;
         this.updatedAt = timestamp;
         this.opened = true;
-        this.iconSVG = undefined;
-
-        this.searchFavicon(app);
+        this.iconB64 = app.icon
     }
 
     update(status, timestamp) {
         this.status = status;
         this.updatedAt = timestamp;
         this.opened = true;
-    }
-
-    async searchFavicon() {
-        if(this.iconSVG) return;
-
-        // check in file icons.json
-        try {
-            const cachedIcons = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'icons.json'), 'utf8'));
-
-            if (cachedIcons[this.app]) {
-                this.iconSVG = cachedIcons[this.app];
-                return;
-            }
-        } catch (e) {
-            console.error(e);
-        }
-        try {
-            // check in icons8
-            const appname = this.app.replace(".exe", "");
-            const response = await  axios.get(`https://search.icons8.com/api/iconsets/v5/search?term=${appname}&category=logos&isColor=true&amount=1&platform=color&token=${process.env.ICONS8_TOKEN}`)
-
-            if(!response.data.icons || !response.data.icons.length) return;
-            const iconId = response.data.icons[0].id;
-            const icon = await axios.get(`https://api-icons.icons8.com/publicApi/icons/icon?id=${iconId}&token=${process.env.ICONS8_TOKEN}`);
-            this.iconSVG = icon.data.icon.svg;
-            console.log("NEW ICON", appname)
-
-            // save in file icons.json
-            try {
-                const cachedIcons = JSON.parse(fs.readFileSync(path.join(__dirname, '..' , '..', 'assets' ,'icons.json'), 'utf8'));
-                cachedIcons[this.app] = this.iconSVG;
-                fs.writeFileSync(path.join(__dirname, '..' , '..', 'assets' ,'icons.json'), JSON.stringify(cachedIcons), 'utf8');
-            } catch (e) {
-                console.error(e);
-            }
-        } catch (e) {
-            console.error(e);
-        }
     }
 
     close() {
@@ -321,11 +283,11 @@ class AlumneStatus {
         this._onUpdateCallback = onUpdateCallback;
     }
 
-    registerApp(app, status, timestamp) {
-        if(!this.apps[app])
-            this.apps[app] = new AppStatus(app, status, timestamp);
+    registerApp(appinfo, status, timestamp) {
+        if(!this.apps[appinfo.pid])
+            this.apps[appinfo.pid] = new AppStatus(appinfo, status, timestamp);
         else
-            this.apps[app].update(status, timestamp);
+            this.apps[appinfo.pid].update(status, timestamp);
     }
 
     closeNotUpdatedApps(timestamp) {
@@ -411,12 +373,12 @@ class AllAlumnesStatus{
         this._onUpdateCallback();
     }
 
-    registerApp(app, alumne, status, timestamp) {
+    registerApp(appinfo, alumne, status, timestamp) {
         if(!this.alumnesStat[alumne]) {
             this.alumnesStat[alumne] = new AlumneStatus(alumne, this._onUpdateCallback);
         }
 
-        this.alumnesStat[alumne].registerApp(app, status, timestamp);
+        this.alumnesStat[alumne].registerApp(appinfo, status, timestamp);
     }
 
     closeNotUpdatedApps(alumne, timestamp) {
@@ -529,7 +491,7 @@ function getBrowserPendingActions(alumne, browser, browserId) {
     return pending;
 }
 
-async function normesHasChanged() {
+async function normesWebHasChanged() {
     for (const alumne in allAlumnesStatus.alumnesStat) {
         const validacio = new validacioService.Validacio(alumne);
         for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
@@ -553,8 +515,9 @@ async function normesHasChanged() {
 }
 
 function registerApps(apps, alumne, status, timestamp) {
-    for (const app of apps) {
-        allAlumnesStatus.registerApp(app, alumne, status[app], timestamp);
+    for (const appinfo of apps) {
+
+        allAlumnesStatus.registerApp(appinfo, alumne, status[appinfo.name], timestamp);
     }
     allAlumnesStatus.closeNotUpdatedApps(alumne, timestamp);
     allAlumnesStatus._onUpdateCallback();
@@ -568,6 +531,6 @@ module.exports = {
     registerOnUpdateCallback,
     remoteCloseTab,
     getBrowserPendingActions,
-    normesHasChanged,
+    normesWebHasChanged,
     registerApps
 }

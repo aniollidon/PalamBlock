@@ -410,7 +410,7 @@
 const menu = document.querySelector(".menu");
 let menuClickCoords = {};
 
-const openMenu = (e, options, tabinfo) => {
+const openMenu = (e, options, info) => {
     e.preventDefault();
     const origin = {
         left: e.pageX,
@@ -425,11 +425,11 @@ const openMenu = (e, options, tabinfo) => {
     const ul = menu.querySelector(".menu-options");
     ul.innerHTML = "";
 
-    for(let option in options) {
+    for (let i = 0; i< options.length; i++) {
         let menuOption = document.createElement("li");
         menuOption.setAttribute("class", "menu-option");
-        menuOption.innerHTML = option;
-        menuOption.addEventListener("click", ()=>options[option](tabinfo));
+        menuOption.innerHTML = options[i].text;
+        menuOption.addEventListener("click", ()=>options[i].do(info));
         ul.appendChild(menuOption);
     }
     setPosition(origin);

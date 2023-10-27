@@ -52,18 +52,18 @@ function addNorma(who, whoid, severity, mode, hosts_list, protocols_list, search
     if(who === "grup") {
         normaService.creaNormaGrup(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
             titles_list, enabled_on).then((alumne) => {
-                console.log("Norma afegida de grup");
+                console.log("NormaWeb afegida de grup");
         });
     } else if(who === "alumne"){
         normaService.creaNormaAlumne(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
             titles_list, enabled_on).then((alumne) => {
-                console.log("Norma afegida d'alumne");
+                console.log("NormaWeb afegida d'alumne");
         });
     }
 }
 
-const getAllNormes = () => {
-    return normaService.getAllNormes();
+const getAllNormesWeb = () => {
+    return normaService.getAllNormesWeb();
 }
 
 const removeNorma = (who, whoid, normaid) => {
@@ -77,7 +77,7 @@ const registerOnUpdateCallback = (callback) => {
 module.exports = {
     postNorma,
     addNorma,
-    getAllNormes,
+    getAllNormesWeb,
     removeNorma,
     registerOnUpdateCallback,
 }

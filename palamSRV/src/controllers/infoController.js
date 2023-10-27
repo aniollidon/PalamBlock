@@ -66,8 +66,8 @@ function remoteCloseTab(alumne, browser, browserId, tab) {
     infoService.remoteCloseTab(alumne, browser, browserId, tab);
 }
 
-function normesHasChanged() {
-    infoService.normesHasChanged();
+function normesWebHasChanged() {
+    infoService.normesWebHasChanged();
 }
 
 module.exports = {
@@ -76,5 +76,5 @@ module.exports = {
     getAlumnesActivity,
     registerOnUpdateCallback,
     remoteCloseTab,
-    normesHasChanged
+    normesWebHasChanged
 }

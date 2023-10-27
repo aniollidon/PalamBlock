@@ -1,9 +1,14 @@
 const historialService = require("../services/historialService")
 
-async function getHistorial(alumne, offset= undefined){
-    return historialService.getHistorial(alumne, offset);
+async function getHistorialWeb(alumne, offset= undefined){
+    return historialService.getHistorialWeb(alumne, offset);
+}
+
+async function getHistorialApps(alumne, offset= undefined){
+    return historialService.getHistorialApps(alumne, offset);
 }
 
 module.exports = {
-    getHistorial
+    getHistorialWeb,
+    getHistorialApps
 }

@@ -22,7 +22,7 @@ class Validacio {
     async check(host, protocol, search, pathname, title) {
         const alumne = await db.Alumne.findOne({alumneId: this.alumneid})
             .populate('grup')
-            .populate('normes');
+            .populate('normesWeb');
 
         if(!alumne) {
             console.log("L'alumne no existeix: alumne=" + this.alumneid);
@@ -46,18 +46,18 @@ class Validacio {
         else if(grup.status === "Blocked")
             return "block";
 
-        // Busca les normes del grup
-        const normesgrup = await db.Norma.find({_id: {$in: grup.normes}});
-        // Busca les normes de l'alumne
-        const normesalumne = await db.Norma.find({_id: {$in: alumne.normes}});
+        // Busca les normesWeb del grup
+        const normesgrup = await db.NormaWeb.find({_id: {$in: grup.normesWeb}});
+        // Busca les normesWeb de l'alumne
+        const normesalumne = await db.NormaWeb.find({_id: {$in: alumne.normesWeb}});
 
-        const normes = normesgrup.concat(normesalumne);
+        const normesWeb = normesgrup.concat(normesalumne);
         const dataActual = new Date();
         const datetime_ara = dataActual.getTime();
         const dia_avui = dataActual.toLocaleDateString('ca-ES',  { weekday: 'long' });
         let action = "allow";
 
-        for(const norma of normes) {
+        for(const norma of normesWeb) {
 
             // Troba si una norma està activa
             const normaNotEnabled = norma.enabled_on.find((enabled) => {
@@ -108,18 +108,19 @@ class Validacio {
 async function checkApps(apps) {
     let statusForApps = {};
     for (const app of apps) {
-        const dbapp =  await db.App.findOne({appId: app});
+        const name = app.name;
+        const dbapp =  await db.NormaApp.findOne({appId: name});
 
         if(!dbapp) {
-            statusForApps[app] = "allow";
+            statusForApps[name] = "allow";
             // Crear nova app a la db
-            const newApp = await db.App.create({
-                appId: app,
+            const newApp = await db.NormaApp.create({
+                appId: name,
                 status: "allow"
             });
         }
         else {
-            statusForApps[app] = dbapp.status;
+            statusForApps[app.pid] = "allow";
         }
     }
 

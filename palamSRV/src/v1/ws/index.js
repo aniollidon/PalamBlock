@@ -10,7 +10,7 @@ function initializeWebSocket(server) {
     io.on('connection', async (socket) => {
         socket.emit('grupAlumnesList', await alumneController.getGrupAlumnesList());
         socket.emit('browsingActivity', infoController.getAlumnesActivity());
-        socket.emit('normesList', await normaController.getAllNormes());
+        socket.emit('normesWeb', await normaController.getAllNormesWeb());
 
         infoController.registerOnUpdateCallback((toUpdate) => {
             socket.emit('alumnesActivity', infoController.getAlumnesActivity());
@@ -33,13 +33,18 @@ function initializeWebSocket(server) {
         });
 
         normaController.registerOnUpdateCallback(async () => {
-            infoController.normesHasChanged();
-            socket.emit('normesList', await normaController.getAllNormes());
+            infoController.normesWebHasChanged();
+            socket.emit('normesWeb', await normaController.getAllNormesWeb());
         });
 
-        socket.on('getHistorial', async (msg) => {
-            const historial = await historialController.getHistorial(msg.alumne, msg.offset);
-            socket.emit('historialAlumne', {alumne:msg.alumne, historial:historial});
+        socket.on('getHistorialWeb', async (msg) => {
+            const historial = await historialController.getHistorialWeb(msg.alumne, msg.offset);
+            socket.emit('historialWebAlumne', {alumne:msg.alumne, historial:historial});
+        });
+
+        socket.on('getHistorialApps', async (msg) => {
+            const historial = await historialController.getHistorialApps(msg.alumne, msg.offset);
+            socket.emit('historialAppsAlumne', {alumne:msg.alumne, historial:historial});
         });
     });
 
