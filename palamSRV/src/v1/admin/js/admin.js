@@ -68,14 +68,24 @@ function creaWebMenuJSON(alumne) {
         {text: "Afegeix a llista blanca", do: onAfegeixLlistaBlanca},
     ]
 }
-function toogleHistorial(alumne){
+function toogleHistorial(alumne, tipus = "web"){
     const historialSidebar = document.getElementById("historialSidebar");
 
-    if (historialSidebar.style.display.includes("none")) {
-        socket.emit("getHistorialWeb", { alumne: alumne });
+    const prevTipus = historialSidebar.getAttribute("data-historial");
+    const prevAlumne = historialSidebar.getAttribute("data-alumne");
+
+    historialSidebar.setAttribute("data-historial", tipus);
+    historialSidebar.setAttribute("data-alumne", alumne);
+
+    if(prevTipus !== tipus || prevAlumne !== alumne || historialSidebar.style.display.includes("none")){
+        if(tipus === "web")
+            socket.emit("getHistorialWeb", { alumne: alumne });
+        else
+            socket.emit("getHistorialApps", { alumne: alumne });
+
         const historialSideBarTitle = document.getElementById("historialSidebarTitle");
         const historialSideBarContent = document.getElementById("historialSidebarContent");
-        historialSideBarTitle.innerHTML = `Historial web de l'alumne ${alumne}`;
+        historialSideBarTitle.innerHTML = `Historial ${(tipus === "web" ? "web" : "d'Apps")} de l'alumne ${alumne}`;
         historialSideBarContent.innerHTML = "";
         historialSidebar.style.display = "";
     }
@@ -334,7 +344,7 @@ socket.on('alumnesActivity', function (data) {
                 </svg> Historial Web`
             historialWebButton.appendChild(historialWebInner);
 
-            historialWebButton.onclick = () =>toogleHistorial(alumne)
+            historialWebButton.onclick = () =>toogleHistorial(alumne, "web")
             alumneDiv.appendChild(historialWebButton);
             alumneDiv.appendChild(document.createTextNode(' '))
 
@@ -367,7 +377,7 @@ socket.on('alumnesActivity', function (data) {
                 </svg> Historial Apps`
             historialAppButton.appendChild(historialAppInner);
 
-            historialAppButton.onclick = () =>toogleHistorial(alumne)
+            historialAppButton.onclick = () =>toogleHistorial(alumne, "apps")
             alumneDiv.appendChild(historialAppButton);
 
             // Apps List
@@ -678,7 +688,6 @@ socket.on('historialAppsAlumne', function (data) {
     const historialSidebar = document.getElementById("historialSidebar");
     const historialSideBarTitle = document.getElementById("historialSidebarTitle");
     const historialSideBarContent = document.getElementById("historialSidebarContent");
-    const opcionMenuContextual = creaAppMenuJSON(data.alumne);
 
     let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
 
@@ -691,20 +700,18 @@ socket.on('historialAppsAlumne', function (data) {
         hiddenAuxInfo.setAttribute("data-historial-length", 0);
         hiddenAuxInfo.setAttribute("data-alumne", data.alumne);
         hiddenAuxInfo.setAttribute("data-prevday", undefined);
-        hiddenAuxInfo.setAttribute("data-previd", undefined);
-        hiddenAuxInfo.setAttribute("data-prevhost", undefined);
         historialSideBarContent.appendChild(hiddenAuxInfo);
     }
 
     let prevday = hiddenAuxInfo.getAttribute("data-prevday");
-    let previd = hiddenAuxInfo.getAttribute("data-previd");
-    let prevhost = hiddenAuxInfo.getAttribute("data-prevhost");
     const historialLength = parseInt(hiddenAuxInfo.getAttribute("data-historial-length")) + data.historial.length;
 
-    for (const webPage of data.historial) {
-        const data = new Date(webPage.timestamp);
-        const dia = data.toLocaleDateString('ca-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-        const hora = data.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+    for (const process of data.historial) {
+        const started = new Date(process.startedTimestamp);
+        const updated = new Date(process.updatedTimestamp);
+        const dia = started.toLocaleDateString('ca-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+        const horaStart = started.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+        const horaUpdated = updated.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' });
         const newDay = prevday !== dia;
 
         if (newDay) {
@@ -715,66 +722,49 @@ socket.on('historialAppsAlumne', function (data) {
             prevday = dia;
         }
 
-        if(prevhost && previd && prevhost === webPage.host && !newDay) {
-            const dHora = document.getElementById(`historial_hora_${previd}`);
-            const dHoraEnd = dHora.getAttribute("data-hora-end");
-            if(dHoraEnd !== hora)
-                dHora.innerHTML = `${hora} - ${dHoraEnd}` ;
-            else
-                dHora.innerHTML = hora;
-            continue;
-        }
         const a = document.createElement("a");
         a.setAttribute("href", "#");
         a.setAttribute("class", "list-group-item list-group-item-action lh-tight py-1"); //active
-        const tooltip = "Obert a " + webPage.browser + (webPage.incognito ? " en mode incognit" : "") + `\n${webPage.protocol}//${webPage.host}${webPage.pathname}${webPage.search}`;
+        const tooltip = process.processPath;
         a.setAttribute("title", tooltip);
 
         const divHeader = document.createElement("div");
         divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
 
-
         const dTitile = document.createElement("strong");
         dTitile.setAttribute("class", "mb-1 nomesunalinia");
         const favicon = document.createElement("img");
-        favicon.setAttribute("src", webPage.favicon ? webPage.favicon : "img/undefined_favicon.png");
+        favicon.setAttribute("src", process.iconB64 ? "data:image/png;base64," + process.iconB64 : "img/undefined_app.png");
         favicon.setAttribute("class", "historial-favicon");
         dTitile.appendChild(favicon);
 
-        const text = document.createTextNode(webPage.title);
+        const text = document.createTextNode(process.caption);
         dTitile.appendChild(text);
         divHeader.appendChild(dTitile);
 
-
         const dHora = document.createElement("small");
-        dHora.id = `historial_hora_${webPage._id}`;
-        dHora.setAttribute("data-hora-end", hora);
-        dHora.innerHTML = hora;
+        dHora.id = `historial_hora_${process._id}`;
+        dHora.innerHTML = horaStart === horaUpdated ? horaStart : `${horaStart} - ${horaUpdated}`
         divHeader.appendChild(dHora);
 
         const divContent = document.createElement("div");
         divContent.setAttribute("class", "col-10 mb-1 small");
-        divContent.innerHTML = `${webPage.host}`;
+        divContent.innerHTML = `${process.processName}`;
+        const opcionMenuContextual = creaAppMenuJSON(data.alumne, process.processName);
 
         a.onclick = (ev) => {
             const info = {
                 alumne: data.alumne,
-                webPage: {
-                    host: webPage.host,
-                    pathname: webPage.pathname,
-                    search: webPage.search,
-                    title: webPage.title,
-                    protocol: webPage.protocol,
-                }
+                processName: process.processName,
+                processPath: process.processPath,
+                caption: process.caption,
+                iconB64: process.iconB64,
             }
             openMenu(ev, opcionMenuContextual, info);
         }
         a.appendChild(divHeader);
         a.appendChild(divContent);
         historialSideBarContent.appendChild(a);
-
-        previd = webPage._id;
-        prevhost = webPage.host;
     }
 
     if(data.historial.length !== 0) {
@@ -785,7 +775,7 @@ socket.on('historialAppsAlumne', function (data) {
         a.setAttribute("aria-current", "true");
         a.innerHTML = `<strong class="mb-1 nomesunalinia">Mostra'n més</strong>`;
         a.onclick = () => {
-            socket.emit("getHistorialWeb", {alumne: data.alumne, offset: historialLength});
+            socket.emit("getHistorialApps", {alumne: data.alumne, offset: historialLength});
             a.remove();
         };
 
@@ -795,8 +785,6 @@ socket.on('historialAppsAlumne', function (data) {
     hiddenAuxInfo.setAttribute("data-historial-length", historialLength);
     hiddenAuxInfo.setAttribute("data-alumne", data.alumne);
     hiddenAuxInfo.setAttribute("data-prevday", prevday);
-    hiddenAuxInfo.setAttribute("data-prevhost", prevhost);
-    hiddenAuxInfo.setAttribute("data-previd", previd);
 
     // Refresca els chrome tabs
     if(chromeTabsObjects[data.alumne])

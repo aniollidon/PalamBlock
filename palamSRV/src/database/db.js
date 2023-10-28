@@ -131,7 +131,10 @@ const HistorialWebSchema = new mongoose.Schema({
 });
 
 const HistorialAppsSchema = new mongoose.Schema({
-    timestamp: {
+    startedTimestamp: {
+        type: Date
+    },
+    updatedTimestamp: {
         type: Date
     },
     processName: {

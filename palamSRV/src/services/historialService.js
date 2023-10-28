@@ -17,13 +17,40 @@ function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, bro
 }
 
 function saveApp(alumne, timestamp, processName, processPath, caption, iconB64) {
-    return db.HistorialApps.create({
+
+    // Fa una hora
+    const now = new Date();
+    const faUnaHora = new Date(Date.now() - 60 * 60 * 1000)
+
+    // si fa una hora és d'un dia diferent, queda't a les 00:00:00
+    if (faUnaHora.getDate() !== now.getDate()) {
+        faUnaHora.setHours(0,0,0,0);
+    }
+
+    // Si la app ha estat creada o actualitzada en l'última hora del mateix dia només l'actualitzem
+    return db.HistorialApps.findOneAndUpdate({
         alumneid: alumne,
-        timestamp: timestamp,
-        processName: processName,
         processPath: processPath,
-        caption: caption,
-        iconB64: iconB64
+        updatedTimestamp: {
+            $gte: faUnaHora,
+        }
+    }, {
+        updatedTimestamp: timestamp
+    }, {
+        new: true
+    }).then((doc) => {
+        if (!doc) {
+            // Si no, creem una nova
+            db.HistorialApps.create({
+                alumneid: alumne,
+                startedTimestamp: timestamp,
+                updatedTimestamp: timestamp,
+                processName: processName,
+                processPath: processPath,
+                caption: caption,
+                iconB64: iconB64
+            });
+        }
     });
 }
 
