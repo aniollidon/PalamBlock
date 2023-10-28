@@ -2,7 +2,7 @@ const historialService = require("../services/historialService");
 const validacioService = require("../services/validacioService");
 const infoService = require("../services/infoService");
 
-const postValidacio = (req, res) => {
+const postValidacioAPI = (req, res) => {
     const host = req.body.host;
     const protocol = req.body.protocol;
     const search = req.body.search;
@@ -35,7 +35,7 @@ const postValidacio = (req, res) => {
     });
 }
 
-const postApps = (req, res) => {
+const postAppsAPI = (req, res) => {
     const apps = req.body.apps;
     const alumne = req.body.alumne;
     const timestamp = new Date();
@@ -53,6 +53,6 @@ const postApps = (req, res) => {
 }
 
 module.exports = {
-    postValidacio,
-    postApps
+    postValidacioAPI,
+    postAppsAPI
 };

@@ -1,6 +1,6 @@
 const normaService = require('../services/normaService');
 
-const postNorma = (req, res) => {
+const postNormaAPI = (req, res) => {
     const who = req.body.who;
     const whoid = req.body.whoid;
     const severity = req.body.severity;
@@ -75,7 +75,7 @@ const registerOnUpdateCallback = (callback) => {
 }
 
 module.exports = {
-    postNorma,
+    postNormaAPI,
     addNorma,
     getAllNormesWeb,
     removeNorma,

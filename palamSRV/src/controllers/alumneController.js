@@ -1,7 +1,7 @@
 const alumneService = require("../services/alumneServices");
 
 
-const postAlumne = (req, res) => {
+const postAlumneAPI = (req, res) => {
     const { body } = req;
     const alumneId = body.alumne;
     const grupId = body.grup;
@@ -23,7 +23,7 @@ const postAlumne = (req, res) => {
         res.send({ status: "ERROR", data:"Falten dades de l'Alumne. Es necessiten alumne, grup, nom, cognoms i clau"})
 }
 
-const autentificaAlumne = (req, res) => {
+const autentificaAlumneAPI = (req, res) => {
     const { body } = req;
     const alumneId = body.alumne;
     const clau = body.clau;
@@ -46,7 +46,7 @@ const getGrupAlumnesList = () => {
     return alumneService.getGrupAlumnesList();
 }
 module.exports = {
-    postAlumne,
-    autentificaAlumne,
+    postAlumneAPI,
+    autentificaAlumneAPI,
     getGrupAlumnesList,
 }

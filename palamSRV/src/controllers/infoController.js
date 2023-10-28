@@ -1,6 +1,6 @@
 const infoService = require("../services/infoService");
 
-const postTabInfo = (req, res) => {
+const postTabInfoAPI = (req, res) => {
     const action = req.body.action;
     const host = req.body.host;
     const protocol = req.body.protocol;
@@ -36,7 +36,7 @@ const postTabInfo = (req, res) => {
     res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser, browserId) });
 }
 
-const postBrowserInfo = (req, res) => {
+const postBrowserInfoAPI = (req, res) => {
     const alumne = req.body.alumne;
     const browser = req.body.browser;
     const browserId = req.body.browserId;
@@ -71,8 +71,8 @@ function normesWebHasChanged() {
 }
 
 module.exports = {
-    postTabInfo,
-    postBrowserInfo,
+    postTabInfoAPI,
+    postBrowserInfoAPI,
     getAlumnesActivity,
     registerOnUpdateCallback,
     remoteCloseTab,

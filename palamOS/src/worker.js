@@ -196,4 +196,12 @@ async function sendPrograms(){
 }
 
 sendPrograms();
+setInterval(()=>{
+    try{
+        sendPrograms();
+    }
+    catch(err){
+        console.error(err);
+    }
+}, process.env.UPDATE_INTERVAL * 1000)
 
