@@ -93,6 +93,17 @@ const AlumneSchema = new mongoose.Schema({
     },
 });
 
+const AdminSchema = new mongoose.Schema({
+    user: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    clauMd5: {
+        type: String,
+        required: true
+    }
+});
 
 const HistorialWebSchema = new mongoose.Schema({
     timestamp: {
@@ -159,6 +170,7 @@ const NormaWeb = mongoose.model('NormaWeb', NormaWebSchema);
 const NormaApp = mongoose.model('NormaApp', NormaAppSchema);
 const HistorialWeb = mongoose.model('HistorialWeb', HistorialWebSchema);
 const HistorialApps = mongoose.model('HistorialApps', HistorialAppsSchema);
+const Admin = mongoose.model('Admin', AdminSchema);
 
 
 // Fes ids unics
@@ -172,4 +184,5 @@ module.exports = {
     Grup,
     HistorialWeb,
     HistorialApps,
+    Admin
 }

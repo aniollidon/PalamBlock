@@ -5,6 +5,8 @@ const validacioController = require("../../controllers/validacioController");
 const alumneController = require("../../controllers/alumneController");
 const normaController = require("../../controllers/normaController");
 const infoController = require("../../controllers/infoController");
+const adminController = require("../../controllers/adminController");
+
 
 //router.get("/historials", historialController.getHistorials);
 //router.get("/historials?venda=[DATA-VENDA]", historialController.getHistorials);
@@ -21,5 +23,6 @@ router.post("/validacio/tab", validacioController.postValidacioAPI);
 router.post("/info/tab", infoController.postTabInfoAPI);
 router.post("/info/browser", infoController.postBrowserInfoAPI);
 router.post("/validacio/apps", validacioController.postAppsAPI);
+router.post("/admin/login", adminController.autentificaAdminAPI);
 
 module.exports = router;

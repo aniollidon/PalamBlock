@@ -3,9 +3,23 @@ const infoController = require("../../controllers/infoController");
 const normaController = require("../../controllers/normaController");
 const historialController = require("../../controllers/historialController");
 const alumneController = require("../../controllers/alumneController");
+const adminController = require("../../controllers/adminController");
 
 function initializeWebSocket(server) {
     const io = new Server(server)
+
+    io.use((socket, next) => {
+        // Obtenim les credencials de l'usuari i la contrasenya
+        const { user, authToken } = socket.handshake.query;
+
+        // Verifiquem les credencials
+        const auth = adminController.checkAdmin(user, authToken);
+        if (auth) {
+            return next();
+        }
+
+        return next(new Error('Autenticació fallida'));
+    });
 
     io.on('connection', async (socket) => {
         socket.emit('grupAlumnesList', await alumneController.getGrupAlumnesList());

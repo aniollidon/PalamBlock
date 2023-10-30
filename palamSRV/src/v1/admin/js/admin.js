@@ -1,4 +1,13 @@
-const socket = io();
+const authUser = localStorage.getItem("user");
+const authToken = localStorage.getItem("authToken");
+
+const socket = io(':4000', {
+    query: {
+        user: authUser,
+        authToken: authToken
+    }
+});
+
 const hblockModal = document.getElementById('bloquejaModal')
 const blockModal = new bootstrap.Modal(hblockModal)
 const hnormesModal = document.getElementById('normesModal')
@@ -791,4 +800,14 @@ socket.on('historialAppsAlumne', function (data) {
         for(let b in chromeTabsObjects[data.alumne])
             chromeTabsObjects[data.alumne][b].layoutTabs();
 
+});
+
+socket.on('connect', function () {
+    console.log('Connected to server');
+});
+
+// Gestiona errors d'autenticació
+socket.on('connect_error', (error) => {
+    console.log('Error d\'autenticació:', error.message);
+    window.location.href = "login.html";
 });
