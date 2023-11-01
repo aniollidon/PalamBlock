@@ -1,4 +1,5 @@
 const infoService = require("../services/infoService");
+const historialService = require("../services/historialService");
 
 const postTabInfoAPI = (req, res) => {
     const action = req.body.action;
@@ -31,6 +32,9 @@ const postTabInfoAPI = (req, res) => {
 
     if (action === "active" || action === "close" || action === "update") {
         infoService.registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, audible);
+        if(action === "update") {
+            historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
+        }
     }
 
     res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser, browserId) });

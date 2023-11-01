@@ -30,12 +30,12 @@ const postNormaAPI = (req, res) => {
     if(whoid && (hosts_list || protocols_list || searches_list || pathnames_list || titles_list)){
 
         if(who === "grup") {
-            normaService.creaNormaGrup(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
+            normaService.creaNormaWebGrup(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
                 titles_list, enabled_on).then((alumne) => {
                 res.send({status: "OK", data: alumne});
             });
         } else if(who === "alumne"){
-            normaService.creaNormaAlumne(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
+            normaService.addNormaWebAlumne(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
                 titles_list, enabled_on).then((alumne) => {
                 res.send({status: "OK", data: alumne});
             });
@@ -47,27 +47,46 @@ const postNormaAPI = (req, res) => {
     }
 }
 
-function addNorma(who, whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
+function addNormaWeb(who, whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
                   titles_list, enabled_on) {
     if(who === "grup") {
-        normaService.creaNormaGrup(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
+        normaService.creaNormaWebGrup(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
             titles_list, enabled_on).then((alumne) => {
                 console.log("NormaWeb afegida de grup");
         });
     } else if(who === "alumne"){
-        normaService.creaNormaAlumne(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
+        normaService.addNormaWebAlumne(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
             titles_list, enabled_on).then((alumne) => {
                 console.log("NormaWeb afegida d'alumne");
         });
     }
 }
 
+function addNormaApps(who, whoid, severity, processName, processPath, processPathisRegex) {
+    if(who === "grup") {
+        normaService.creaNormaGrupApp(whoid, processName, processPath, processPathisRegex, severity).then((alumne) => {
+            console.log("NormaApp afegida de grup");
+        });
+    } else if(who === "alumne"){
+        normaService.creaNormaAlumneApp(whoid, processName, processPath, processPathisRegex, severity).then((alumne) => {
+            console.log("NormaApp afegida d'alumne");
+        });
+    }
+}
 const getAllNormesWeb = () => {
     return normaService.getAllNormesWeb();
 }
 
-const removeNorma = (who, whoid, normaid) => {
-    normaService.removeNorma(who, whoid, normaid);
+const getAllNormesApps = () => {
+    return normaService.getAllNormesApps();
+}
+
+const removeNormaWeb = (who, whoid, normaid) => {
+    normaService.removeNormaWeb(who, whoid, normaid);
+}
+
+const removeNormaApp = (who, whoid, normaid) => {
+    normaService.removeNormaApp(who, whoid, normaid);
 }
 
 const registerOnUpdateCallback = (callback) => {
@@ -76,8 +95,11 @@ const registerOnUpdateCallback = (callback) => {
 
 module.exports = {
     postNormaAPI,
-    addNorma,
+    addNormaWeb,
+    addNormaApps,
     getAllNormesWeb,
-    removeNorma,
+    getAllNormesApps,
+    removeNormaWeb,
+    removeNormaApp,
     registerOnUpdateCallback,
 }

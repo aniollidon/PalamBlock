@@ -1,4 +1,4 @@
-const alumneService = require("../services/alumneServices");
+const alumneService = require("../services/alumneService");
 
 
 const postAlumneAPI = (req, res) => {
@@ -45,8 +45,23 @@ const autentificaAlumneAPI = (req, res) => {
 const getGrupAlumnesList = () => {
     return alumneService.getGrupAlumnesList();
 }
+
+function setAlumneStatus(alumneId, status){
+    alumneService.setAlumneStatus(alumneId, status).catch((error) => {
+        console.error(error);
+    });
+}
+
+function setGrupStatus(grupId, status){
+    return alumneService.setGrupStatus(grupId, status).catch((error) => {
+        console.error(error);
+    });
+}
+
 module.exports = {
     postAlumneAPI,
     autentificaAlumneAPI,
     getGrupAlumnesList,
+    setAlumneStatus,
+    setGrupStatus,
 }

@@ -31,6 +31,14 @@ body {
     text-decoration: line-through;
 }
 
+.grup-buttons{
+    min-width: fit-content;
+    margin-left: 10px;
+}
+
+.grup-opcions{
+    display: flex;
+}
 /*******/
 /* nav */
 .card {
@@ -227,6 +235,10 @@ main {
     --footer-start-height: 4em;
     --sun-gradient: linear-gradient(135deg, #ffef80, #ecaa00);
     font-family: poppins, monospace;
+}
+
+.w11-first-container div svg{
+    scale: 0.8;
 }
 .w11-nav-container{display:flex;align-items:center;justify-content:space-between;height:var(--nav-height); background: #212529; border-radius: 5px 5px 0 0;}
 .w11-first-container,.w11-second-container{display:flex;height:100%;width:auto;gap:0.5rem;align-items:center;justify-content:center;}

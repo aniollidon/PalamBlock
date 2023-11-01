@@ -23,11 +23,12 @@ function initializeWebSocket(server) {
 
     io.on('connection', async (socket) => {
         socket.emit('grupAlumnesList', await alumneController.getGrupAlumnesList());
-        socket.emit('browsingActivity', infoController.getAlumnesActivity());
+        socket.emit('alumnesActivity', await infoController.getAlumnesActivity());
         socket.emit('normesWeb', await normaController.getAllNormesWeb());
+        socket.emit('normesApps', await normaController.getAllNormesApps());
 
-        infoController.registerOnUpdateCallback((toUpdate) => {
-            socket.emit('alumnesActivity', infoController.getAlumnesActivity());
+        infoController.registerOnUpdateCallback(async (toUpdate) => {
+            socket.emit('alumnesActivity', await infoController.getAlumnesActivity());
         });
 
         // on message closeTab
@@ -35,20 +36,33 @@ function initializeWebSocket(server) {
             infoController.remoteCloseTab(msg.alumne, msg.browser, msg.browserId, msg.tabId);
         });
 
-        socket.on('addNorma', (msg) => {
-            console.log('addNorma', msg);
-            normaController.addNorma(msg.who, msg.whoid, msg.severity, msg.mode, msg.hosts_list,
+        socket.on('addNormaWeb', (msg) => {
+            console.log('addNormaWeb', msg);
+            normaController.addNormaWeb(msg.who, msg.whoid, msg.severity, msg.mode, msg.hosts_list,
                 msg.protocols_list, msg.searches_list, msg.pathnames_list, msg.titles_list, msg.enabled_on);
         });
 
-        socket.on('removeNorma', (msg) => {
-            console.log('removeNorma', msg);
-            normaController.removeNorma(msg.who, msg.whoid, msg.normaId);
+        socket.on('addNormaApps', (msg) => {
+            console.log('addNormaApps', msg);
+            normaController.addNormaApps(msg.who, msg.whoid, msg.severity, msg.processName, msg.processPath,
+                msg.processPathisRegex);
+        });
+
+        socket.on('removeNormaWeb', (msg) => {
+            console.log('removeNormaWeb', msg);
+            normaController.removeNormaWeb(msg.who, msg.whoid, msg.normaId);
+        });
+
+        socket.on('removeNormaApps', (msg) => {
+            console.log('removeNormaApps', msg);
+            normaController.removeNormaApp(msg.who, msg.whoid, msg.normaId);
         });
 
         normaController.registerOnUpdateCallback(async () => {
             infoController.normesWebHasChanged();
             socket.emit('normesWeb', await normaController.getAllNormesWeb());
+            socket.emit('normesApps', await normaController.getAllNormesApps());
+
         });
 
         socket.on('getHistorialWeb', async (msg) => {
@@ -59,6 +73,14 @@ function initializeWebSocket(server) {
         socket.on('getHistorialApps', async (msg) => {
             const historial = await historialController.getHistorialApps(msg.alumne, msg.offset);
             socket.emit('historialAppsAlumne', {alumne:msg.alumne, historial:historial});
+        });
+
+        socket.on('setGrupStatus', async (msg) => {
+            await alumneController.setGrupStatus(msg.grup, msg.status);
+        });
+
+        socket.on('setAlumneStatus', async (msg) => {
+            await alumneController.setAlumneStatus(msg.alumne, msg.status);
         });
     });
 

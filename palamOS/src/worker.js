@@ -30,7 +30,7 @@ async function getCurrentPrograms(){
         const afw = allProcesses.list.find((proc) => proc.name === 'ApplicationFrameHost.exe');
 
         // update the list of Windows apps
-        await updateWindowsAppDetails(windows, allProcesses, afw);
+        return await updateWindowsAppDetails(windows, allProcesses, afw);
     }
 
     return windows;
@@ -50,23 +50,27 @@ async function updateWindowsAppDetails(winapps, allprocesses, afw){
 
     const appsList = allprocesses.list.filter((proc) => proc.parentPid === afw.parentPid);
 
+    // load from json
+    const matchlist = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets",  "ApplicationFrameWindow-apps.json"), 'utf8'));
+
     for (const app of winapps) {
+        if(app.className === 'TaskManagerWindow') {
+            app.hide = true;
+            continue;
+        }
         if(app.className !== 'ApplicationFrameWindow') continue;
         const appName = app.caption.toLowerCase();
+        let iconSVG = undefined;
         let appData = appsList.find((proc) => path.parse(proc.name).name.toLowerCase().includes(appName));
 
-        const matchlist = {
-            'càmera': 'windowscamera',
-            'correu': 'mail',
-            'calendari': 'calendar',
-            'calculadora': 'calculator',
-            'contactes': 'people',
-            'mapes': 'maps',
-            'Microsoft Store': 'store'
-        }
-
         if(!appData && matchlist[appName]){
-            appData = appsList.find((proc) => proc.name.toLowerCase().includes(matchlist[appName]));
+            if(matchlist[appName].hide) {
+                app.hide = true;
+                continue;
+            }
+
+            appData = appsList.find((proc) => proc.name.toLowerCase().includes(matchlist[appName].tip));
+            iconSVG = matchlist[appName].iconSVG;
         }
 
         if(appData) {
@@ -81,21 +85,31 @@ async function updateWindowsAppDetails(winapps, allprocesses, afw){
             app.name = appData.name;
             app.className = appName;
             app.processId = appData.pid;
+            app.iconSVG = iconSVG;
         }
     }
+
+    // Filter hidden apps
+    return winapps.filter((app) => !app.hide);
 }
 async function sendPrograms(){
     const programs = await getCurrentPrograms();
     const programsToSend = [];
     for (let program of programs) {
-        const iconBuffer = await getIcon(program.processPath);
-        const icon = iconBuffer.toString('base64');
-        console.log(program.processPath);
+        let icon = program.iconSVG;
+        let iconType = 'svg';
+
+        if(!program.iconSVG) {
+            const iconBuffer = await getIcon(program.processPath);
+            icon = iconBuffer.toString('base64');
+            iconType = 'base64';
+        }
         programsToSend.push({
             name: path.basename(program.processPath),
             title: program.caption,
             path: program.processPath,
             icon: icon,
+            iconType: iconType,
             pid: program.processId
         });
     }
@@ -104,11 +118,11 @@ async function sendPrograms(){
         apps: programsToSend,
         alumne: username
     }).then(async (res) => {
-        console.log(programsToSend)
-        console.log(res.data);
         const doList = res.data.do;
 
         for (const process of programsToSend) {
+            if(!doList[process.pid]) continue;
+
             if (doList[process.pid] === 'close' || doList[process.pid] === 'block' || doList[process.pid].includes('uninstall')) {
                 try {
                     // Tanca el procés
@@ -189,7 +203,7 @@ async function sendPrograms(){
             }
         }
     }).catch((err) => {
-        console.error(err);
+        console.error("Server not found");
     });
 
 
@@ -198,6 +212,7 @@ async function sendPrograms(){
 sendPrograms();
 setInterval(()=>{
     try{
+        console.log("Sending programs");
         sendPrograms();
     }
     catch(err){

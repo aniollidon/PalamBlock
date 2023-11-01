@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>PalamBlock Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" rel="stylesheet">
     <link href="css/tabs.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <link href="css/menu.css" rel="stylesheet">
@@ -12,47 +13,63 @@
 <body>
 
 <!-- Modal Normes-->
-<div id="normesModal" tabindex="-1" role="dialog" aria-labelledby="normesModalLabel" aria-hidden="true" class="modal fade text-left">
-    <div role="document" class="modal-dialog">
+<div aria-hidden="true" aria-labelledby="normesModalLabel" class="modal fade text-left" id="normesModal" role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="pbk_modal_normes_title" >Normes per ALUMNE</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="pbk_modal_normes_title">Normes per ALUMNE</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <div id="pbk_modal_normes"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tanca</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Tanca</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Bloqueja-->
-<div id="bloquejaModal" tabindex="-1" role="dialog" aria-labelledby="bloquejaModalLabel" aria-hidden="true" class="modal fade text-left">
-    <div role="document" class="modal-dialog">
+<!-- Modal Bloqueja Web -->
+<div aria-hidden="true" aria-labelledby="bloquejaModalWebLabel" class="modal fade text-left" id="bloquejaModalWeb"
+     role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <!-- nav options -->
-            <ul class="nav nav-pills mb-3 shadow-sm" id="pills-tab" role="tablist">
+            <ul class="nav nav-pills mb-3 shadow-sm" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="pills-blocalumn-tab" data-bs-toggle="pill" href="#pills-blocalumn" role="tab" aria-controls="pills-blocalumn" aria-selected="true">Bloqueja ALUMNE</a>
+                    <a aria-controls="pills-blocalumnweb" aria-selected="true" class="nav-link active"
+                       data-bs-toggle="pill" href="#pills-blocalumnweb" id="pills-blocwebalumn-tab" role="tab">Bloqueja
+                        ALUMNE</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="pills-blocgrup-tab" data-bs-toggle="pill" href="#pills-blocgrup" role="tab" aria-controls="pills-blocgrup" aria-selected="false">Bloqueja GRUP</a>
+                    <a aria-controls="pills-blocgrupweb" aria-selected="false" class="nav-link" data-bs-toggle="pill"
+                       href="#pills-blocgrupweb" id="pills-blocwebgrup-tab" role="tab">Bloqueja GRUP</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="pills-llistablanca-tab" data-bs-toggle="pill" href="#pills-llistablanca" role="tab" aria-controls="pills-llistablanca" aria-selected="false">Crea llista blanca GRUP</a>
+                    <a aria-controls="pills-llistablancaweb" aria-selected="false" class="nav-link"
+                       data-bs-toggle="pill" href="#pills-llistablancaweb" id="pills-llistablancawebweb-tab"
+                       role="tab">Crea llista blanca GRUP</a>
                 </li>
             </ul>
             <!-- content -->
-            <div class="tab-content" id="pills-tabContent p-3">
-                <div class="tab-pane marge fade show active" id="pills-blocalumn" role="tabpanel" aria-labelledby="pills-blocalumn-tab">
-                    Crea una nova norma de bloqueig per l'alumne. Aquesta norma s'aplicarà a tots els navegadors de l'alumne.
+            <div class="tab-content">
+                <div aria-labelledby="pills-blocwebalumn-tab" class="tab-pane marge fade show active"
+                     id="pills-blocalumnweb"
+                     role="tabpanel">
+                    Crea una nova norma de bloqueig per l'alumne. Aquesta norma s'aplicarà a tots els navegadors de
+                    l'alumne.
                 </div>
-                <div class="tab-pane marge fade" id="pills-blocgrup" role="tabpanel" aria-labelledby="pills-blocgrup-tab">
-                    Crea una nova norma de bloqueig per el grup. Aquesta norma s'aplicarà a tots els navegadors dels alumnes del grup.
+                <div aria-labelledby="pills-blocwebgrup-tab" class="tab-pane marge fade" id="pills-blocgrupweb"
+                     role="tabpanel">
+                    Crea una nova norma de bloqueig per el grup. Aquesta norma s'aplicarà a tots els navegadors dels
+                    alumnes del grup.
                 </div>
-                <div class="tab-pane marge fade" id="pills-llistablanca" role="tabpanel" aria-labelledby="pills-llistablanca-tab">
-                    Crea una nova norma llista blanca per el grup. Aquesta norma s'aplicarà a tots els navegadors dels alumnes del grup.
+                <div aria-labelledby="pills-llistablancawebweb-tab" class="tab-pane marge fade"
+                     id="pills-llistablancaweb"
+                     role="tabpanel">
+                    Crea una nova norma llista blanca per el grup. Aquesta norma s'aplicarà a tots els navegadors dels
+                    alumnes del grup.
                     No es recomana crear llistes blanques si hi ha altres normes de bloqueig actives.
 
                 </div>
@@ -60,54 +77,135 @@
 
             <div class="form marge">
                 <div class="form-group" style="margin-bottom: 10px">
-                    <label for="pbk_modal_severity">Tipus de bloqueig</label>
-                    <select class="form-control round" id="pbk_modal_severity">
+                    <label for="pbk_modalblockweb_severity">Tipus de bloqueig</label>
+                    <select class="form-control round" id="pbk_modalblockweb_severity">
                         <option value="block">Bloca</option>
                         <option value="warn">Només avís</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <div style="display: flex;justify-content: space-between;">
-                        <label for="pbk_modal_host">host</label>
+                        <label for="pbk_modalblockweb_host">host</label>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="pbk_modal_host_switch" checked>
+                            <input checked class="form-check-input" id="pbk_modalblockweb_host_switch" type="checkbox">
                         </div>
                     </div>
-                    <input class="form-control" placeholder="example.com" id="pbk_modal_host"/>
+                    <input class="form-control" id="pbk_modalblockweb_host" placeholder="example.com"/>
 
                     <div style="display: flex;justify-content: space-between;">
-                        <label for="pbk_modal_pathname">path</label>
+                        <label for="pbk_modalblockweb_pathname">path</label>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="pbk_modal_pathname_switch" checked>
+                            <input checked class="form-check-input" id="pbk_modalblockweb_pathname_switch"
+                                   type="checkbox">
                         </div>
                     </div>
 
-                    <input class="form-control" placeholder="/path/" id="pbk_modal_pathname"/>
+                    <input class="form-control" id="pbk_modalblockweb_pathname" placeholder="/path/"/>
 
                     <div style="display: flex;justify-content: space-between;">
-                        <label for="pbk_modal_search">cerca</label>
+                        <label for="pbk_modalblockweb_search">cerca</label>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="pbk_modal_search_switch">
+                            <input class="form-check-input" id="pbk_modalblockweb_search_switch" type="checkbox">
                         </div>
                     </div>
 
-                    <input class="form-control" placeholder="" id="pbk_modal_search"/>
+                    <input class="form-control" id="pbk_modalblockweb_search" placeholder=""/>
 
                     <div style="display: flex;justify-content: space-between;">
-                        <label for="pbk_modal_title">titol</label>
+                        <label for="pbk_modalblockweb_title">titol</label>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="pbk_modal_title_switch">
+                            <input class="form-check-input" id="pbk_modalblockweb_title_switch" type="checkbox">
                         </div>
                     </div>
 
-                    <input class="form-control" placeholder="" id="pbk_modal_title"/>
+                    <input class="form-control" id="pbk_modalblockweb_title" placeholder=""/>
                     <p></p>
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tanca</button>
-                <button type="button" class="btn btn-primary" id="pbk_modal_creanorma">Crea norma</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Tanca</button>
+                <button class="btn btn-primary" id="pbk_modalblockweb_creanorma" type="button">Crea norma</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Bloqueja App -->
+<div aria-hidden="true" aria-labelledby="bloquejaModalAppsLabel" class="modal fade text-left" id="bloquejaModalApps"
+     role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <!-- nav options -->
+            <ul class="nav nav-pills mb-3 shadow-sm" role="tablist">
+                <li class="nav-item">
+                    <a aria-controls="pills-blocalumnapps" aria-selected="true" class="nav-link active"
+                       data-bs-toggle="pill" href="#pills-blocalumnapps" id="pills-blockappsalumn-tab" role="tab">Bloqueja
+                        ALUMNE</a>
+                </li>
+                <li class="nav-item">
+                    <a aria-controls="pills-blocgrupapps" aria-selected="false" class="nav-link" data-bs-toggle="pill"
+                       href="#pills-blocgrupapps" id="pills-blockappsgrup-tab" role="tab">Bloqueja GRUP</a>
+                </li>
+            </ul>
+            <!-- content -->
+            <div class="tab-content">
+                <div aria-labelledby="pills-blocappsalumn-tab" class="tab-pane marge fade show active"
+                     id="pills-blocalumnapps"
+                     role="tabpanel">
+                    Crea una nova norma de bloqueig per l'alumne. Aquesta norma s'aplicarà a l'ordinador actiu de
+                    l'alumne.
+                </div>
+                <div aria-labelledby="pills-blocappsgrup-tab" class="tab-pane marge fade" id="pills-blocgrupapps"
+                     role="tabpanel">
+                    Crea una nova norma de bloqueig per el grup. Aquesta norma s'aplicarà a tots els ordinadors dels
+                    alumnes del grup.
+                </div>
+            </div>
+
+            <div class="form marge">
+                <div class="form-group" style="margin-bottom: 10px">
+                    <label for="pbk_modalblockweb_severity">Tipus de bloqueig</label>
+                    <select class="form-control round" id="pbk_modalblockapps_severity">
+                        <option value="block">Bloca</option>
+                        <option value="uninstall">Bloca i desinstal·la</option>
+                        <option value="force_uninstall">Bloca i desinstal·la brusc</option>
+
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div style="display: flex;justify-content: space-between;">
+                        <label for="pbk_modalblockapp_process">procés</label>
+                        <div class="form-check form-switch">
+                            <input checked class="form-check-input" id="pbk_modalblockapp_process_switch"
+                                   type="checkbox">
+                        </div>
+                    </div>
+                    <input class="form-control" id="pbk_modalblockapp_process" placeholder="example.com"/>
+
+                    <div style="display: flex;justify-content: space-between;">
+                        <label for="pbk_modalblockapp_filepath">filepath</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" id="pbk_modalblockapp_filepath_switch" type="checkbox">
+                        </div>
+                    </div>
+
+                    <input class="form-control" id="pbk_modalblockapp_filepath" placeholder="/path/"/>
+
+                    <div style="display: flex;justify-content: space-between;">
+                        <label for="pbk_modalblockapp_filepath">Cerca filepath com una expressió regular</label>
+                        <div class="form-check">
+                            <input class="form-check-input" id="pbk_modalblockapp_filepathregex_switch" type="checkbox">
+                        </div>
+                    </div>
+                    <p></p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Tanca</button>
+                <button class="btn btn-primary" id="pbk_modalblockapps_creanorma" type="button">Crea norma</button>
             </div>
         </div>
     </div>
@@ -124,30 +222,65 @@
 
 <main>
     <!-- Sidebar Historial -->
-    <div id="historialSidebar" class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 380px; display:none !important;">
+    <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" id="historialSidebar"
+         style="width: 380px; display:none !important;">
         <div class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
-            <span class="fs-5 fw-semibold" id="historialSidebarTitle" >Historial ALUMNE</span>
+            <span class="fs-5 fw-semibold" id="historialSidebarTitle">Historial ALUMNE</span>
         </div>
         <div class="list-group list-group-flush border-bottom scrollarea" id="historialSidebarContent">
         </div>
     </div>
 
     <!-- Sidebar Espai -->
-    <div id="sidebarDivider" class="b-divider"></div>
+    <div class="b-divider" id="sidebarDivider"></div>
 
     <!-- Main content -->
     <div class="main-content d-flex flex-column">
 
-        <!-- Selector de grup -->
-        <div class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
-            <span class="fs-5 fw-semibold" id="grupSelectorTitle" >Grup </span>
-            <select class="form-select" id="grupSelector" aria-label="Default select example">
+        <!-- Opcions de grup -->
+        <div class="grup-opcions p-3 link-dark text-decoration-none border-bottom">
+            <!-- Grup selector -->
+            <select aria-label="Default select example" class="form-select" id="grupSelector">
                 <option selected>Selecciona un grup</option>
             </select>
+            <div class="grup-buttons">
+                <!-- Grup status -->
+                <div class="btn-group">
+                    <button aria-expanded="false" class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown"
+                            disabled id="globalGroupGtatus" type="button">
+                        Inactiu
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" id="globalGroupStatusRuleOn">Filtre actiu</a></li>
+                        <li><a class="dropdown-item" id="globalGroupStatusRuleFree">Filtre desactivat</a></li>
+                        <li><a class="dropdown-item" id="globalGroupStatusBlockAll">Tot bloquejat</a></li>
+                    </ul>
+                </div>
+                <!-- Normes web de grup -->
+                <button class="btn btn-dark" type="button" id="globalGroupNormesWebButton" disabled>
+                    <span>
+                        <svg class="bi bi-globe-americas" fill="currentColor" height="16" viewBox="0 0 16 16"
+                               width="16" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0ZM2.04 4.326c.325 1.329 2.532 2.54 3.717 3.19.48.263.793.434.743.484-.08.08-.162.158-.242.234-.416.396-.787.749-.758 1.266.035.634.618.824 1.214 1.017.577.188 1.168.38 1.286.983.082.417-.075.988-.22 1.52-.215.782-.406 1.48.22 1.48 1.5-.5 3.798-3.186 4-5 .138-1.243-2-2-3.5-2.5-.478-.16-.755.081-.99.284-.172.15-.322.279-.51.216-.445-.148-2.5-2-1.5-2.5.78-.39.952-.171 1.227.182.078.099.163.208.273.318.609.304.662-.132.723-.633.039-.322.081-.671.277-.867.434-.434 1.265-.791 2.028-1.12.712-.306 1.365-.587 1.579-.88A7 7 0 1 1 2.04 4.327Z"></path>
+                        </svg> Normes Web
+                    </span>
+                </button>
+                <!-- Normes apps de grup -->
+                <button class="btn btn-dark" type="button" id="globalGroupNormesAppsButton" disabled>
+                    <span>
+                        <svg class="bi bi-window-stack" fill="currentColor"
+                               height="16" viewBox="0 0 16 16"
+                               width="16" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4.5 6a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1ZM6 6a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Zm2-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z"></path>
+                            <path d="M12 1a2 2 0 0 1 2 2 2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2 2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h10ZM2 12V5a2 2 0 0 1 2-2h9a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1Zm1-4v5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8H3Zm12-1V5a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v2h12Z"></path>
+                        </svg> Normes Apps
+                    </span>
+                </button>
+            </div>
         </div>
 
         <!-- Browsers d'alumnes -->
-        <div id="alumnesList"> </div>
+        <div id="alumnesList"></div>
     </div>
 
     <!-- Styles to prevent flash after JS initialization -->
@@ -166,7 +299,9 @@
     </style>
 
     <!-- Boostrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script crossorigin="anonymous"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Chrome pbk-modal-tabs JS -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/draggabilly@2.2.0/dist/draggabilly.pkgd.min.js"></script>

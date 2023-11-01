@@ -41,12 +41,17 @@ const NormaWebSchema = new mongoose.Schema({
 });
 
 const NormaAppSchema = new mongoose.Schema({
-    appId: {
+    processName: {
         type: String,
-        unique: true
+    },
+    processPath: {
+        type: String
+    },
+    processPathisRegex: {
+        type: Boolean
     },
     severity: {
-        type: String // block, allow, uninstall
+        type: String // block, allow, uninstall, force_uninstall
     }
 });
 
@@ -60,6 +65,9 @@ const GrupSchema = new mongoose.Schema({
     },
     normesWeb: {
         type: [NormaWebSchema]
+    },
+    normesApp: {
+        type: [NormaAppSchema]
     },
     status: {
         type: String // Blocked, RuleFree, RuleOn
@@ -91,6 +99,9 @@ const AlumneSchema = new mongoose.Schema({
     normesWeb: {
         type: [NormaWebSchema]
     },
+    normesApp: {
+        type: [NormaAppSchema]
+    }
 });
 
 const AdminSchema = new mongoose.Schema({
@@ -158,6 +169,9 @@ const HistorialAppsSchema = new mongoose.Schema({
         type: String
     },
     iconB64: {
+        type: String
+    },
+    iconSVG: {
         type: String
     },
     alumneid: {

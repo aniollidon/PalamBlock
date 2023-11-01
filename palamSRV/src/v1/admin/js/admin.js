@@ -8,17 +8,21 @@ const socket = io(':4000', {
     }
 });
 
-const hblockModal = document.getElementById('bloquejaModal')
-const blockModal = new bootstrap.Modal(hblockModal)
+const hblockModalWeb = document.getElementById('bloquejaModalWeb')
+const blockModalWeb = new bootstrap.Modal(hblockModalWeb)
+const hblockModalApps = document.getElementById('bloquejaModalApps')
+const blockModalApps = new bootstrap.Modal(hblockModalApps)
 const hnormesModal = document.getElementById('normesModal')
 const normesModal = new bootstrap.Modal(hnormesModal)
 let normesWebInfo = {}
+let normesAppsInfo = {}
 let grupAlumnesList = {}
 let visibilityAlumnes = {}
 let chromeTabsObjects = {}
-function getGrup(alumneId){
-    for(let grup in grupAlumnesList){
-        if(alumneId in grupAlumnesList[grup])
+
+function getGrup(alumneId) {
+    for (let grup in grupAlumnesList) {
+        if (alumneId in grupAlumnesList[grup].alumnes)
             return grup;
     }
 
@@ -29,28 +33,18 @@ function creaAppMenuJSON(alumne, app) {
     // Opcions del menu contextual
 
     const onBloqueja = (info) => {
-        console.log("bloqueja app")
+        obreDialogBloquejaApps(info, alumne, "blocalumn");
     }
-
-    const onDesinstalla = (info) => {
-        console.log("uninstall app")
-    }
-
-    const onFoceDesinstalla = (info) => {
-        console.log("force uninstall app")
-    }
-
     const onTanca = (info) => {
         console.log("onTanca app")
     }
 
-    return  [
+    return [
         {text: "Tanca " + app, do: onTanca},
-        {text: "Bloqueja " + app, do: onBloqueja},
-        {text: "Desinstal·la " + app, do: onDesinstalla},
-        {text: "Desinstal·la bruscament " + app, do: onFoceDesinstalla},
+        {text: "Bloqueja " + app, do: onBloqueja}
     ]
 }
+
 function creaWebMenuJSON(alumne) {
     // Opcions del menu contextual
     const obreUrl = (info) => {
@@ -59,15 +53,15 @@ function creaWebMenuJSON(alumne) {
 
     }
     const onBloqueja = (info) => {
-        obreDialogBloqueja(info, alumne, "blocalumn");
+        obreDialogBloquejaWeb(info, alumne, "blocalumn");
     }
 
     const onBloquejaGrup = (info) => {
-        obreDialogBloqueja(info, alumne, "blocgrup");
+        obreDialogBloquejaWeb(info, alumne, "blocgrup");
     }
 
     const onAfegeixLlistaBlanca = (info) => {
-        obreDialogBloqueja(info, alumne, "llistablanca");
+        obreDialogBloquejaWeb(info, alumne, "llistablanca");
     }
 
     return [
@@ -77,7 +71,8 @@ function creaWebMenuJSON(alumne) {
         {text: "Afegeix a llista blanca", do: onAfegeixLlistaBlanca},
     ]
 }
-function toogleHistorial(alumne, tipus = "web"){
+
+function toogleHistorial(alumne, tipus = "web") {
     const historialSidebar = document.getElementById("historialSidebar");
 
     const prevTipus = historialSidebar.getAttribute("data-historial");
@@ -86,44 +81,44 @@ function toogleHistorial(alumne, tipus = "web"){
     historialSidebar.setAttribute("data-historial", tipus);
     historialSidebar.setAttribute("data-alumne", alumne);
 
-    if(prevTipus !== tipus || prevAlumne !== alumne || historialSidebar.style.display.includes("none")){
-        if(tipus === "web")
-            socket.emit("getHistorialWeb", { alumne: alumne });
+    if (prevTipus !== tipus || prevAlumne !== alumne || historialSidebar.style.display.includes("none")) {
+        if (tipus === "web")
+            socket.emit("getHistorialWeb", {alumne: alumne});
         else
-            socket.emit("getHistorialApps", { alumne: alumne });
+            socket.emit("getHistorialApps", {alumne: alumne});
 
         const historialSideBarTitle = document.getElementById("historialSidebarTitle");
         const historialSideBarContent = document.getElementById("historialSidebarContent");
         historialSideBarTitle.innerHTML = `Historial ${(tipus === "web" ? "web" : "d'Apps")} de l'alumne ${alumne}`;
         historialSideBarContent.innerHTML = "";
         historialSidebar.style.display = "";
-    }
-    else {
+    } else {
         historialSidebar.style.setProperty('display', 'none', 'important');
         // Refresca els chrome tabs
-        if(chromeTabsObjects[alumne])
-            for(let b in chromeTabsObjects[alumne])
+        if (chromeTabsObjects[alumne])
+            for (let b in chromeTabsObjects[alumne])
                 chromeTabsObjects[alumne][b].layoutTabs();
     }
 
 
 }
-function obreDialogBloqueja(info, alumne, action, severity = "block") {
+
+function obreDialogBloquejaWeb(info, alumne, action, severity = "block") {
     const ugrup = getGrup(alumne);
     const ualumne = alumne.toUpperCase();
-    const blocalumnLink = document.getElementById("pills-blocalumn-tab");
-    const blocgrupLink = document.getElementById("pills-blocgrup-tab");
-    const llistablancaLink = document.getElementById("pills-llistablanca-tab");
-    const severitySelect = document.getElementById("pbk_modal_severity");
-    const hostInput = document.getElementById("pbk_modal_host");
-    const pathnameInput = document.getElementById("pbk_modal_pathname");
-    const searchInput = document.getElementById("pbk_modal_search");
-    const titleInput = document.getElementById("pbk_modal_title");
-    const hostSwitch = document.getElementById("pbk_modal_host_switch");
-    const pathnameSwitch = document.getElementById("pbk_modal_pathname_switch");
-    const searchSwitch = document.getElementById("pbk_modal_search_switch");
-    const titleSwitch = document.getElementById("pbk_modal_title_switch");
-    const normaButton = document.getElementById("pbk_modal_creanorma");
+    const blocalumnLink = document.getElementById("pills-blocwebalumn-tab");
+    const blocgrupLink = document.getElementById("pills-blocwebgrup-tab");
+    const llistablancaLink = document.getElementById("pills-llistablancawebweb-tab");
+    const severitySelect = document.getElementById("pbk_modalblockweb_severity");
+    const hostInput = document.getElementById("pbk_modalblockweb_host");
+    const pathnameInput = document.getElementById("pbk_modalblockweb_pathname");
+    const searchInput = document.getElementById("pbk_modalblockweb_search");
+    const titleInput = document.getElementById("pbk_modalblockweb_title");
+    const hostSwitch = document.getElementById("pbk_modalblockweb_host_switch");
+    const pathnameSwitch = document.getElementById("pbk_modalblockweb_pathname_switch");
+    const searchSwitch = document.getElementById("pbk_modalblockweb_search_switch");
+    const titleSwitch = document.getElementById("pbk_modalblockweb_title_switch");
+    const normaButton = document.getElementById("pbk_modalblockweb_creanorma");
     let normaWhoSelection = "alumne";
     let normaWhoId = alumne;
     let normaMode = "blacklist";
@@ -132,16 +127,6 @@ function obreDialogBloqueja(info, alumne, action, severity = "block") {
     blocgrupLink.innerHTML = `Bloqueja ${ugrup}`;
     llistablancaLink.innerHTML = `Crea llista blanca ${ugrup}`;
 
-    if(action === "blocalumn") {
-        blocalumnLink.click();
-    }
-    else if(action === "blocgrup") {
-        blocgrupLink.click();
-    }
-    else if(action === "llistablanca") {
-        llistablancaLink.click();
-    }
-
     severitySelect.value = severity;
     hostInput.value = info.webPage.host;
     pathnameInput.value = info.webPage.pathname;
@@ -149,11 +134,10 @@ function obreDialogBloqueja(info, alumne, action, severity = "block") {
     titleInput.value = info.webPage.title;
 
 
-    if(info.webPage.pathname === "/" || info.webPage.pathname === ""){
+    if (info.webPage.pathname === "/" || info.webPage.pathname === "") {
         pathnameSwitch.checked = false;
         pathnameInput.setAttribute("disabled", "disabled");
-    }
-    else {
+    } else {
         pathnameSwitch.checked = true;
         pathnameInput.removeAttribute("disabled");
     }
@@ -164,10 +148,10 @@ function obreDialogBloqueja(info, alumne, action, severity = "block") {
     titleSwitch.checked = false;
     titleInput.setAttribute("disabled", "disabled");
 
-    blocalumnLink.onclick =  (event) => {
-       normaWhoSelection = "alumne";
-       normaWhoId = alumne;
-       normaMode = "blacklist";
+    blocalumnLink.onclick = (event) => {
+        normaWhoSelection = "alumne";
+        normaWhoId = alumne;
+        normaMode = "blacklist";
     };
 
     blocgrupLink.onclick = (event) => {
@@ -210,8 +194,16 @@ function obreDialogBloqueja(info, alumne, action, severity = "block") {
             titleInput.setAttribute("disabled", "disabled");
     };
 
-    normaButton.onclick= (event) => {
-        socket.emit("addNorma", {
+    if (action === "blocalumn") {
+        blocalumnLink.click();
+    } else if (action === "blocgrup") {
+        blocgrupLink.click();
+    } else if (action === "llistablanca") {
+        llistablancaLink.click();
+    }
+
+    normaButton.onclick = (event) => {
+        socket.emit("addNormaWeb", {
             who: normaWhoSelection,
             whoid: normaWhoId,
             severity: severitySelect.value,
@@ -224,24 +216,110 @@ function obreDialogBloqueja(info, alumne, action, severity = "block") {
             //enabled_on: undefined
         })
 
-        blockModal.hide();
+        blockModalWeb.hide();
     };
 
-    blockModal.show();
+    blockModalWeb.show();
 }
-function obreDialogNormes(alumne){
-    const modalTitle = document.getElementById("pbk_modal_normes_title");
-    const container =  document.getElementById("pbk_modal_normes");
-    const list = document.createElement("div");
 
+function obreDialogBloquejaApps(info, alumne, action, severity = "block") {
+    const ugrup = getGrup(alumne);
+    const ualumne = alumne.toUpperCase();
+    const blocalumnLink = document.getElementById("pills-blockappsalumn-tab");
+    const blocgrupLink = document.getElementById("pills-blockappsgrup-tab");
+    const severitySelect = document.getElementById("pbk_modalblockapps_severity");
+    const processInput = document.getElementById("pbk_modalblockapp_process");
+    const processSwitch = document.getElementById("pbk_modalblockapp_process_switch");
+    const filepathInput = document.getElementById("pbk_modalblockapp_filepath");
+    const filepathSwitch = document.getElementById("pbk_modalblockapp_filepath_switch");
+    const filepathregexSwitch = document.getElementById("pbk_modalblockapp_filepathregex_switch");
+    const normaButton = document.getElementById("pbk_modalblockapps_creanorma");
+    let normaWhoSelection = "alumne";
+    let normaWhoId = alumne;
+
+    blocalumnLink.innerHTML = `Bloqueja ${ualumne}`;
+    blocgrupLink.innerHTML = `Bloqueja ${ugrup}`;
+
+    if (action === "blocalumn") {
+        blocalumnLink.click();
+    } else if (action === "blocgrup") {
+        blocgrupLink.click();
+    }
+
+    severitySelect.value = severity;
+    processInput.value = info.name;
+    filepathInput.value = info.path;
+    filepathInput.setAttribute("disabled", "disabled");
+    filepathregexSwitch.checked = false;
+    filepathregexSwitch.setAttribute("disabled", "disabled");
+
+    processSwitch.onchange = (event) => {
+        if (event.target.checked) {
+            processInput.removeAttribute("disabled");
+            filepathInput.setAttribute("disabled", "disabled");
+            filepathregexSwitch.setAttribute("disabled", "disabled");
+
+        } else {
+            processInput.setAttribute("disabled", "disabled");
+            filepathInput.removeAttribute("disabled");
+            filepathregexSwitch.removeAttribute("disabled");
+        }
+        filepathSwitch.checked = !event.target.checked;
+    }
+
+    filepathSwitch.onchange = (event) => {
+        if (event.target.checked) {
+            processInput.setAttribute("disabled", "disabled");
+            filepathInput.removeAttribute("disabled");
+            filepathregexSwitch.removeAttribute("disabled");
+        } else {
+            processInput.removeAttribute("disabled");
+            filepathInput.setAttribute("disabled", "disabled");
+            filepathregexSwitch.setAttribute("disabled", "disabled");
+        }
+        processSwitch.checked = !event.target.checked;
+    };
+
+    blocalumnLink.onclick = (event) => {
+        normaWhoSelection = "alumne";
+        normaWhoId = alumne;
+    };
+
+    blocgrupLink.onclick = (event) => {
+        normaWhoSelection = "grup";
+        normaWhoId = ugrup;
+    };
+
+
+    normaButton.onclick = (event) => {
+        socket.emit("addNormaApps", {
+            who: normaWhoSelection,
+            whoid: normaWhoId,
+            severity: severitySelect.value,
+            processName: (processSwitch.checked ? processInput.value : undefined),
+            processPath: (filepathSwitch.checked ? filepathInput.value : undefined),
+            processPathisRegex: (filepathSwitch.checked ? filepathregexSwitch.checked : undefined)
+        })
+
+        blockModalApps.hide();
+    };
+
+    blockModalApps.show();
+}
+
+function obreDialogNormesWeb(whoid, who = "alumne") {
+    const modalTitle = document.getElementById("pbk_modal_normes_title");
+    const container = document.getElementById("pbk_modal_normes");
+    const list = document.createElement("div");
+    const whos = (who === "alumne" ? "alumnes" : "grups");
     container.innerHTML = "";
-    modalTitle.innerHTML = "Normes per " + alumne;
+    modalTitle.innerHTML = `Normes web per ${whoid}`;
 
     list.setAttribute("class", "list-group");
     container.appendChild(list);
 
-    for (const norma in normesWebInfo["alumnes"][alumne]) {
-        if(normesWebInfo["alumnes"][alumne][norma].removed === true) continue;
+    for (const norma in normesWebInfo[whos][whoid]) {
+        if (normesWebInfo[whos][whoid][norma].removed === true) continue;
 
         const listItem = document.createElement("div");
         listItem.setAttribute("class", "list-group-item list-group-item-action flex-column align-items-start");
@@ -249,15 +327,15 @@ function obreDialogNormes(alumne){
         itemHeading.setAttribute("class", "d-flex w-100 justify-content-between");
         const itemTitle = document.createElement("h5");
         itemTitle.setAttribute("class", "mb-1");
-        const severity = normesWebInfo["alumnes"][alumne][norma].severity;
-        itemTitle.innerHTML = (severity === "block"? "Bloqueja" : "Avisa" );
+        const severity = normesWebInfo[whos][whoid][norma].severity;
+        itemTitle.innerHTML = (severity === "block" ? "Bloqueja" : "Avisa");
 
-        if(normesWebInfo["alumnes"][alumne][norma].mode !== "blacklist")
+        if (normesWebInfo[whos][whoid][norma].mode !== "blacklist")
             itemTitle.innerHTML += " si no coincideix";
 
         const itemSubtitle = document.createElement("small");
-        itemSubtitle.innerHTML = normesWebInfo["alumnes"][alumne][norma].enabled_on;
-        const trash  = document.createElement("button");
+        itemSubtitle.innerHTML = normesWebInfo[whos][whoid][norma].enabled_on;
+        const trash = document.createElement("button");
         trash.setAttribute("type", "button");
         trash.setAttribute("class", "btn btn-outline-secondary btn-sm");
         trash.innerHTML =
@@ -275,11 +353,11 @@ function obreDialogNormes(alumne){
                 <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
             </svg>`
         trash.onclick = (event) => {
-            socket.emit("removeNorma", { normaId: norma, who: "alumne", whoid: alumne });
-            normesWebInfo["alumnes"][alumne][norma].removed = true;
-            obreDialogNormes(alumne);
+            socket.emit("removeNormaWeb", {normaId: norma, who: who, whoid: whoid});
+            normesWebInfo[whos][whoid][norma].removed = true;
+            obreDialogNormesWeb(whoid, who);
         };
-        pencil.onclick =(event) => {
+        pencil.onclick = (event) => {
             //TODO edit norma
             alert("Aquesta funció encara no està implementada")
         };
@@ -290,21 +368,109 @@ function obreDialogNormes(alumne){
         listItem.appendChild(itemHeading);
         const itemText = document.createElement("p");
         itemText.setAttribute("class", "mb-1");
-        if(normesWebInfo["alumnes"][alumne][norma].hosts_list.length > 0)
-            itemText.innerHTML = "<b>Hosts:</b> " + normesWebInfo["alumnes"][alumne][norma].hosts_list + "<br>";
-        if(normesWebInfo["alumnes"][alumne][norma].protocols_list.length > 0)
-            itemText.innerHTML += "<b>Protocols:</b> " + normesWebInfo["alumnes"][alumne][norma].protocols_list + "<br>";
-        if(normesWebInfo["alumnes"][alumne][norma].searches_list.length > 0)
-            itemText.innerHTML += "<b>Searches:</b> " + normesWebInfo["alumnes"][alumne][norma].searches_list + "<br>";
-        if(normesWebInfo["alumnes"][alumne][norma].pathnames_list.length > 0)
-            itemText.innerHTML += "<b>Pathnames:</b> " + normesWebInfo["alumnes"][alumne][norma].pathnames_list + "<br>";
-        if(normesWebInfo["alumnes"][alumne][norma].titles_list.length > 0)
-            itemText.innerHTML += "<b>Titles:</b> " + normesWebInfo["alumnes"][alumne][norma].titles_list + "<br>";
+        if (normesWebInfo[whos][whoid][norma].hosts_list.length > 0)
+            itemText.innerHTML = "<b>Hosts:</b> " + normesWebInfo[whos][whoid][norma].hosts_list + "<br>";
+        if (normesWebInfo[whos][whoid][norma].protocols_list.length > 0)
+            itemText.innerHTML += "<b>Protocols:</b> " + normesWebInfo[whos][whoid][norma].protocols_list + "<br>";
+        if (normesWebInfo[whos][whoid][norma].searches_list.length > 0)
+            itemText.innerHTML += "<b>Searches:</b> " + normesWebInfo[whos][whoid][norma].searches_list + "<br>";
+        if (normesWebInfo[whos][whoid][norma].pathnames_list.length > 0)
+            itemText.innerHTML += "<b>Pathnames:</b> " + normesWebInfo[whos][whoid][norma].pathnames_list + "<br>";
+        if (normesWebInfo[whos][whoid][norma].titles_list.length > 0)
+            itemText.innerHTML += "<b>Titles:</b> " + normesWebInfo[whos][whoid][norma].titles_list + "<br>";
         listItem.appendChild(itemText);
         list.appendChild(listItem);
     }
     normesModal.show();
 }
+
+function obreDialogNormesApps(whoid, who = "alumne") {
+    const modalTitle = document.getElementById("pbk_modal_normes_title");
+    const container = document.getElementById("pbk_modal_normes");
+    const list = document.createElement("div");
+    const whos = (who === "alumne" ? "alumnes" : "grups");
+
+    container.innerHTML = "";
+    modalTitle.innerHTML = `Normes d'Apps per ${whoid}`;
+
+    list.setAttribute("class", "list-group");
+    container.appendChild(list);
+
+    for (const norma in normesAppsInfo[whos][whoid]) {
+        if (normesAppsInfo[whos][whoid][norma].removed === true) continue;
+
+        const listItem = document.createElement("div");
+        listItem.setAttribute("class", "list-group-item list-group-item-action flex-column align-items-start");
+        const itemHeading = document.createElement("div");
+        itemHeading.setAttribute("class", "d-flex w-100 justify-content-between");
+        const itemTitle = document.createElement("h5");
+        itemTitle.setAttribute("class", "mb-1");
+        const severity = normesAppsInfo[whos][whoid][norma].severity;
+
+        switch (severity) {
+            case "block":
+                itemTitle.innerHTML = "Bloqueja";
+                break;
+            case "uninstall":
+                itemTitle.innerHTML = "Desinstal·la";
+                break;
+            case "force_uninstall":
+                itemTitle.innerHTML = "Desinstal·la bruscament";
+                break;
+            default:
+                itemTitle.innerHTML = "Error";
+                break;
+        }
+
+        const itemSubtitle = document.createElement("small");
+        const trash = document.createElement("button");
+        trash.setAttribute("type", "button");
+        trash.setAttribute("class", "btn btn-outline-secondary btn-sm");
+        trash.innerHTML =
+            `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"></path>
+                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"></path>
+            </svg>`
+
+        const pencil = document.createElement("button");
+        pencil.setAttribute("type", "button");
+        pencil.setAttribute("class", "btn btn-outline-secondary btn-sm mx-1");
+        pencil.innerHTML =
+            `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+            </svg>`
+        trash.onclick = (event) => {
+            socket.emit("removeNormaApps", {normaId: norma, who: who, whoid: whoid});
+            normesAppsInfo[whos][whoid][norma].removed = true;
+            obreDialogNormesApps(whoid, who);
+        };
+        pencil.onclick = (event) => {
+            //TODO edit norma
+            alert("Aquesta funció encara no està implementada")
+        };
+        itemSubtitle.appendChild(trash);
+        itemSubtitle.appendChild(pencil);
+        itemHeading.appendChild(itemTitle);
+        itemHeading.appendChild(itemSubtitle);
+        listItem.appendChild(itemHeading);
+        const itemText = document.createElement("p");
+        itemText.setAttribute("class", "mb-1");
+        itemText.innerHTML = "";
+
+        if (normesAppsInfo[whos][whoid][norma].processName)
+            itemText.innerHTML += "<b>ProcessName:</b> " + normesAppsInfo[whos][whoid][norma].processName + "<br>";
+        if (normesAppsInfo[whos][whoid][norma].processPath)
+            itemText.innerHTML += "<b>processPath:</b> " + normesAppsInfo[whos][whoid][norma].processPath + "<br>";
+        if (normesAppsInfo[whos][whoid][norma].processPathisRegex)
+            itemText.innerHTML += "<b>processPath amb regex:</b>actiu<br>";
+
+        listItem.appendChild(itemText);
+        list.appendChild(listItem);
+    }
+    normesModal.show();
+}
+
 socket.on('alumnesActivity', function (data) {
     let alumnesList = document.getElementById("alumnesList");
     alumnesList.innerHTML = "";
@@ -313,20 +479,82 @@ socket.on('alumnesActivity', function (data) {
     for (const alumne in data) {
         if (Object.hasOwnProperty.call(data, alumne)) {
             const alumneInfo = data[alumne];
-            let alumneDiv = document.createElement("div");
-            alumneDiv.setAttribute("class", "alumne-browser-container");
-            alumneDiv.setAttribute("id", alumne + "-browser-container");
+            const alumneDiv = document.createElement("div");
+            alumneDiv.setAttribute("class", "alumne-container");
+            alumneDiv.setAttribute("id", alumne + "-container");
             alumneDiv.style.display = visibilityAlumnes[alumne] ? "" : "none";
 
-            let alumneDivHeader = document.createElement("div");
-            alumneDivHeader.setAttribute("class", "alumne-browser-header");
-            alumneDivHeader.setAttribute("id", alumne + "-browser-header");
+            const alumneDivHeader = document.createElement("div");
+            alumneDivHeader.setAttribute("class", "alumne-header");
+            alumneDivHeader.setAttribute("id", alumne + "-header");
             alumneDiv.appendChild(alumneDivHeader);
             alumneDivHeader.innerHTML = ` <h3>Alumne: ${alumne}</h3>`;
             alumnesList.appendChild(alumneDiv);
 
+            const alumneDivButtons = document.createElement("div");
+            alumneDivButtons.setAttribute("class", "alumne-buttons");
+            alumneDivHeader.appendChild(alumneDivButtons);
+
+            // Status button
+            const alumneStatusButton = document.createElement("div");
+            alumneStatusButton.setAttribute("class", "btn-group");
+            alumneStatusButton.setAttribute("id", alumne + "-status-button");
+            const alumneStatusButtonMain = document.createElement("button");
+            alumneStatusButtonMain.setAttribute("type", "button");
+            alumneStatusButtonMain.setAttribute("class", "btn dropdown-toggle");
+            alumneStatusButtonMain.setAttribute("data-bs-toggle", "dropdown");
+            alumneStatusButtonMain.setAttribute("aria-expanded", "false");
+            alumneStatusButton.appendChild(alumneStatusButtonMain);
+            const alumneStatusButtonDropdown = document.createElement("ul");
+            alumneStatusButtonDropdown.setAttribute("class", "dropdown-menu");
+            alumneStatusButton.appendChild(alumneStatusButtonDropdown);
+
+            function setAlumneStatus(status) {
+                alumneStatusButtonMain.classList.remove("btn-success");
+                alumneStatusButtonMain.classList.remove("btn-danger");
+                alumneStatusButtonMain.classList.remove("btn-warning");
+
+                switch (status) {
+                    case "RuleOn":
+                        alumneStatusButtonMain.classList.add("btn-success");
+                        alumneStatusButtonMain.innerHTML = "Filtre actiu";
+                        break;
+                    case "RuleFree":
+                        alumneStatusButtonMain.classList.add("btn-warning");
+                        alumneStatusButtonMain.innerHTML = "Desactivat";
+                        break;
+                    case "Blocked":
+                        alumneStatusButtonMain.classList.add("btn-danger");
+                        alumneStatusButtonMain.innerHTML = "Bloquejat";
+                        break;
+                }
+            }
+
+            for (const s of [
+                {id: "RuleOn", text: "Filtre actiu"},
+                {id: "RuleFree", text: "Filtre desactivat"},
+                {id: "Blocked", text: "Tot bloquejat"}
+            ]) {
+                const li = document.createElement("li");
+                const a = document.createElement("a");
+                a.setAttribute("class", "dropdown-item");
+                a.setAttribute("id", alumne + "-status-" + s.id);
+                a.innerHTML = s.text;
+                a.onclick = () => {
+                    socket.emit("setAlumneStatus", {alumne: alumne, status: s.id});
+                    setAlumneStatus(s.id);
+                }
+                li.appendChild(a);
+                alumneStatusButtonDropdown.appendChild(li);
+            }
+
+            setAlumneStatus(alumneInfo.status);
+            alumneDivButtons.appendChild(alumneStatusButton);
+            alumneDivButtons.appendChild(document.createTextNode(' '))
+
+
             // Normes web button
-            let normesWebButton = document.createElement("button");
+            const normesWebButton = document.createElement("button");
             normesWebButton.setAttribute("class", "btn btn-dark");
             normesWebButton.setAttribute("type", "button");
             const NormesWebInner = document.createElement("div");
@@ -336,12 +564,12 @@ socket.on('alumnesActivity', function (data) {
                 </svg> Normes Web`
             normesWebButton.appendChild(NormesWebInner);
 
-            normesWebButton.onclick = () =>obreDialogNormes(alumne)
-            alumneDiv.appendChild(normesWebButton);
-            alumneDiv.appendChild(document.createTextNode(' '));
+            normesWebButton.onclick = () => obreDialogNormesWeb(alumne, "alumne")
+            alumneDivButtons.appendChild(normesWebButton);
+            alumneDivButtons.appendChild(document.createTextNode(' '));
 
             // Historial Web button
-            let historialWebButton = document.createElement("button");
+            const historialWebButton = document.createElement("button");
             historialWebButton.setAttribute("class", "btn btn-dark");
             historialWebButton.setAttribute("type", "button");
             const historialWebInner = document.createElement("div");
@@ -353,12 +581,12 @@ socket.on('alumnesActivity', function (data) {
                 </svg> Historial Web`
             historialWebButton.appendChild(historialWebInner);
 
-            historialWebButton.onclick = () =>toogleHistorial(alumne, "web")
-            alumneDiv.appendChild(historialWebButton);
-            alumneDiv.appendChild(document.createTextNode(' '))
+            historialWebButton.onclick = () => toogleHistorial(alumne, "web")
+            alumneDivButtons.appendChild(historialWebButton);
+            alumneDivButtons.appendChild(document.createTextNode(' '))
 
             // Normes App button
-            let normesAppButton = document.createElement("button");
+            const normesAppButton = document.createElement("button");
             normesAppButton.setAttribute("class", "btn btn-dark");
             normesAppButton.setAttribute("type", "button");
             const NormesAppInner = document.createElement("div");
@@ -369,12 +597,12 @@ socket.on('alumnesActivity', function (data) {
                 </svg> Normes Apps`
             normesAppButton.appendChild(NormesAppInner);
 
-            normesAppButton.onclick = () =>obreDialogNormes(alumne)
-            alumneDiv.appendChild(normesAppButton);
-            alumneDiv.appendChild(document.createTextNode(' '));
+            normesAppButton.onclick = () => obreDialogNormesApps(alumne);
+            alumneDivButtons.appendChild(normesAppButton);
+            alumneDivButtons.appendChild(document.createTextNode(' '));
 
             // Historial App button
-            let historialAppButton = document.createElement("button");
+            const historialAppButton = document.createElement("button");
             historialAppButton.setAttribute("class", "btn btn-dark");
             historialAppButton.setAttribute("type", "button");
             const historialAppInner = document.createElement("div");
@@ -386,11 +614,11 @@ socket.on('alumnesActivity', function (data) {
                 </svg> Historial Apps`
             historialAppButton.appendChild(historialAppInner);
 
-            historialAppButton.onclick = () =>toogleHistorial(alumne, "apps")
-            alumneDiv.appendChild(historialAppButton);
+            historialAppButton.onclick = () => toogleHistorial(alumne, "apps")
+            alumneDivButtons.appendChild(historialAppButton);
 
             // Apps List
-            let alumneAppsDiv = document.createElement("div");
+            const alumneAppsDiv = document.createElement("div");
 
             // Translate to javscript
             const w11_nav_container = document.createElement("div");
@@ -401,18 +629,23 @@ socket.on('alumnesActivity', function (data) {
             for (const app in alumneInfo.apps) {
                 if (Object.hasOwnProperty.call(alumneInfo.apps, app)) {
                     const appInfo = alumneInfo.apps[app];
-                    if(!appInfo.opened) continue;
+                    if (!appInfo.opened) continue;
                     const w11_app = document.createElement("div");
                     w11_app.setAttribute("class", "w11 app-div");
                     w11_app.setAttribute("title", appInfo.name + ": " + appInfo.title);
-                    if(appInfo.iconB64){
+                    if (appInfo.iconB64) {
                         const icon = document.createElement("img");
                         icon.setAttribute("src", "data:image/png;base64," + appInfo.iconB64);
                         icon.setAttribute("class", "app-icon");
                         icon.setAttribute("style", "width: 90%; height: 90%;");
                         w11_app.appendChild(icon);
-                    }
-                    else {
+                    } else if (appInfo.iconSVG) {
+                        const icon = document.createElement("span");
+                        icon.setAttribute("class", "app-icon");
+                        icon.setAttribute("style", "width: 90%; height: 90%;");
+                        icon.innerHTML = appInfo.iconSVG;
+                        w11_app.appendChild(icon);
+                    } else {
                         const defaultIcon = document.createElement("img");
                         defaultIcon.setAttribute("src", "img/undefined_app.png");
                         defaultIcon.setAttribute("class", "app-icon");
@@ -435,14 +668,14 @@ socket.on('alumnesActivity', function (data) {
             alumneDiv.appendChild(alumneAppsDiv);
 
             // Browsers List
-            let alumneBrowsersDiv = document.createElement("div");
+            const alumneBrowsersDiv = document.createElement("div");
             alumneBrowsersDiv.setAttribute("class", "browsers");
             alumneDiv.appendChild(alumneBrowsersDiv);
 
             for (const browser in alumneInfo.browsers) {
                 if (Object.hasOwnProperty.call(alumneInfo.browsers, browser)) {
                     const browserInfo = alumneInfo.browsers[browser];
-                    if(!browserInfo.opened) continue;
+                    if (!browserInfo.opened) continue;
                     /*let tbrowserDiv = document.createElement("div");
                     tbrowserDiv.setAttribute("class", "browser");
                     tbrowserDiv.setAttribute("id", browser);
@@ -453,48 +686,53 @@ socket.on('alumnesActivity', function (data) {
                     tbrowserDiv.appendChild(tbrowserTabsDiv);*/
 
                     // Create a browser
-                    let browserDiv = document.createElement("div");
+                    const browserDiv = document.createElement("div");
                     browserDiv.setAttribute("class", "chrome-tabs");
-                    browserDiv.setAttribute("id", browser+ "-browser");
+                    browserDiv.setAttribute("id", browser + "-browser");
                     browserDiv.style = "--tab-content-margin: 9px;";
                     browserDiv.setAttribute("data-chrome-tabs-instance-id", browser);
                     alumneBrowsersDiv.appendChild(browserDiv);
 
-                    let browserInfoDiv = document.createElement("div");
+                    const browserInfoDiv = document.createElement("div");
                     browserInfoDiv.setAttribute("class", "browser-info");
-                    let browserIcon = document.createElement("img");
-                    browserIcon.setAttribute("src", "img/" +browserInfo.browser + ".png");
+                    const browserIcon = document.createElement("img");
+                    browserIcon.setAttribute("src", "img/" + browserInfo.browser + ".png");
                     browserIcon.setAttribute("class", "browser-icon");
                     browserInfoDiv.appendChild(browserIcon);
                     browserDiv.appendChild(browserInfoDiv);
 
-                    let browserContent = document.createElement("div");
+                    const browserContent = document.createElement("div");
                     browserContent.setAttribute("class", "chrome-tabs-content");
                     browserDiv.appendChild(browserContent);
 
-                    let browserTabsBottomBar = document.createElement("div");
+                    const browserTabsBottomBar = document.createElement("div");
                     browserTabsBottomBar.setAttribute("class", "chrome-tabs-bottom-bar");
                     browserDiv.appendChild(browserTabsBottomBar);
 
                     const menu_options = creaWebMenuJSON(alumne);
 
                     // init chrome tabs
-                    if(!chromeTabsObjects[alumne])
+                    if (!chromeTabsObjects[alumne])
                         chromeTabsObjects[alumne] = {};
                     chromeTabsObjects[alumne][browser] = new ChromeTabs()
                     chromeTabsObjects[alumne][browser].init(browserDiv, menu_options)
 
                     //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
                     //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
-                    browserDiv.addEventListener('tabRemove', ({ detail }) => {
+                    browserDiv.addEventListener('tabRemove', ({detail}) => {
                         console.log('Tab removed', detail.tabEl)
-                        socket.emit("closeTab", { alumne: alumne, browser: browserInfo.browser, browserId: browserInfo.browserId, tabId: detail.tabEl.info.tabId })
+                        socket.emit("closeTab", {
+                            alumne: alumne,
+                            browser: browserInfo.browser,
+                            browserId: browserInfo.browserId,
+                            tabId: detail.tabEl.info.tabId
+                        })
                     });
 
                     for (const tab in browserInfo.tabs) {
                         if (Object.hasOwnProperty.call(browserInfo.tabs, tab)) {
                             const tabInfo = browserInfo.tabs[tab];
-                            if(!tabInfo.opened) continue;
+                            if (!tabInfo.opened) continue;
                             /*let ttabDiv = document.createElement("div");
                             ttabDiv.setAttribute("class", "tab");
                             ttabDiv.setAttribute("id", tab);
@@ -503,7 +741,7 @@ socket.on('alumnesActivity', function (data) {
                             tbrowserTabsDiv.appendChild(ttabDiv);*/
                             chromeTabsObjects[alumne][browser].addTab({
                                 title: tabInfo.webPage.title,
-                                favicon: tabInfo.webPage.favicon ?  tabInfo.webPage.favicon :
+                                favicon: tabInfo.webPage.favicon ? tabInfo.webPage.favicon :
                                     (tabInfo.webPage.protocol === "chrome:" ? undefined : "img/undefined_favicon.png"),
                                 info: tabInfo
                             }, {
@@ -521,8 +759,8 @@ socket.on('grupAlumnesList', function (data) {
     grupAlumnesList = data;
 
     // Prepara visibilitat
-    for(let grup in grupAlumnesList){
-        for(let alumne in grupAlumnesList[grup]){
+    for (let grup in grupAlumnesList) {
+        for (let alumne in grupAlumnesList[grup].alumnes) {
             visibilityAlumnes[alumne] = false;
         }
     }
@@ -536,30 +774,88 @@ socket.on('grupAlumnesList', function (data) {
     option.setAttribute("disabled", "disabled");
     grupSelector.appendChild(option);
 
-    for(let grup in grupAlumnesList){
+    for (let grup in grupAlumnesList) {
         const option = document.createElement("option");
         option.setAttribute("value", grup);
         option.innerHTML = grup;
-        grupSelector.onchange = (ev) =>{
-            for(let g in grupAlumnesList){
-                for(let a in grupAlumnesList[g]){
-                    visibilityAlumnes[a] = (g===grupSelector.value);
-                    const browserContainer = document.getElementById(a + "-browser-container")
-                    if(browserContainer)
+        grupSelector.onchange = (ev) => {
+            for (let g in grupAlumnesList) {
+                for (let a in grupAlumnesList[g].alumnes) {
+                    visibilityAlumnes[a] = (g === grupSelector.value);
+                    const browserContainer = document.getElementById(a + "-container")
+                    if (browserContainer)
                         browserContainer.style.display = visibilityAlumnes[a] ? "" : "none";
 
                     // Refresca els chrome tabs
-                    if(chromeTabsObjects[a])
-                        for(let b in chromeTabsObjects[a])
+                    if (chromeTabsObjects[a])
+                        for (let b in chromeTabsObjects[a])
                             chromeTabsObjects[a][b].layoutTabs();
                 }
             }
+
+            // Prepara el botó d'estat global
+            const grupStatus = document.getElementById("globalGroupGtatus");
+            const grupStatusRuleOn = document.getElementById("globalGroupStatusRuleOn");
+            const grupStatusRuleFree = document.getElementById("globalGroupStatusRuleFree");
+            const grupStatusBlockAll = document.getElementById("globalGroupStatusBlockAll");
+
+            function setGrupStatus(status, send = false) {
+                grupStatus.classList.remove("btn-warning");
+                grupStatus.classList.remove("btn-success");
+                grupStatus.classList.remove("btn-danger");
+
+                if(status === "RuleOn")
+                    grupStatus.classList.add("btn-success");
+                else if(status === "RuleFree")
+                    grupStatus.classList.add("btn-warning");
+                else if(status === "Blocked")
+                    grupStatus.classList.add("btn-danger");
+
+                if(status === "RuleOn")
+                    grupStatus.innerHTML = "Filtre actiu";
+                else if(status === "RuleFree")
+                    grupStatus.innerHTML = "Desactivat";
+                else if(status === "Blocked")
+                    grupStatus.innerHTML = "Tot bloquejat";
+
+                if(send) socket.emit("setGrupStatus", {grup: grupSelector.value, status: status});
+            }
+
+            grupStatus.classList.remove("btn-dark");
+            grupStatus.removeAttribute("disabled");
+            setGrupStatus(data[grupSelector.value].status);
+
+            grupStatusRuleOn.onclick = (ev) => {
+                setGrupStatus("RuleOn", true);
+            }
+
+            grupStatusRuleFree.onclick = (ev) => {
+                setGrupStatus("RuleFree", true);
+            }
+
+            grupStatusBlockAll.onclick = (ev) => {
+                setGrupStatus("Blocked", true);
+            }
+
+            // Prepara el botó de Normes Web de grup
+            const grupNormesWebButton = document.getElementById("globalGroupNormesWebButton");
+            grupNormesWebButton.removeAttribute("disabled");
+            grupNormesWebButton.onclick = (ev) => obreDialogNormesWeb(grupSelector.value, "grup");
+
+            // Prepara el botó de Normes Apps de grup
+            const grupNormesAppsButton = document.getElementById("globalGroupNormesAppsButton");
+            grupNormesAppsButton.removeAttribute("disabled");
+            grupNormesAppsButton.onclick = (ev) => obreDialogNormesApps(grupSelector.value, "grup");
         }
         grupSelector.appendChild(option);
     }
 });
 socket.on('normesWeb', function (data) {
     normesWebInfo = data;
+});
+
+socket.on('normesApps', function (data) {
+    normesAppsInfo = data;
 });
 
 socket.on('historialWebAlumne', function (data) {
@@ -570,8 +866,7 @@ socket.on('historialWebAlumne', function (data) {
 
     let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
 
-    if(!hiddenAuxInfo)
-    {
+    if (!hiddenAuxInfo) {
         hiddenAuxInfo = document.createElement("div");
         hiddenAuxInfo.setAttribute("id", "hiddenHistorialAuxInfo");
         hiddenAuxInfo.setAttribute("style", "display: none;");
@@ -583,7 +878,7 @@ socket.on('historialWebAlumne', function (data) {
         hiddenAuxInfo.setAttribute("data-prevhost", undefined);
         historialSideBarContent.appendChild(hiddenAuxInfo);
     }
-    
+
     let prevday = hiddenAuxInfo.getAttribute("data-prevday");
     let previd = hiddenAuxInfo.getAttribute("data-previd");
     let prevhost = hiddenAuxInfo.getAttribute("data-prevhost");
@@ -591,8 +886,13 @@ socket.on('historialWebAlumne', function (data) {
 
     for (const webPage of data.historial) {
         const data = new Date(webPage.timestamp);
-        const dia = data.toLocaleDateString('ca-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-        const hora = data.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+        const dia = data.toLocaleDateString('ca-ES', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        const hora = data.toLocaleTimeString('ca-ES', {hour: '2-digit', minute: '2-digit'});
         const newDay = prevday !== dia;
 
         if (newDay) {
@@ -603,11 +903,11 @@ socket.on('historialWebAlumne', function (data) {
             prevday = dia;
         }
 
-        if(prevhost && previd && prevhost === webPage.host && !newDay) {
+        if (prevhost && previd && prevhost === webPage.host && !newDay) {
             const dHora = document.getElementById(`historial_hora_${previd}`);
             const dHoraEnd = dHora.getAttribute("data-hora-end");
-            if(dHoraEnd !== hora)
-                dHora.innerHTML = `${hora} - ${dHoraEnd}` ;
+            if (dHoraEnd !== hora)
+                dHora.innerHTML = `${hora} - ${dHoraEnd}`;
             else
                 dHora.innerHTML = hora;
             continue;
@@ -665,7 +965,7 @@ socket.on('historialWebAlumne', function (data) {
         prevhost = webPage.host;
     }
 
-    if(data.historial.length !== 0) {
+    if (data.historial.length !== 0) {
         // Mostra'n més
         const a = document.createElement("a");
         a.setAttribute("href", "#");
@@ -687,8 +987,8 @@ socket.on('historialWebAlumne', function (data) {
     hiddenAuxInfo.setAttribute("data-previd", previd);
 
     // Refresca els chrome tabs
-    if(chromeTabsObjects[data.alumne])
-        for(let b in chromeTabsObjects[data.alumne])
+    if (chromeTabsObjects[data.alumne])
+        for (let b in chromeTabsObjects[data.alumne])
             chromeTabsObjects[data.alumne][b].layoutTabs();
 
 });
@@ -700,8 +1000,7 @@ socket.on('historialAppsAlumne', function (data) {
 
     let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
 
-    if(!hiddenAuxInfo)
-    {
+    if (!hiddenAuxInfo) {
         hiddenAuxInfo = document.createElement("div");
         hiddenAuxInfo.setAttribute("id", "hiddenHistorialAuxInfo");
         hiddenAuxInfo.setAttribute("style", "display: none;");
@@ -718,9 +1017,14 @@ socket.on('historialAppsAlumne', function (data) {
     for (const process of data.historial) {
         const started = new Date(process.startedTimestamp);
         const updated = new Date(process.updatedTimestamp);
-        const dia = started.toLocaleDateString('ca-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-        const horaStart = started.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' });
-        const horaUpdated = updated.toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+        const dia = started.toLocaleDateString('ca-ES', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        const horaStart = started.toLocaleTimeString('ca-ES', {hour: '2-digit', minute: '2-digit'});
+        const horaUpdated = updated.toLocaleTimeString('ca-ES', {hour: '2-digit', minute: '2-digit'});
         const newDay = prevday !== dia;
 
         if (newDay) {
@@ -768,6 +1072,7 @@ socket.on('historialAppsAlumne', function (data) {
                 processPath: process.processPath,
                 caption: process.caption,
                 iconB64: process.iconB64,
+                iconSVG: process.iconSVG,
             }
             openMenu(ev, opcionMenuContextual, info);
         }
@@ -776,7 +1081,7 @@ socket.on('historialAppsAlumne', function (data) {
         historialSideBarContent.appendChild(a);
     }
 
-    if(data.historial.length !== 0) {
+    if (data.historial.length !== 0) {
         // Mostra'n més
         const a = document.createElement("a");
         a.setAttribute("href", "#");
@@ -796,8 +1101,8 @@ socket.on('historialAppsAlumne', function (data) {
     hiddenAuxInfo.setAttribute("data-prevday", prevday);
 
     // Refresca els chrome tabs
-    if(chromeTabsObjects[data.alumne])
-        for(let b in chromeTabsObjects[data.alumne])
+    if (chromeTabsObjects[data.alumne])
+        for (let b in chromeTabsObjects[data.alumne])
             chromeTabsObjects[data.alumne][b].layoutTabs();
 
 });

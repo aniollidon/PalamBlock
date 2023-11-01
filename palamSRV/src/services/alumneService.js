@@ -49,12 +49,22 @@ async function autentificaAlumne(alumneId, clau){
 
 async function getGrupAlumnesList(){
     const list = {};
+    const grups = await db.Grup.find();
+    for (let grup of grups) {
+        list[grup.grupId] = {
+            grupId: grup.grupId,
+            status: grup.status,
+            alumnes: {}
+        }
+    }
     for (let alumne of await db.Alumne.find()) {
 
-        if(!list[alumne.grup])
-            list[alumne.grup] = {}
+        if(!list[alumne.grup]){
+            console.error("No existeix el grup " + alumne.grup);
+            continue;
+        }
 
-        list[alumne.grup][alumne.alumneId] = {
+        list[alumne.grup].alumnes[alumne.alumneId] = {
             alumneId: alumne.alumneId,
             nom: alumne.nom,
             cognoms: alumne.cognoms,
@@ -65,8 +75,27 @@ async function getGrupAlumnesList(){
     return list;
 }
 
+function setAlumneStatus(alumneId, status){
+    return db.Alumne.updateOne({alumneId: alumneId}, {status: status});
+}
+
+function setGrupStatus(grupId, status){
+    return db.Grup.updateOne({grupId: grupId}, {status: status});
+}
+
+async function getAlumneStatus(alumneId){
+    const alumne = await db.Alumne.findOne({alumneId: alumneId});
+    if(!alumne)
+        throw {status: 404, message: "Alumne no trobat"};
+
+    return alumne.status;
+}
+
 module.exports = {
     creaAlumne,
     autentificaAlumne,
-    getGrupAlumnesList
+    getGrupAlumnesList,
+    setAlumneStatus,
+    setGrupStatus,
+    getAlumneStatus
 }

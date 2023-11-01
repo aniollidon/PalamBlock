@@ -3,6 +3,7 @@ const axios = require('axios');
 require('dotenv').config();
 const fs = require("fs");
 const path = require("path");
+const alumneService = require("./alumneService");
 
 class WebPage {
     constructor(host, protocol, search, pathname, title, favicon) {
@@ -262,7 +263,8 @@ class AppStatus {
         this.startedAt = timestamp;
         this.updatedAt = timestamp;
         this.opened = true;
-        this.iconB64 = app.icon
+        this.iconB64 = app.iconType === "base64" ? app.icon : undefined
+        this.iconSVG = app.iconType === "svg" ? app.icon : undefined
     }
 
     update(status, timestamp) {
@@ -280,10 +282,31 @@ class AlumneStatus {
         this.alumne = alumne;
         this.browsers = {};
         this.apps = {};
+        this.conected = true;
         this._onUpdateCallback = onUpdateCallback;
+        this._lastNews = new Date();
+
+        // Comprova si l'alumne s'ha desconnectat
+        const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
+        setInterval(() => {
+            if(this.conected && this._lastNews && (new Date() - this._lastNews) > NOCONN_TIME) {
+                console.log("Alumne " + this.alumne + " disconnected");
+                for (const app in this.apps) {
+                    this.apps[app].close();
+                }
+                this.conected = false;
+                this._onUpdateCallback();
+            }
+        }, NOCONN_TIME);
+    }
+
+    setAlive(timestamp) {
+        this._lastNews = timestamp;
+        this.conected = true;
     }
 
     registerApp(appinfo, status, timestamp) {
+        this.setAlive(timestamp);
         if(!this.apps[appinfo.pid])
             this.apps[appinfo.pid] = new AppStatus(appinfo, status, timestamp);
         else
@@ -291,12 +314,14 @@ class AlumneStatus {
     }
 
     closeNotUpdatedApps(timestamp) {
+        this.setAlive(timestamp);
         for (const app in this.apps) {
             if(this.apps[app].updatedAt !== timestamp)
                 this.apps[app].close();
         }
     }
     register(browser, browserId, tabId, tabPropierties, webPage, timestamp) {
+        this.setAlive(timestamp);
         // Check if browser exists
         if(!this.browsers[browser+browserId]) {
             this.browsers[browser+browserId] = new BrowserStatus(browser, browserId, timestamp, this._onUpdateCallback);
@@ -306,6 +331,7 @@ class AlumneStatus {
     }
 
     update(browser, browserId, tabId, tabPropierties, webPage, timestamp) {
+        this.setAlive(timestamp);
         // Check if browser exists
         if(!this.browsers[browser+browserId]) {
             this.browsers[browser+browserId] = new BrowserStatus(browser, browserId, timestamp, this._onUpdateCallback);
@@ -314,6 +340,7 @@ class AlumneStatus {
         return this.browsers[browser+browserId].update(tabId, tabPropierties, webPage, timestamp);
     }
     closeTab(browser, browserId, tabId, timestamp) {
+        this.setAlive(timestamp);
         if(!this.browsers[browser+browserId]) {
             console.error("Browser " + browser + " " + browserId + " not found");
             return; //TODO algo millor
@@ -323,6 +350,8 @@ class AlumneStatus {
     }
 
     checkTabs(browser, browserId, tabsInfos, activeTab, timestamp){
+        this.setAlive(timestamp);
+
         if(!this.browsers[browser+browserId]) {
             this.browsers[browser+browserId] = new BrowserStatus(browser, browserId, timestamp, this._onUpdateCallback);
         }
@@ -459,7 +488,17 @@ function register(alumne, timestamp, host, protocol, search, pathname, title, br
 function registerBrowserInfo(alumne, browser, browserId, tabsInfos, activeTab, timestamp) {
     allAlumnesStatus.checkTabs(alumne, browser, browserId, tabsInfos, activeTab, timestamp);
 }
-function getAlumnesActivity() {
+async function getAlumnesActivity() {
+    // Get alumnes status on db
+    for (const alumne in allAlumnesStatus.alumnesStat) {
+        try {
+            allAlumnesStatus.alumnesStat[alumne].status = await alumneService.getAlumneStatus(alumne);
+        }
+        catch (err) {
+            console.error("Error getting alumne status. Esborrant alumne", err);
+            allAlumnesStatus.alumnesStat[alumne] = undefined; // Esborra l'alumne
+        }
+    }
     return allAlumnesStatus.alumnesStat;
 }
 
@@ -498,7 +537,7 @@ async function normesWebHasChanged() {
             for(const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
                 const action = {action:'refresh', tabId: tab};
                 const webPage = allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].webPage;
-                const permition = await validacio.check(webPage.host, webPage.protocol, webPage.search, webPage.pathname, webPage.title);
+                const permition = await validacio.checkWeb(webPage.host, webPage.protocol, webPage.search, webPage.pathname, webPage.title);
 
                 if(permition !== "allow"){
                     allAlumnesStatus._onSavePending = true;

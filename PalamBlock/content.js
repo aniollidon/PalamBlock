@@ -1,7 +1,8 @@
+
 chrome.storage.sync.get(['alumne'], function(result) {
 
     if(!result.alumne){
-      window.location.href = chrome.runtime.getURL("index.html")
+      window.location.href = chrome.runtime.getURL("login.html")
       return;
     }
 

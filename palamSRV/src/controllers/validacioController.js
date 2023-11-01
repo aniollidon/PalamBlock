@@ -20,7 +20,7 @@ const postValidacioAPI = (req, res) => {
     const timestamp = new Date();
 
     const validacioAlumne = new validacioService.Validacio(alumne);
-    const validacio = validacioAlumne.check(host, protocol, search, pathname, title);
+    const validacio = validacioAlumne.checkWeb(host, protocol, search, pathname, title);
 
     validacio.then((status) => {
         console.log("host: " + host + " protocol: " + protocol + " search: " + search + " pathname: " + pathname + " title: " + title + " alumne: " + alumne + " browser: " + browser + " tabId: " + tabId + "incognito: " + incognito + " timestamp: " + timestamp);
@@ -40,10 +40,11 @@ const postAppsAPI = (req, res) => {
     const alumne = req.body.alumne;
     const timestamp = new Date();
 
-    validacioService.checkApps(apps).then((status) => {
+    const validacioAlumne = new validacioService.Validacio(alumne);
+    validacioAlumne.checkApps(apps).then((status) => {
         infoService.registerApps(apps, alumne, status, timestamp);
         for (const app of apps) {
-            historialService.saveApp(alumne, timestamp, app.name, app.path, app.title, app.icon);
+            historialService.saveApp(alumne, timestamp, app.name, app.path, app.title, app.icon, app.iconType);
         }
         res.status(200).send({ do:status} );
     }).catch((err) => {

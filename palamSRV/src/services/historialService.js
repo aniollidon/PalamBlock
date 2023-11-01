@@ -1,22 +1,48 @@
 const db = require("../database/db");
 
 function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon) {
-    return db.HistorialWeb.create({
+
+    if(protocol.includes("chrome")) return;
+
+    // Si fa menys de 5 minuts, i és el mateix web actualitzem
+    return db.HistorialWeb.findOneAndUpdate({
         alumneid: alumne,
-        timestamp: timestamp,
-        host: host,
-        protocol: protocol,
-        search: search,
-        pathname: pathname,
-        title: title,
-        browser: browser,
         tabId: tabId,
+        protocol: protocol,
+        host: host,
+        pathname: pathname,
+        search: search,
+        browser: browser,
+        timestamp: {
+            $gte: new Date(Date.now() - 5 * 60 * 1000),
+        }
+    }, {
+        title: title,
         incognito: incognito,
         favicon: favicon
+    }, {
+        new: true
+    }).then((doc) => {
+        if (!doc) {
+            // Si no, creem una nova
+            db.HistorialWeb.create({
+                alumneid: alumne,
+                timestamp: timestamp,
+                host: host,
+                protocol: protocol,
+                search: search,
+                pathname: pathname,
+                title: title,
+                browser: browser,
+                tabId: tabId,
+                incognito: incognito,
+                favicon: favicon
+            });
+        }
     });
 }
 
-function saveApp(alumne, timestamp, processName, processPath, caption, iconB64) {
+function saveApp(alumne, timestamp, processName, processPath, caption, icon, iconType) {
 
     // Fa una hora
     const now = new Date();
@@ -48,7 +74,8 @@ function saveApp(alumne, timestamp, processName, processPath, caption, iconB64) 
                 processName: processName,
                 processPath: processPath,
                 caption: caption,
-                iconB64: iconB64
+                iconB64: iconType === "base64" ? icon : undefined,
+                iconSVG: iconType === "svg" ? icon : undefined
             });
         }
     });

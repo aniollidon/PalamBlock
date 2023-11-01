@@ -19,7 +19,7 @@ class Validacio {
     constructor(alumneid) {
         this.alumneid = alumneid;
     }
-    async check(host, protocol, search, pathname, title) {
+    async checkWeb(host, protocol, search, pathname, title) {
         const alumne = await db.Alumne.findOne({alumneId: this.alumneid})
             .populate('grup')
             .populate('normesWeb');
@@ -103,31 +103,73 @@ class Validacio {
 
         return action;
     }
-}
 
-async function checkApps(apps) {
-    let statusForApps = {};
-    for (const app of apps) {
-        const name = app.name;
-        const dbapp =  await db.NormaApp.findOne({appId: name});
-
-        if(!dbapp) {
-            statusForApps[name] = "allow";
-            // Crear nova app a la db
-            const newApp = await db.NormaApp.create({
-                appId: name,
-                status: "allow"
-            });
+    allApps(apps, status){
+        const return_status = {};
+        for (const app of apps) {
+            return_status[app.pid] = status;
         }
-        else {
-            statusForApps[app.pid] = "allow";
-        }
+        return return_status;
     }
+    async checkApps(apps) {
+        const alumne = await db.Alumne.findOne({alumneId: this.alumneid})
+            .populate('grup')
+            .populate('normesApp');
 
-    return statusForApps;
+        if(!alumne) {
+            console.log("L'alumne no existeix: alumne=" + this.alumneid);
+            return {};
+        }
+
+        if(alumne.status === "RuleFree")
+            return {};
+        else if(alumne.status === "Blocked")
+            return this.allApps(apps, "close");
+
+        const grup = await db.Grup.findOne({grupId: alumne.grup})
+
+        if(!grup){
+            console.log("L'alumne no té grup assignat: alumne=" + this.alumneid);
+            return {};
+        }
+
+        if(grup.status === "RuleFree")
+            return {};
+        else if(grup.status === "Blocked")
+            return  this.allApps(apps, "close");
+
+        // Busca les normesApp del grup
+        const normesgrup = await db.NormaApp.find({_id: {$in: grup.normesApp}});
+        // Busca les normesApp de l'alumne
+        const normesalumne = await db.NormaApp.find({_id: {$in: alumne.normesApp}});
+        const normesApp = normesgrup.concat(normesalumne);
+
+        let statusForApps = {};
+        for (const app of apps) {
+            const name = app.name;
+            const path = app.path;
+            statusForApps[app.pid] = "allow";
+
+            for (const norma of normesApp) {
+                if(norma.processName === name || norma.processPath === path) {
+                    statusForApps[app.pid] = norma.severity;
+                }
+                else if (norma.processPathisRegex) {
+                    const regex = new RegExp(norma.processPath);
+                    if (regex.test(path)) {
+                        statusForApps[app.pid] = norma.severity;
+                    }
+                }
+            }
+        }
+
+        return statusForApps;
+    }
 }
+
+
+
 
 module.exports = {
-    Validacio,
-    checkApps
+    Validacio
 }
