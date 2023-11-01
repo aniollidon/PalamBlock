@@ -10,7 +10,7 @@ async function getInstanceID() {
     try {
         return await chrome.instanceID.getID()
     } catch (e) {
-        console.log("Error getting instanceID: " + e)
+        //console.log("Error getting instanceID: " + e)
         return "unknown"
     }
 }
@@ -127,7 +127,7 @@ function handleMessage(request, sender, sendResponse) {
                     }
                 });
             }).catch((error) => {
-                console.error(error);
+                //console.error(error);
                 sendResponse({do: "allow", aim: "error"});
             });
         });
@@ -150,7 +150,7 @@ function handleMessage(request, sender, sendResponse) {
                 }
             });
         }).catch((error) => {
-            console.error(error);
+            //console.error(error);
             sendResponse({status: "FAILED"});
         });
     }
@@ -158,7 +158,7 @@ function handleMessage(request, sender, sendResponse) {
 }
 
 chrome.tabs.onRemoved.addListener(function (tabid, removed) {
-    console.log("tab closed" + tabid)
+    //console.log("tab closed" + tabid)
     customShortInfo().then((short_info) => {
         short_info.action = "close";
         short_info.tabId = tabid;
@@ -171,7 +171,7 @@ chrome.tabs.onRemoved.addListener(function (tabid, removed) {
         }).then((response) => {
             // do nothing
         }).catch((error) => {
-            console.error(error);
+            //console.error(error);
         });
     });
 });
@@ -190,7 +190,7 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
             }).then((response) => {
                 // do nothing
             }).catch((error) => {
-                console.error(error);
+                //console.error(error);
             });
         });
     });
@@ -209,7 +209,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
             }).then((response) => {
                 // do nothing
             }).catch((error) => {
-                console.error(error);
+                //console.error(error);
             });
         });
     }
@@ -246,7 +246,7 @@ function pingMessage() {
                     });
             });
         }).catch((error) => {
-            console.error(error);
+            //console.error(error);
         });
     });
 }
