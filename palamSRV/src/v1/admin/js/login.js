@@ -4,7 +4,7 @@ function save_options() {
     let clauMd5 = md5(clau);
 
     // Send a message to API to check if user and clau are correct7
-    fetch('http://localhost:4000/api/v1/admin/login', {
+    fetch('/api/v1/admin/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

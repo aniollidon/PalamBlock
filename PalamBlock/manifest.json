@@ -11,11 +11,13 @@
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
-        "36": "images/icon36.png"
+        "36": "images/icon36.png",
+        "128": "images/icon128.png"
       }
     },
     "icons": {
-      "36": "images/icon36.png"
+      "36": "images/icon36.png",
+        "128": "images/icon128.png"
     },
     "content_scripts": [
       {
