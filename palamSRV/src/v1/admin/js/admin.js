@@ -696,7 +696,7 @@ socket.on('alumnesActivity', function (data) {
                     const browserInfoDiv = document.createElement("div");
                     browserInfoDiv.setAttribute("class", "browser-info");
                     const browserIcon = document.createElement("img");
-                    browserIcon.setAttribute("src", "img/" + browserInfo.browser + ".png");
+                    browserIcon.setAttribute("src", "img/" + browserInfo.browser.toLowerCase() + ".png");
                     browserIcon.setAttribute("class", "browser-icon");
                     browserInfoDiv.appendChild(browserIcon);
                     browserDiv.appendChild(browserInfoDiv);
