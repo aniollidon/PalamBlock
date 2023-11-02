@@ -34,6 +34,7 @@ app.use(cors())
 app.use(bodyParser.json());
 app.use("/api/v1", v1Router);
 app.use('/admin', express.static(path.join(__dirname, '/v1/admin')))
+app.use('/privacy', express.static(path.join(__dirname, '/v1/privacy')))
 
 // WebSocket
 initializeWebSocket(server);
