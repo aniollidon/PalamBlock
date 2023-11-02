@@ -119,7 +119,7 @@ class BrowserStatus {
         const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
         setInterval(() => {
             if(this.opened && this._passiveupdatedAt && (new Date() - this._passiveupdatedAt) > NOCONN_TIME) {
-                console.log("Browser " + this.browser + " " + this.browserId + " disconnected");
+                //console.log("Browser " + this.browser + " " + this.browserId + " disconnected");
                 for (const tab in this.tabs) {
                     this.tabs[tab].close(new Date());
                 }
@@ -290,7 +290,7 @@ class AlumneStatus {
         const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
         setInterval(() => {
             if(this.conected && this._lastNews && (new Date() - this._lastNews) > NOCONN_TIME) {
-                console.log("Alumne " + this.alumne + " disconnected");
+                //console.log("Alumne " + this.alumne + " disconnected");
                 for (const app in this.apps) {
                     this.apps[app].close();
                 }
@@ -423,7 +423,7 @@ class AllAlumnesStatus{
 
         this.alumnesStat[alumne].closeTab(browser, browserId, tabId, timestamp);
 
-        console.log("Alumne " + alumne + " close tab " + tabId + " on browser " + browser + " " + browserId);
+        //console.log("Alumne " + alumne + " close tab " + tabId + " on browser " + browser + " " + browserId);
 
         // Comprova si estava a la llista d'accions pendents. Si ho estava, l'esborra
         if(this.pendingBrowserActions[alumne] && this.pendingBrowserActions[alumne][browser+browserId]) {
@@ -507,7 +507,7 @@ function registerOnUpdateCallback(callback) {
 }
 
 function remoteCloseTab(alumne, browser, browserId, tabId) {
-    console.log("service remoteCloseTab", alumne, browser, browserId, tabId);
+    //console.log("service remoteCloseTab", alumne, browser, browserId, tabId);
     const action = {action:'close', browser: browser, browserId: browserId, tabId: tabId};
     if(!allAlumnesStatus.pendingBrowserActions[alumne])
         allAlumnesStatus.pendingBrowserActions[alumne] = {};

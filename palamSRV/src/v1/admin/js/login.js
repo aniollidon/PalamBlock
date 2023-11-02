@@ -14,7 +14,7 @@ function save_options() {
     }).then((response) => {
         if (response.status === 200) {
             response.json().then((data) => {
-                console.log(data);
+                //console.log(data);
                 // If correct, save them in localStorage
                 localStorage.setItem('user', user);
                 localStorage.setItem('authToken', data.authToken);

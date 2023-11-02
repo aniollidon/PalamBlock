@@ -52,12 +52,12 @@ function addNormaWeb(who, whoid, severity, mode, hosts_list, protocols_list, sea
     if(who === "grup") {
         normaService.creaNormaWebGrup(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
             titles_list, enabled_on).then((alumne) => {
-                console.log("NormaWeb afegida de grup");
+                //console.log("NormaWeb afegida de grup");
         });
     } else if(who === "alumne"){
         normaService.addNormaWebAlumne(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
             titles_list, enabled_on).then((alumne) => {
-                console.log("NormaWeb afegida d'alumne");
+                //console.log("NormaWeb afegida d'alumne");
         });
     }
 }
@@ -65,11 +65,11 @@ function addNormaWeb(who, whoid, severity, mode, hosts_list, protocols_list, sea
 function addNormaApps(who, whoid, severity, processName, processPath, processPathisRegex) {
     if(who === "grup") {
         normaService.creaNormaGrupApp(whoid, processName, processPath, processPathisRegex, severity).then((alumne) => {
-            console.log("NormaApp afegida de grup");
+            //console.log("NormaApp afegida de grup");
         });
     } else if(who === "alumne"){
         normaService.creaNormaAlumneApp(whoid, processName, processPath, processPathisRegex, severity).then((alumne) => {
-            console.log("NormaApp afegida d'alumne");
+            //console.log("NormaApp afegida d'alumne");
         });
     }
 }

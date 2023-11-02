@@ -36,7 +36,7 @@ function creaAppMenuJSON(alumne, app) {
         obreDialogBloquejaApps(info, alumne, "blocalumn");
     }
     const onTanca = (info) => {
-        console.log("onTanca app")
+        //console.log("onTanca app")
     }
 
     return [
@@ -720,7 +720,7 @@ socket.on('alumnesActivity', function (data) {
                     //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
                     //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
                     browserDiv.addEventListener('tabRemove', ({detail}) => {
-                        console.log('Tab removed', detail.tabEl)
+                        //console.log('Tab removed', detail.tabEl)
                         socket.emit("closeTab", {
                             alumne: alumne,
                             browser: browserInfo.browser,
