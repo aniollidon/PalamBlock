@@ -562,6 +562,26 @@ function registerApps(apps, alumne, status, timestamp) {
     allAlumnesStatus._onUpdateCallback();
 }
 
+function operaHasInfo(alumne, caption, since) {
+    if(allAlumnesStatus.alumnesStat[alumne] === undefined) return false;
+    const browserslist =  allAlumnesStatus.alumnesStat[alumne].browsers;
+    // Search for opera browers
+    for (const browsername in allAlumnesStatus.alumnesStat[alumne].browsers) {
+       if(browsername.toLowerCase().includes("opera"))
+       {
+          // Search for tab with caption
+          for(const tab in browserslist[browsername].tabs) {
+            if(browserslist[browsername].tabs[tab].webPage.title.includes(caption)) {
+                 if(browserslist[browsername].tabs[tab].updatedAt > since) {
+                      return true;
+                 }
+            }
+          }
+       }
+    }
+    return false;
+}
+
 module.exports = {
     register,
     registerTabAction,
@@ -571,5 +591,6 @@ module.exports = {
     remoteCloseTab,
     getBrowserPendingActions,
     normesWebHasChanged,
-    registerApps
+    registerApps,
+    operaHasInfo
 }

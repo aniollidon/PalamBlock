@@ -74,11 +74,26 @@ function normesWebHasChanged() {
     infoService.normesWebHasChanged();
 }
 
+const operaHasInfoAPI = (req, res) => {
+    const alumne = req.params.alumneId;
+    const caption = req.query.caption;
+    const since = req.query.since;
+
+    if(!alumne) {
+        res.status(500).send({status: "ERROR", data: "Falten dades de la info. Cal especificar alumne"});
+        return;
+    }
+
+    const news = infoService.operaHasInfo(alumne, caption, since);
+    res.send({news: news});
+}
+
 module.exports = {
     postTabInfoAPI,
     postBrowserInfoAPI,
     getAlumnesActivity,
     registerOnUpdateCallback,
     remoteCloseTab,
-    normesWebHasChanged
+    normesWebHasChanged,
+    operaHasInfoAPI
 }

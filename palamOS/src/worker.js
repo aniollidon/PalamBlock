@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { listOpenWindows } = require('@josephuspaye/list-open-windows');
 const iconExtractor = require('extract-file-icon');
+const otrk = require('./opera-tracker');
 
 const axios = require("axios");
 const si = require('systeminformation');
@@ -94,6 +95,14 @@ async function updateWindowsAppDetails(winapps, allprocesses, afw){
 }
 async function sendPrograms(){
     const programs = await getCurrentPrograms();
+
+    // Track Opera program
+    const opera = programs.find((proc) => proc.processPath.toLowerCase().includes('opera'));
+
+    if(opera)
+        otrk.track(username, opera);
+
+    // Prepare the list of programs to send
     const programsToSend = [];
     for (let program of programs) {
         let icon = program.iconSVG;
