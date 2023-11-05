@@ -495,7 +495,7 @@ async function getAlumnesActivity() {
             allAlumnesStatus.alumnesStat[alumne].status = await alumneService.getAlumneStatus(alumne);
         }
         catch (err) {
-            console.error("Error getting alumne status. Esborrant alumne", err);
+            console.error("Error getting alumne="+alumne+" status. Esborrant alumne", err);
             allAlumnesStatus.alumnesStat[alumne] = undefined; // Esborra l'alumne
         }
     }
