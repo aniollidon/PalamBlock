@@ -679,7 +679,6 @@ socket.on('alumnesActivity', function (data) {
                     /*let tbrowserDiv = document.createElement("div");
                     tbrowserDiv.setAttribute("class", "browser");
                     tbrowserDiv.setAttribute("id", browser);
-                    tbrowserDiv.innerHTML = browserInfo.browser + " " + browserInfo.browserId;
                     alumneBrowsersDiv.appendChild(tbrowserDiv);
                     let tbrowserTabsDiv = document.createElement("div");
                     tbrowserTabsDiv.setAttribute("class", "tabs");
@@ -724,7 +723,6 @@ socket.on('alumnesActivity', function (data) {
                         socket.emit("closeTab", {
                             alumne: alumne,
                             browser: browserInfo.browser,
-                            browserId: browserInfo.browserId,
                             tabId: detail.tabEl.info.tabId
                         })
                     });

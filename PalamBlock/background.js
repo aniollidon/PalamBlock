@@ -1,19 +1,11 @@
-const API_URL = 'http://185.61.126.170:4000/api/v1/';
+//const API_URL = 'http://185.61.126.170:4000/api/v1/';
+const API_URL = 'http://localhost:4000/api/v1/';
 const API_TAB_INFO = API_URL + 'info/tab';
 const API_TAB_VALIDACIO = API_URL + 'validacio/tab';
 const API_BROWSER_INFO = API_URL + 'info/browser';
 const API_REGISTER = API_URL + 'alumne/auth';
 
 importScripts('ua-parser.min.js')
-
-async function getInstanceID() {
-    try {
-        return await chrome.instanceID.getID()
-    } catch (e) {
-        //console.log("Error getting instanceID: " + e)
-        return "unknown"
-    }
-}
 
 function getBrowser() {
     try {
@@ -28,25 +20,28 @@ function getBrowser() {
 async function customTabInfo(chromeTab) {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get(['alumne'], async (result) => {
-            getInstanceID().then((instanceID) => {
-                const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
-                const basetab_info = {
-                    host: url ? url.host: "",
-                    protocol: url ? url.protocol: "",
-                    search: url ? url.search: "",
-                    pathname: url ? url.pathname: "",
-                    title: chromeTab.title,
-                    favicon: chromeTab.favIconUrl,
-                    alumne: result.alumne,
-                    browser: getBrowser(),
-                    browserId: instanceID,
-                    tabId: chromeTab.id,
-                    incognito: chromeTab.incognito,
-                    active: chromeTab.active,
-                    audible: chromeTab.audible,
-                }
-                resolve(basetab_info);
-            });
+
+            if (!result.alumne) {
+                resolve(null);
+                return;
+            }
+            const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
+            const basetab_info = {
+                host: url ? url.host : "",
+                protocol: url ? url.protocol : "",
+                search: url ? url.search : "",
+                pathname: url ? url.pathname : "",
+                title: chromeTab.title,
+                favicon: chromeTab.favIconUrl,
+                alumne: result.alumne,
+                browser: getBrowser(),
+                windowId: chromeTab.windowId,
+                tabId: chromeTab.id,
+                incognito: chromeTab.incognito,
+                active: chromeTab.active,
+                audible: chromeTab.audible,
+            }
+            resolve(basetab_info);
         });
     });
 }
@@ -54,12 +49,13 @@ async function customTabInfo(chromeTab) {
 async function customShortInfo() {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get(['alumne'], async (result) => {
-            getInstanceID().then((instanceID) => {
-                resolve({
-                    alumne: result.alumne,
-                    browser: getBrowser(),
-                    browserId: instanceID
-                });
+            if (!result.alumne) {
+                resolve(null);
+                return;
+            }
+            resolve({
+                alumne: result.alumne,
+                browser: getBrowser(),
             });
         });
     });
@@ -68,41 +64,42 @@ async function customShortInfo() {
 async function customTabsInfo(chromeTabs) {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get(['alumne'], async (result) => {
-            getInstanceID().then(async (instanceID) => {
-                const browser = getBrowser();
-                const alumne = result.alumne;
-                let tabsInfos = {};
-                let activeTab = null;
-                for (let i = 0; i < chromeTabs.length; i++) {
-                    if (chromeTabs[i].active) {
-                        activeTab = chromeTabs[i].id;
-                    }
-
-                    const chromeTab = chromeTabs[i];
-                    const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
-                    tabsInfos[chromeTab.id] = {
-                        host: url ? url.host: "",
-                        protocol: url ? url.protocol: "",
-                        search: url ? url.search: "",
-                        pathname: url ? url.pathname: "",
-                        title: chromeTab.title,
-                        favicon: chromeTab.favIconUrl,
-                        alumne: alumne,
-                        browser: browser,
-                        browserId: instanceID,
-                        tabId: chromeTab.id,
-                        incognito: chromeTab.incognito,
-                        active: chromeTab.active,
-                        audible: chromeTab.audible,
-                    };
+            if (!result.alumne) {
+                resolve(null);
+                return;
+            }
+            const browser = getBrowser();
+            const alumne = result.alumne;
+            let tabsInfos = {};
+            let activeTab = null;
+            for (let i = 0; i < chromeTabs.length; i++) {
+                if (chromeTabs[i].active) {
+                    activeTab = chromeTabs[i].id;
                 }
-                resolve({
-                    tabsInfos: tabsInfos,
-                    activeTab: activeTab,
+
+                const chromeTab = chromeTabs[i];
+                const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
+                tabsInfos[chromeTab.id] = {
+                    host: url ? url.host : "",
+                    protocol: url ? url.protocol : "",
+                    search: url ? url.search : "",
+                    pathname: url ? url.pathname : "",
+                    title: chromeTab.title,
+                    favicon: chromeTab.favIconUrl,
                     alumne: alumne,
                     browser: browser,
-                    browserId: instanceID
-                });
+                    windowId: chromeTab.windowId,
+                    tabId: chromeTab.id,
+                    incognito: chromeTab.incognito,
+                    active: chromeTab.active,
+                    audible: chromeTab.audible,
+                };
+            }
+            resolve({
+                tabsInfos: tabsInfos,
+                activeTab: activeTab,
+                alumne: alumne,
+                browser: browser
             });
         });
     });
@@ -111,6 +108,8 @@ async function customTabsInfo(chromeTabs) {
 function handleMessage(request, sender, sendResponse) {
     if (request.type === 'validacio') {
         customTabInfo(sender.tab).then((tab_info) => {
+            if (!tab_info) return;
+
             tab_info.action = "validacio";
             fetch(API_TAB_VALIDACIO, {
                 method: 'POST',
@@ -158,10 +157,11 @@ function handleMessage(request, sender, sendResponse) {
 }
 
 chrome.tabs.onRemoved.addListener(function (tabid, removed) {
-    //console.log("tab closed" + tabid)
     customShortInfo().then((short_info) => {
+        if (!short_info) return;
         short_info.action = "close";
         short_info.tabId = tabid;
+        short_info.windowId = removed.windowId;
         fetch(API_TAB_INFO, {
             method: 'POST',
             headers: {
@@ -176,10 +176,10 @@ chrome.tabs.onRemoved.addListener(function (tabid, removed) {
     });
 });
 
-
 chrome.tabs.onActivated.addListener(function (activeInfo) {
     chrome.tabs.get(activeInfo.tabId, async function (tab) {
         customTabInfo(tab).then((tab_info) => {
+            if (!tab_info) return;
             tab_info.action = "active";
             fetch(API_TAB_INFO, {
                 method: 'POST',
@@ -197,8 +197,9 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    if(changeInfo.title || changeInfo.favIconUrl) {
+    if (changeInfo.title || changeInfo.favIconUrl) {
         customTabInfo(tab).then((tab_info) => {
+            if (!tab_info) return;
             tab_info.action = "update";
             fetch(API_TAB_INFO, {
                 method: 'POST',
@@ -220,7 +221,9 @@ chrome.runtime.onMessage.addListener(handleMessage);
 // Send ping to server every minute
 function pingMessage() {
     chrome.tabs.query({}, async function (tabs) {
-        const {tabsInfos, activeTab, alumne, browser, browserId} = await customTabsInfo(tabs);
+        const {tabsInfos, activeTab, alumne, browser} = await customTabsInfo(tabs);
+        if (!alumne || !browser) return;
+
         fetch(API_BROWSER_INFO, {
             method: 'POST',
             headers: {
@@ -228,19 +231,17 @@ function pingMessage() {
             },
             body: JSON.stringify({
                 browser: browser,
-                browserId: browserId,
                 alumne: alumne,
                 tabsInfos: tabsInfos,
                 activeTab: activeTab
             }),
         }).then((response) => {
             response.json().then((data) => {
-                if(data.actions && data.actions.length > 0)
+                if (data.actions && data.actions.length > 0)
                     data.actions.forEach((action) => {
                         if (action.action === "close") {
                             chrome.tabs.remove(parseInt(action.tabId));
-                        }
-                        else if (action.action === "refresh") {
+                        } else if (action.action === "refresh") {
                             chrome.tabs.reload(parseInt(action.tabId));
                         }
                     });
