@@ -21,16 +21,31 @@ let visibilityAlumnes = {}
 let chromeTabsObjects = {}
 const storedAlumneInfo = {}
 
+function eliminarUpdateAt(obj) {
+    if (obj && typeof obj === 'object') {
+        for (const clave in obj) {
+            if (clave === 'updatedAt') {
+                delete obj[clave];
+            } else {
+                eliminarUpdateAt(obj[clave]);
+            }
+        }
+    }
+}
 
-const compareExcludeKeys = (object1, object2, excludeKeys = []) => {
-    if (Object.keys(object1).length !== Object.keys(object2).length) return false;
-    return Object.entries(object1).reduce((isEqual, [key, value]) => {
-        const isValueEqual = typeof value === 'object' && value !== null
-            ? compareExcludeKeys(value, object2[key], excludeKeys)
-            : excludeKeys.includes(key) || object2[key] === value;
-        return isEqual && isValueEqual;
-    }, true);
-};
+function compareNoUpdateAt(oobj1, oobj2) {
+    //copia els objectes per no modificar els originals
+    const obj1 = JSON.parse(JSON.stringify(oobj1));
+    const obj2 = JSON.parse(JSON.stringify(oobj2));
+
+    eliminarUpdateAt(obj1);
+    eliminarUpdateAt(obj2);
+
+    const strobj1 = JSON.stringify(obj1);
+    const strobj2 = JSON.stringify(obj2);
+
+    return strobj1 === strobj2;
+}
 
 function getGrup(alumneId) {
     for (let grup in grupAlumnesList) {
@@ -494,19 +509,18 @@ socket.on('alumnesActivity', function (data) {
             let alumneDiv = undefined;
 
             // Draw alumne container
-            if(!document.getElementById(alumne + "-container")){
+            if (!document.getElementById(alumne + "-container")) {
                 alumneDiv = document.createElement("div");
                 alumneDiv.setAttribute("class", "alumne-container");
                 alumneDiv.setAttribute("id", alumne + "-container");
                 alumneDiv.style.display = visibilityAlumnes[alumne] ? "" : "none";
-            }
-            else{
+            } else {
                 alumneDiv = document.getElementById(alumne + "-container");
                 alumneDiv.style.display = visibilityAlumnes[alumne] ? "" : "none";
             }
 
             // Draw alumne header
-            if(!document.getElementById(alumne + "-header")) {
+            if (!document.getElementById(alumne + "-header")) {
                 const alumneDivHeader = document.createElement("div");
                 alumneDivHeader.setAttribute("class", "alumne-header");
                 alumneDivHeader.setAttribute("id", alumne + "-header");
@@ -642,10 +656,10 @@ socket.on('alumnesActivity', function (data) {
             }
 
             // Apps List
-            if(!storedAlumneInfo[alumne] || !storedAlumneInfo[alumne].apps || storedAlumneInfo[alumne].apps !== alumneInfo.apps) {
+            if (!storedAlumneInfo[alumne] || !storedAlumneInfo[alumne].apps || storedAlumneInfo[alumne].apps !== alumneInfo.apps) {
                 let alumneAppsDiv = undefined;
 
-                if(!document.getElementById(alumne + "-apps")) {
+                if (!document.getElementById(alumne + "-apps")) {
                     alumneAppsDiv = document.createElement("div");
                     alumneAppsDiv.setAttribute("class", "apps");
                     alumneAppsDiv.setAttribute("id", alumne + "-apps");
@@ -701,103 +715,101 @@ socket.on('alumnesActivity', function (data) {
             }
 
             // Browsers List
-            if(!storedAlumneInfo[alumne] || !storedAlumneInfo[alumne].browsers || storedAlumneInfo[alumne].browsers !== alumneInfo.browsers) {
-                let alumneBrowsersDiv = undefined;
+            let alumneBrowsersDiv = undefined;
 
-                if(!document.getElementById(alumne + "-browsers")){
-                    alumneBrowsersDiv = document.createElement("div");
-                    alumneBrowsersDiv.setAttribute("class", "browsers");
-                    alumneBrowsersDiv.setAttribute("id", alumne + "-browsers");
-                    alumneDiv.appendChild(alumneBrowsersDiv);
-                } else {
-                    alumneBrowsersDiv = document.getElementById(alumne + "-browsers");
-                }
+            if (!document.getElementById(alumne + "-browsers")) {
+                alumneBrowsersDiv = document.createElement("div");
+                alumneBrowsersDiv.setAttribute("class", "browsers");
+                alumneBrowsersDiv.setAttribute("id", alumne + "-browsers");
+                alumneDiv.appendChild(alumneBrowsersDiv);
+            } else {
+                alumneBrowsersDiv = document.getElementById(alumne + "-browsers");
+            }
 
-                for (const browser in alumneInfo.browsers) {
-                    if (Object.hasOwnProperty.call(alumneInfo.browsers, browser)) {
-                        const browserInfo = alumneInfo.browsers[browser];
+            for (const browser in alumneInfo.browsers) {
+                if (Object.hasOwnProperty.call(alumneInfo.browsers, browser)) {
+                    const browserInfo = alumneInfo.browsers[browser];
 
-                        if(!storedAlumneInfo[alumne]
-                            || !storedAlumneInfo[alumne].browsers
-                            || !storedAlumneInfo[alumne].browsers[browser]
-                            || storedAlumneInfo[alumne].browsers[browser] !== browserInfo) {
+                    if (!storedAlumneInfo[alumne]
+                        || !storedAlumneInfo[alumne].browsers
+                        || !storedAlumneInfo[alumne].browsers[browser]
+                        || !compareNoUpdateAt(storedAlumneInfo[alumne].browsers[browser], browserInfo)) {
 
-                            // Create a browser
-                            let browserDiv = undefined;
+                        // Create a browser
+                        let browserDiv = undefined;
 
-                            if (!document.getElementById(browser + "-browser")) {
-                                browserDiv = document.createElement("div");
-                                browserDiv.setAttribute("class", "chrome-tabs");
-                                browserDiv.setAttribute("id", browser + "-browser");
-                                browserDiv.style = "--tab-content-margin: 9px;";
-                                browserDiv.setAttribute("data-chrome-tabs-instance-id", browser);
-                                alumneBrowsersDiv.appendChild(browserDiv);
-                            } else {
-                                browserDiv = document.getElementById(browser + "-browser");
-                                browserDiv.innerHTML = "";
-                            }
+                        if (!document.getElementById(browser + "-browser")) {
+                            browserDiv = document.createElement("div");
+                            browserDiv.setAttribute("class", "chrome-tabs");
+                            browserDiv.setAttribute("id", browser + "-browser");
+                            browserDiv.style = "--tab-content-margin: 9px;";
+                            browserDiv.setAttribute("data-chrome-tabs-instance-id", browser);
+                            alumneBrowsersDiv.appendChild(browserDiv);
+                        } else {
+                            browserDiv = document.getElementById(browser + "-browser");
+                            browserDiv.innerHTML = "";
+                        }
 
-                            // Check if browser is opened
-                            if (!browserInfo.opened) {
-                                // delete browser
-                                browserDiv.remove();
-                                continue;
-                            }
+                        // Check if browser is opened
+                        if (!browserInfo.opened) {
+                            // delete browser
+                            browserDiv.remove();
+                            continue;
+                        }
 
-                            const browserInfoDiv = document.createElement("div");
-                            browserInfoDiv.setAttribute("class", "browser-info");
-                            const browserIcon = document.createElement("img");
-                            browserIcon.setAttribute("src", "img/" + browserInfo.browser.toLowerCase() + ".png");
-                            browserIcon.setAttribute("class", "browser-icon");
-                            browserInfoDiv.appendChild(browserIcon);
-                            browserDiv.appendChild(browserInfoDiv);
+                        const browserInfoDiv = document.createElement("div");
+                        browserInfoDiv.setAttribute("class", "browser-info");
+                        const browserIcon = document.createElement("img");
+                        browserIcon.setAttribute("src", "img/" + browserInfo.browser.toLowerCase() + ".png");
+                        browserIcon.setAttribute("class", "browser-icon");
+                        browserInfoDiv.appendChild(browserIcon);
+                        browserDiv.appendChild(browserInfoDiv);
 
-                            const browserContent = document.createElement("div");
-                            browserContent.setAttribute("class", "chrome-tabs-content");
-                            browserDiv.appendChild(browserContent);
+                        const browserContent = document.createElement("div");
+                        browserContent.setAttribute("class", "chrome-tabs-content");
+                        browserDiv.appendChild(browserContent);
 
-                            const browserTabsBottomBar = document.createElement("div");
-                            browserTabsBottomBar.setAttribute("class", "chrome-tabs-bottom-bar");
-                            browserDiv.appendChild(browserTabsBottomBar);
+                        const browserTabsBottomBar = document.createElement("div");
+                        browserTabsBottomBar.setAttribute("class", "chrome-tabs-bottom-bar");
+                        browserDiv.appendChild(browserTabsBottomBar);
 
-                            const menu_options = creaWebMenuJSON(alumne);
+                        const menu_options = creaWebMenuJSON(alumne);
 
-                            // init chrome tabs
-                            if (!chromeTabsObjects[alumne])
-                                chromeTabsObjects[alumne] = {};
-                            chromeTabsObjects[alumne][browser] = new ChromeTabs()
-                            chromeTabsObjects[alumne][browser].init(browserDiv, menu_options)
+                        // init chrome tabs
+                        if (!chromeTabsObjects[alumne])
+                            chromeTabsObjects[alumne] = {};
+                        chromeTabsObjects[alumne][browser] = new ChromeTabs()
+                        chromeTabsObjects[alumne][browser].init(browserDiv, menu_options)
 
-                            //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
-                            //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
-                            browserDiv.addEventListener('tabRemove', ({detail}) => {
-                                //console.log('Tab removed', detail.tabEl)
-                                socket.emit("closeTab", {
-                                    alumne: alumne,
-                                    browser: browserInfo.browser,
-                                    tabId: detail.tabEl.info.tabId
+                        //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
+                        //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
+                        browserDiv.addEventListener('tabRemove', ({detail}) => {
+                            //console.log('Tab removed', detail.tabEl)
+                            socket.emit("closeTab", {
+                                alumne: alumne,
+                                browser: browserInfo.browser,
+                                tabId: detail.tabEl.info.tabId
+                            })
+                        });
+
+                        for (const tab in browserInfo.tabs) {
+                            if (Object.hasOwnProperty.call(browserInfo.tabs, tab)) {
+                                const tabInfo = browserInfo.tabs[tab];
+                                if (!tabInfo.opened) continue;
+                                /*let ttabDiv = document.createElement("div");
+                                ttabDiv.setAttribute("class", "tab");
+                                ttabDiv.setAttribute("id", tab);
+                                const url = tabInfo.webPage.protocol + "//" + tabInfo.webPage.host + tabInfo.webPage.pathname + tabInfo.webPage.search
+                                ttabDiv.innerHTML = `${tabInfo.tabId}  <a href="${url}"> ${tabInfo.webPage.title} </a> ${tabInfo.incognito ? "[INCOGNITO]" : ""} ${tabInfo.active ? "ACTIVE" : "INACTIVE"} favicon: ${tabInfo.webPage.favicon}`
+                                tbrowserTabsDiv.appendChild(ttabDiv);*/
+                                chromeTabsObjects[alumne][browser].addTab({
+                                    title: tabInfo.webPage.title,
+                                    favicon: tabInfo.webPage.favicon ? tabInfo.webPage.favicon :
+                                        (tabInfo.webPage.protocol === "chrome:" ? undefined : "img/undefined_favicon.png"),
+                                    info: tabInfo
+                                }, {
+                                    background: !tabInfo.active
                                 })
-                            });
-
-                            for (const tab in browserInfo.tabs) {
-                                if (Object.hasOwnProperty.call(browserInfo.tabs, tab)) {
-                                    const tabInfo = browserInfo.tabs[tab];
-                                    if (!tabInfo.opened) continue;
-                                    /*let ttabDiv = document.createElement("div");
-                                    ttabDiv.setAttribute("class", "tab");
-                                    ttabDiv.setAttribute("id", tab);
-                                    const url = tabInfo.webPage.protocol + "//" + tabInfo.webPage.host + tabInfo.webPage.pathname + tabInfo.webPage.search
-                                    ttabDiv.innerHTML = `${tabInfo.tabId}  <a href="${url}"> ${tabInfo.webPage.title} </a> ${tabInfo.incognito ? "[INCOGNITO]" : ""} ${tabInfo.active ? "ACTIVE" : "INACTIVE"} favicon: ${tabInfo.webPage.favicon}`
-                                    tbrowserTabsDiv.appendChild(ttabDiv);*/
-                                    chromeTabsObjects[alumne][browser].addTab({
-                                        title: tabInfo.webPage.title,
-                                        favicon: tabInfo.webPage.favicon ? tabInfo.webPage.favicon :
-                                            (tabInfo.webPage.protocol === "chrome:" ? undefined : "img/undefined_favicon.png"),
-                                        info: tabInfo
-                                    }, {
-                                        background: !tabInfo.active
-                                    })
-                                }
                             }
                         }
                     }
@@ -858,21 +870,21 @@ socket.on('grupAlumnesList', function (data) {
                 grupStatus.classList.remove("btn-success");
                 grupStatus.classList.remove("btn-danger");
 
-                if(status === "RuleOn")
+                if (status === "RuleOn")
                     grupStatus.classList.add("btn-success");
-                else if(status === "RuleFree")
+                else if (status === "RuleFree")
                     grupStatus.classList.add("btn-warning");
-                else if(status === "Blocked")
+                else if (status === "Blocked")
                     grupStatus.classList.add("btn-danger");
 
-                if(status === "RuleOn")
+                if (status === "RuleOn")
                     grupStatus.innerHTML = "Filtre actiu";
-                else if(status === "RuleFree")
+                else if (status === "RuleFree")
                     grupStatus.innerHTML = "Desactivat";
-                else if(status === "Blocked")
+                else if (status === "Blocked")
                     grupStatus.innerHTML = "Tot bloquejat";
 
-                if(send) socket.emit("setGrupStatus", {grup: grupSelector.value, status: status});
+                if (send) socket.emit("setGrupStatus", {grup: grupSelector.value, status: status});
             }
 
             grupStatus.classList.remove("btn-dark");
