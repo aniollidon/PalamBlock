@@ -33,7 +33,7 @@ function initializeWebSocket(server) {
 
         // on message closeTab
         socket.on('closeTab', (msg) => {
-            infoController.remoteCloseTab(msg.alumne, msg.browser, msg.browserId, msg.tabId);
+            infoController.remoteCloseTab(msg.alumne, msg.browser, msg.tabId);
         });
 
         socket.on('addNormaWeb', (msg) => {

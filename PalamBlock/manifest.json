@@ -4,10 +4,8 @@
     "version": "1.0",
     "description": "Una extensió per bloquejar pàgines web específiques.",
     "permissions": [
-      "activeTab",
-     "storage", 
-     "tabs",
-      "gcm"],
+     "storage",
+     "tabs"],
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
@@ -39,4 +37,3 @@
       "service_worker": "background.js"
     }
   }
-  

@@ -775,7 +775,6 @@ socket.on('alumnesActivity', function (data) {
                                 socket.emit("closeTab", {
                                     alumne: alumne,
                                     browser: browserInfo.browser,
-                                    browserId: browserInfo.browserId,
                                     tabId: detail.tabEl.info.tabId
                                 })
                             });

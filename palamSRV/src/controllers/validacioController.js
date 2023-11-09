@@ -10,7 +10,7 @@ const postValidacioAPI = (req, res) => {
     const title = req.body.title;
     const alumne = req.body.alumne;
     const browser = req.body.browser
-    const browserId = req.body.browserId;
+    const windowId = req.body.windowId;
     const tabId = req.body.tabId;
     const incognito = req.body.incognito;
     const favicon = req.body.favicon;
@@ -27,7 +27,7 @@ const postValidacioAPI = (req, res) => {
         //console.log("Do: " + status);
         res.status(200).send({ do:status} );
         historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
-        infoService.register(alumne, timestamp, host, protocol, search, pathname, title, browser, browserId, tabId, incognito, favicon, active, status, audible);
+        infoService.register(alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, status, audible);
 
     }).catch((err) => {
         console.error(err);
