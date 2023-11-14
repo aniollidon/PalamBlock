@@ -213,6 +213,9 @@ class BrowserStatus {
     }
 
     checkTabs(tabsInfos, activeTab, timestamp) {
+        if(!tabsInfos) return false;
+        if(!activeTab) return false;
+        
         this.setAlive(timestamp);
 
         let changes = false;
