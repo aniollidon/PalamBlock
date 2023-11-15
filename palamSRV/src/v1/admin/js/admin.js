@@ -753,15 +753,15 @@ socket.on('alumnesActivity', function (data) {
                             // Create a browser
                             let browserDiv = undefined;
 
-                            if (!document.getElementById(browser + "-browser")) {
+                            if (!document.getElementById(alumne + browser + "-browser")) {
                                 browserDiv = document.createElement("div");
                                 browserDiv.setAttribute("class", "chrome-tabs");
-                                browserDiv.setAttribute("id", browser + "-browser");
+                                browserDiv.setAttribute("id", alumne + browser + "-browser");
                                 browserDiv.style = "--tab-content-margin: 9px;";
                                 browserDiv.setAttribute("data-chrome-tabs-instance-id", browser);
                                 alumneBrowsersDiv.appendChild(browserDiv);
                             } else {
-                                browserDiv = document.getElementById(browser + "-browser");
+                                browserDiv = document.getElementById(alumne + browser + "-browser");
                                 browserDiv.innerHTML = "";
                             }
 
