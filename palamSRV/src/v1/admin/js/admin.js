@@ -500,7 +500,7 @@ function obreDialogNormesApps(whoid, who = "alumne") {
 
 socket.on('alumnesActivity', function (data) {
     let alumnesList = document.getElementById("alumnesList");
-    
+
     for (let grup in grupAlumnesList){
         for (let alumne in grupAlumnesList[grup].alumnes){
             const alumneInfo = Object.hasOwnProperty.call(data, alumne)? data[alumne] : undefined;
@@ -817,10 +817,12 @@ socket.on('alumnesActivity', function (data) {
                                     const url = tabInfo.webPage.protocol + "//" + tabInfo.webPage.host + tabInfo.webPage.pathname + tabInfo.webPage.search
                                     ttabDiv.innerHTML = `${tabInfo.tabId}  <a href="${url}"> ${tabInfo.webPage.title} </a> ${tabInfo.incognito ? "[INCOGNITO]" : ""} ${tabInfo.active ? "ACTIVE" : "INACTIVE"} favicon: ${tabInfo.webPage.favicon}`
                                     tbrowserTabsDiv.appendChild(ttabDiv);*/
+                                    const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:"];
+                                    const noicon = (tabInfo.webPage.protocol && noprotocols.indexOf(tabInfo.webPage.protocol) !== -1)
                                     chromeTabsObjects[alumne][browser].addTab({
                                         title: tabInfo.webPage.title,
                                         favicon: tabInfo.webPage.favicon ? tabInfo.webPage.favicon :
-                                            (tabInfo.webPage.protocol === "chrome:" ? undefined : "img/undefined_favicon.png"),
+                                            (noicon ? undefined : "img/undefined_favicon.png"),
                                         info: tabInfo
                                     }, {
                                         background: !tabInfo.active
@@ -1007,7 +1009,10 @@ socket.on('historialWebAlumne', function (data) {
         const dTitile = document.createElement("strong");
         dTitile.setAttribute("class", "mb-1 nomesunalinia");
         const favicon = document.createElement("img");
-        favicon.setAttribute("src", webPage.favicon ? webPage.favicon : "img/undefined_favicon.png");
+        const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:"];
+        const noicon = (webPage.protocol && noprotocols.indexOf(webPage.protocol) !== -1)
+
+        favicon.setAttribute("src", webPage.favicon && !noicon ? webPage.favicon : "img/undefined_favicon.png");
         favicon.setAttribute("class", "historial-favicon");
         dTitile.appendChild(favicon);
 

@@ -116,6 +116,7 @@
 
         get tabContentWidths() {
             const numberOfTabs = this.tabEls.length
+            if(numberOfTabs === 0) return []
             const tabsContentWidth = this.tabContentEl.clientWidth
             const tabsCumulativeOverlappedWidth = (numberOfTabs - 1) * TAB_CONTENT_OVERLAP_DISTANCE
             const targetWidth = (tabsContentWidth - (2 * TAB_CONTENT_MARGIN) + tabsCumulativeOverlappedWidth) / numberOfTabs

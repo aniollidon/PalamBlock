@@ -3,6 +3,8 @@ const db = require("../database/db");
 function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon) {
 
     if(protocol.includes("chrome")) return;
+    if(protocol.includes("edge")) return;
+    if(protocol.includes("secure")) return;
 
     // Si fa menys de 5 minuts, i és el mateix web actualitzem
     return db.HistorialWeb.findOneAndUpdate({

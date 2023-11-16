@@ -7,14 +7,23 @@ const API_REGISTER = API_URL + 'alumne/auth';
 
 importScripts('ua-parser.min.js')
 
-function getBrowser() {
-    try {
-        if (navigator.brave.isBrave())
-            return "Brave"
-    } catch (e) {
+async function getBrowser() {
+    const stored = await chrome.storage.sync.get(['browser']);
+    if(!stored || !stored.browser || stored.browser === "unknown") {
+        try {
+            if (navigator.brave.isBrave())
+                chrome.storage.sync.set({browser: "Brave"});
+                return "Brave"
+        } catch (e) {
+        }
+
+        const uap = new UAParser();
+        chrome.storage.sync.set({browser: uap.getBrowser().name});
+        return uap.getBrowser().name;
     }
-    const uap = new UAParser();
-    return uap.getBrowser().name;
+    else {
+        return stored.browser;
+    }
 }
 
 async function customTabInfo(chromeTab) {
@@ -34,7 +43,7 @@ async function customTabInfo(chromeTab) {
                 title: chromeTab.title,
                 favicon: chromeTab.favIconUrl,
                 alumne: result.alumne,
-                browser: getBrowser(),
+                browser: await getBrowser(),
                 windowId: chromeTab.windowId,
                 tabId: chromeTab.id,
                 incognito: chromeTab.incognito,
@@ -55,7 +64,7 @@ async function customShortInfo() {
             }
             resolve({
                 alumne: result.alumne,
-                browser: getBrowser(),
+                browser: await getBrowser(),
             });
         });
     });
@@ -68,7 +77,7 @@ async function customTabsInfo(chromeTabs) {
                 resolve(null);
                 return;
             }
-            const browser = getBrowser();
+            const browser = await getBrowser();
             const alumne = result.alumne;
             let tabsInfos = {};
             let activeTab = null;
@@ -198,9 +207,16 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if (changeInfo.title || changeInfo.favIconUrl) {
-        customTabInfo(tab).then((tab_info) => {
+        customTabInfo(tab).then(async (tab_info) => {
             if (!tab_info) return;
             tab_info.action = "update";
+
+            if(tab_info.protocol === "secure:") {
+                // Avast només es pot detectar en obrir una pestanya nova
+                await chrome.storage.sync.set({browser: "Avast"});
+                tab_info.browser = "Avast";
+            }
+
             fetch(API_TAB_INFO, {
                 method: 'POST',
                 headers: {
