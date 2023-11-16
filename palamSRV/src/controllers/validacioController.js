@@ -19,6 +19,11 @@ const postValidacioAPI = (req, res) => {
 
     const timestamp = new Date();
 
+    if(!alumne || !browser || !tabId) {
+        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar alumne, browser i tabId" })
+        return;
+    }
+
     const validacioAlumne = new validacioService.Validacio(alumne);
     const validacio = validacioAlumne.checkWeb(host, protocol, search, pathname, title);
 
@@ -39,6 +44,11 @@ const postAppsAPI = (req, res) => {
     const apps = req.body.apps;
     const alumne = req.body.alumne;
     const timestamp = new Date();
+
+    if(!alumne || !apps) {
+        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar alumne i apps" })
+        return;
+    }
 
     const validacioAlumne = new validacioService.Validacio(alumne);
     validacioAlumne.checkApps(apps).then((status) => {

@@ -86,7 +86,7 @@ function setGrupStatus(grupId, status){
 async function getAlumneStatus(alumneId){
     const alumne = await db.Alumne.findOne({alumneId: alumneId});
     if(!alumne)
-        throw {status: 404, message: "Alumne no trobat"};
+        throw {status: 404, message: "Alumne " + alumneId +" no trobat"};
 
     return alumne.status;
 }

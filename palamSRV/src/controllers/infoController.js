@@ -16,17 +16,15 @@ const postTabInfoAPI = (req, res) => {
     const favicon = req.body.favicon;
     const active = req.body.active;
     const audible = req.body.audible;
-
-
     const timestamp = new Date();
 
-    if(action !== "active" && action !== "close" && action !== "update") {
-        res.status(500).send({status: "ERROR", data: "Action incorrecte. Ha de ser active, close o update"});
+    if(!alumne || !browser || !tabId) {
+        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar alumne, browser i tabId" })
         return;
     }
 
-    if (!tabId) {
-        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar action i tabId" })
+    if(action !== "active" && action !== "close" && action !== "update") {
+        res.status(500).send({status: "ERROR", data: "Action incorrecte. Ha de ser active, close o update"});
         return;
     }
 
@@ -47,8 +45,8 @@ const postBrowserInfoAPI = (req, res) => {
     const tabsInfos = req.body.tabsInfos;
     const activeTab = req.body.activeTab;
 
-    if (!alumne || !browser) {
-        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar alumne, browser." })
+    if (!alumne || !browser || !tabsInfos || !activeTab) {
+        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar alumne, browser, tabsInfos i activeTab" });
         return;
     }
 
@@ -62,10 +60,12 @@ function getAlumnesActivity() {
 }
 
 function registerOnUpdateCallback(callback) {
+    if(!callback) return;
     infoService.registerOnUpdateCallback(callback);
 }
 
 function remoteCloseTab(alumne, browser, tab) {
+    if(!alumne || !browser || !tab) return;
     infoService.remoteCloseTab(alumne, browser, tab);
 }
 
