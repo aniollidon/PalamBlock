@@ -215,7 +215,7 @@ class BrowserStatus {
     checkTabs(tabsInfos, activeTab, timestamp) {
         if(!tabsInfos) return false;
         if(!activeTab) return false;
-        
+
         this.setAlive(timestamp);
 
         let changes = false;
@@ -387,6 +387,7 @@ class AllAlumnesStatus{
     registerCallback(onUpdateCallback) {
         this._onUpdateCallback = onUpdateCallback;
         for (const alumne in this.alumnesStat) {
+            if(!this.alumnesStat[alumne]) continue; // Això no hauria de caldre
             this.alumnesStat[alumne].updateCallbacks(onUpdateCallback);
         }
     }
