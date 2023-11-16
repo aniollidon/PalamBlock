@@ -1,7 +1,8 @@
 const db = require("../database/db");
+const logger = require("../logger").logger;
 
 function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon) {
-
+    logger.debug("saveWeb: " + alumne + " " + timestamp + " " + host + " " + protocol + " " + search + " " + pathname + " " + title + " " + browser + " " + tabId + " " + incognito + " " + favicon);
     if(protocol.includes("chrome")) return;
     if(protocol.includes("edge")) return;
     if(protocol.includes("secure")) return;
@@ -45,7 +46,7 @@ function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, bro
 }
 
 function saveApp(alumne, timestamp, processName, processPath, caption, icon, iconType) {
-
+    logger.debug("saveApp: " + alumne + " " + timestamp + " " + processName + " " + processPath + " " + caption + " " + icon + " " + iconType);
     // Fa una hora
     const now = new Date();
     const faUnaHora = new Date(Date.now() - 60 * 60 * 1000)
