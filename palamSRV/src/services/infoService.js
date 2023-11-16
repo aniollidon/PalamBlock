@@ -461,7 +461,7 @@ class AllAlumnesStatus {
 const allAlumnesStatus = new AllAlumnesStatus();
 
 function registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, audible) {
-    logger.debug("registerTabAction: action=" + action + " alumne=" + alumne + " timestamp=" + timestamp + " host=" + host + " protocol=" + protocol + " search=" + search + " pathname=" + pathname + " title=" + title + " browser=" + browser + " windowId=" + windowId + " tabId=" + tabId + " incognito=" + incognito + " favicon=" + favicon + " active=" + active + " audible=" + audible);
+    logger.trace("registerTabAction: action=" + action + " alumne=" + alumne + " host=" + host + " protocol=" + protocol + " search=" + search + " pathname=" + pathname + " title=" + title + " browser=" + browser + " windowId=" + windowId + " tabId=" + tabId + " incognito=" + incognito + " favicon=" + favicon + " active=" + active + " audible=" + audible);
 
     if (action === "close") {
         allAlumnesStatus.closeTab(alumne, tabId, browser, timestamp);
@@ -471,18 +471,18 @@ function registerTabAction(action, alumne, timestamp, host, protocol, search, pa
 }
 
 function register(alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, action, audible) {
-    logger.debug("register: alumne=" + alumne + " timestamp=" + timestamp + " host=" + host + " protocol=" + protocol + " search=" + search + " pathname=" + pathname + " title=" + title + " browser=" + browser + " windowId=" + windowId + " tabId=" + tabId + " incognito=" + incognito + " favicon=" + favicon + " active=" + active + " action=" + action + " audible=" + audible);
+    logger.trace("register: alumne=" + alumne + " host=" + host + " protocol=" + protocol + " search=" + search + " pathname=" + pathname + " title=" + title + " browser=" + browser + " windowId=" + windowId + " tabId=" + tabId + " incognito=" + incognito + " favicon=" + favicon + " active=" + active + " action=" + action + " audible=" + audible);
     allAlumnesStatus.register(alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, action, audible);
 }
 
 
 function registerBrowserInfo(alumne, browser, tabsInfos, activeTab, timestamp) {
-    logger.debug("registerBrowserInfo: alumne=" + alumne + " browser=" + browser + " tabsInfos=" + tabsInfos + " activeTab=" + activeTab + " timestamp=" + timestamp);
+    logger.trace("registerBrowserInfo: alumne=" + alumne + " browser=" + browser + " tabsInfos=" + JSON.stringify(tabsInfos) + " activeTab=" + activeTab );
     allAlumnesStatus.checkTabs(alumne, browser, tabsInfos, activeTab, timestamp);
 }
 
 async function getAlumnesActivity() {
-    logger.debug("getAlumnesActivity");
+    logger.trace("getAlumnesActivity");
     // Get alumnes status on db
     for (const alumne in allAlumnesStatus.alumnesStat) {
         try {
@@ -501,7 +501,7 @@ function registerOnUpdateCallback(callback) {
 }
 
 function remoteCloseTab(alumne, browser, tabId) {
-    logger.debug("remoteCloseTab: alumne=" + alumne + " browser=" + browser + " tabId=" + tabId);
+    logger.trace("remoteCloseTab: alumne=" + alumne + " browser=" + browser + " tabId=" + tabId);
     const action = {action: 'close', browser: browser, tabId: tabId};
     if (!allAlumnesStatus.pendingBrowserActions[alumne]) allAlumnesStatus.pendingBrowserActions[alumne] = {};
 
@@ -511,7 +511,7 @@ function remoteCloseTab(alumne, browser, tabId) {
 }
 
 function getBrowserPendingActions(alumne, browser) {
-    logger.debug("getBrowserPendingActions: alumne=" + alumne + " browser=" + browser);
+    logger.trace("getBrowserPendingActions: alumne=" + alumne + " browser=" + browser);
     if (!allAlumnesStatus.pendingBrowserActions[alumne]) return undefined;
     if (!allAlumnesStatus.pendingBrowserActions[alumne][browser]) return undefined;
     const pending = allAlumnesStatus.pendingBrowserActions[alumne][browser];
@@ -543,7 +543,7 @@ async function normesWebHasChanged() {
 }
 
 function registerApps(apps, alumne, status, timestamp) {
-    logger.debug("registerApps: apps=" + apps + " alumne=" + alumne + " status=" + status + " timestamp=" + timestamp);
+    logger.trace("registerApps: apps=" + apps + " alumne=" + alumne + " status=" + status);
     for (const appinfo of apps) {
 
         allAlumnesStatus.registerApp(appinfo, alumne, status[appinfo.name], timestamp);
