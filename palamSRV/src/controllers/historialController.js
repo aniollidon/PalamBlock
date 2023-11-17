@@ -8,7 +8,12 @@ async function getHistorialApps(alumne, offset= undefined){
     return historialService.getHistorialApps(alumne, offset);
 }
 
+async function deleteHistorialFromAlumne(alumne){
+    return historialService.deleteHistorialFromAlumne(alumne);
+}
+
 module.exports = {
     getHistorialWeb,
-    getHistorialApps
+    getHistorialApps,
+    deleteHistorialFromAlumne
 }

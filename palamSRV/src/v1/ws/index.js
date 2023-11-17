@@ -58,6 +58,11 @@ function initializeWebSocket(server) {
             normaController.removeNormaApp(msg.who, msg.whoid, msg.normaId);
         });
 
+        socket.on('deleteHistorialFromAlumne', (msg) => {
+            //console.log('deleteHistorialFromAlumne', msg);
+            historialController.deleteHistorialFromAlumne(msg.alumne);
+        });
+
         normaController.registerOnUpdateCallback(async () => {
             infoController.normesWebHasChanged();
             socket.emit('normesWeb', await normaController.getAllNormesWeb());

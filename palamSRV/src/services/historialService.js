@@ -98,9 +98,16 @@ function getHistorialApps(alumne, offset = undefined) {
         return db.HistorialApps.find({alumneid: alumne}).sort({timestamp: -1}).limit(50);
 }
 
+async  function deleteHistorialFromAlumne(alumne) {
+    const ret = await db.HistorialWeb.deleteMany({alumneid: alumne});
+    const ret2 = await db.HistorialApps.deleteMany({alumneid: alumne});
+    console.log(`Eliminat ${ret.deletedCount} registres web i ${ret2.deletedCount} registres apps de l'alumne ${alumne}`);
+}
+
 module.exports = {
     saveWeb,
     getHistorialWeb,
     getHistorialApps,
+    deleteHistorialFromAlumne,
     saveApp
 };
