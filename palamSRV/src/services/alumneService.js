@@ -1,5 +1,6 @@
 const db = require("../database/db");
 const crypto = require('crypto');
+const logger = require("../logger").logger;
 const cryptoSalt = process.env.CRYPTO_SALT;
 
 
@@ -60,7 +61,7 @@ async function getGrupAlumnesList(){
     for (let alumne of await db.Alumne.find()) {
 
         if(!list[alumne.grup]){
-            console.error("No existeix el grup " + alumne.grup);
+            logger.error("No existeix el grup " + alumne.grup);
             continue;
         }
 

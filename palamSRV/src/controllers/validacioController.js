@@ -1,6 +1,7 @@
 const historialService = require("../services/historialService");
 const validacioService = require("../services/validacioService");
 const infoService = require("../services/infoService");
+const logger = require("../logger").logger;
 
 const postValidacioAPI = (req, res) => {
     const host = req.body.host;
@@ -28,14 +29,14 @@ const postValidacioAPI = (req, res) => {
     const validacio = validacioAlumne.checkWeb(host, protocol, search, pathname, title);
 
     validacio.then((status) => {
-        //console.log("host: " + host + " protocol: " + protocol + " search: " + search + " pathname: " + pathname + " title: " + title + " alumne: " + alumne + " browser: " + browser + " tabId: " + tabId + "incognito: " + incognito + " timestamp: " + timestamp);
-        //console.log("Do: " + status);
+        //logger.info("host: " + host + " protocol: " + protocol + " search: " + search + " pathname: " + pathname + " title: " + title + " alumne: " + alumne + " browser: " + browser + " tabId: " + tabId + "incognito: " + incognito + " timestamp: " + timestamp);
+        //logger.info("Do: " + status);
         res.status(200).send({ do:status} );
         historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
         infoService.register(alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, status, audible);
 
     }).catch((err) => {
-        console.error(err);
+        logger.error(err);
         res.status(500).send({ error: err });
     });
 }
@@ -58,7 +59,7 @@ const postAppsAPI = (req, res) => {
         }
         res.status(200).send({ do:status} );
     }).catch((err) => {
-        console.error(err);
+        logger.error(err);
         res.status(500).send({ error: err });
     });
 }

@@ -25,7 +25,7 @@ class Validacio {
             .populate('normesWeb');
 
         if(!alumne) {
-            //console.log("L'alumne no existeix: alumne=" + this.alumneid);
+            //logger.info("L'alumne no existeix: alumne=" + this.alumneid);
             return "allow";
         }
 
@@ -37,7 +37,7 @@ class Validacio {
         const grup = await db.Grup.findOne({grupId: alumne.grup})
 
         if(!grup){
-            //console.log("L'alumne no té grup assignat: alumne=" + this.alumneid);
+            //logger.info("L'alumne no té grup assignat: alumne=" + this.alumneid);
             return "allow";
         }
 
@@ -117,7 +117,7 @@ class Validacio {
             .populate('normesApp');
 
         if(!alumne) {
-            //console.log("L'alumne no existeix: alumne=" + this.alumneid);
+            //logger.info("L'alumne no existeix: alumne=" + this.alumneid);
             return {};
         }
 
@@ -129,7 +129,7 @@ class Validacio {
         const grup = await db.Grup.findOne({grupId: alumne.grup})
 
         if(!grup){
-            //console.log("L'alumne no té grup assignat: alumne=" + this.alumneid);
+            //logger.info("L'alumne no té grup assignat: alumne=" + this.alumneid);
             return {};
         }
 

@@ -4,6 +4,7 @@ const normaController = require("../../controllers/normaController");
 const historialController = require("../../controllers/historialController");
 const alumneController = require("../../controllers/alumneController");
 const adminController = require("../../controllers/adminController");
+const logger = require("../../logger").logger;
 
 function initializeWebSocket(server) {
     const io = new Server(server)
@@ -37,29 +38,29 @@ function initializeWebSocket(server) {
         });
 
         socket.on('addNormaWeb', (msg) => {
-            //console.log('addNormaWeb', msg);
+            //logger.info('addNormaWeb', msg);
             normaController.addNormaWeb(msg.who, msg.whoid, msg.severity, msg.mode, msg.hosts_list,
                 msg.protocols_list, msg.searches_list, msg.pathnames_list, msg.titles_list, msg.enabled_on);
         });
 
         socket.on('addNormaApps', (msg) => {
-            //console.log('addNormaApps', msg);
+            //logger.info('addNormaApps', msg);
             normaController.addNormaApps(msg.who, msg.whoid, msg.severity, msg.processName, msg.processPath,
                 msg.processPathisRegex);
         });
 
         socket.on('removeNormaWeb', (msg) => {
-            //console.log('removeNormaWeb', msg);
+            //logger.info('removeNormaWeb', msg);
             normaController.removeNormaWeb(msg.who, msg.whoid, msg.normaId);
         });
 
         socket.on('removeNormaApps', (msg) => {
-            //console.log('removeNormaApps', msg);
+            //logger.info('removeNormaApps', msg);
             normaController.removeNormaApp(msg.who, msg.whoid, msg.normaId);
         });
 
         socket.on('deleteHistorialFromAlumne', (msg) => {
-            //console.log('deleteHistorialFromAlumne', msg);
+            //logger.info('deleteHistorialFromAlumne', msg);
             historialController.deleteHistorialFromAlumne(msg.alumne);
         });
 

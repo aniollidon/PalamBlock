@@ -1,4 +1,5 @@
 const alumneService = require("../services/alumneService");
+const logger = require("../logger").logger;
 
 
 const postAlumneAPI = (req, res) => {
@@ -15,7 +16,7 @@ const postAlumneAPI = (req, res) => {
                 res.send({status: "OK", data: alumne});
             })
             .catch((error) => {
-                console.error(error);
+                logger.error(error);
                 res.status(error?.status || 500)
                     .send({ status: "FAILED", data: { error: error?.message || error } });
             });
@@ -34,7 +35,7 @@ const autentificaAlumneAPI = (req, res) => {
                 res.send({status: "OK", data: alumne});
             })
             .catch((error) => {
-                console.error(error);
+                logger.error(error);
                 res.status(error?.status || 500)
                     .send({ status: "FAILED", data: { error: error?.message || error } });
             });
@@ -48,13 +49,13 @@ const getGrupAlumnesList = () => {
 
 function setAlumneStatus(alumneId, status){
     alumneService.setAlumneStatus(alumneId, status).catch((error) => {
-        console.error(error);
+        logger.error(error);
     });
 }
 
 function setGrupStatus(grupId, status){
     return alumneService.setGrupStatus(grupId, status).catch((error) => {
-        console.error(error);
+        logger.error(error);
     });
 }
 

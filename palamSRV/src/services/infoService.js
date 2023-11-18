@@ -171,7 +171,7 @@ class BrowserStatus {
         tabId = tabId.toString();
 
         if (!this.tabs[tabId]) {
-            console.error("Tab " + tabId + " not found");
+            logger.error("Tab " + tabId + " not found");
             return; //TODO algo millor
         }
 
@@ -191,7 +191,7 @@ class BrowserStatus {
 
         // Comprovacions
         if (!this.tabs[tabId]) {
-            console.error("Tab " + tabId + " not found");
+            logger.error("Tab " + tabId + " not found");
             return changes;
         }
 
@@ -286,7 +286,7 @@ class AlumneStatus {
         const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
         setInterval(() => {
             if (this.conected && this._lastNews && (new Date() - this._lastNews) > NOCONN_TIME) {
-                //console.log("Alumne " + this.alumne + " disconnected");
+                //logger.info("Alumne " + this.alumne + " disconnected");
                 for (const app in this.apps) {
                     this.apps[app].close();
                 }
@@ -336,7 +336,7 @@ class AlumneStatus {
     closeTab(browser, tabId, timestamp) {
         this.setAlive(timestamp);
         if (!this.browsers[browser]) {
-            console.error("Browser " + browser + " not found");
+            logger.error("Browser " + browser + " not found");
             return; //TODO algo millor
         }
 
@@ -416,7 +416,7 @@ class AllAlumnesStatus {
 
         this.alumnesStat[alumne].closeTab(browser, tabId, timestamp);
 
-        //console.log("Alumne " + alumne + " close tab " + tabId + " on browser " + browser);
+        //logger.info("Alumne " + alumne + " close tab " + tabId + " on browser " + browser);
 
         // Comprova si estava a la llista d'accions pendents. Si ho estava, l'esborra
         if (this.pendingBrowserActions[alumne] && this.pendingBrowserActions[alumne][browser]) {
@@ -461,7 +461,7 @@ class AllAlumnesStatus {
 const allAlumnesStatus = new AllAlumnesStatus();
 
 function registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, audible) {
-    logger.trace("registerTabAction: action=" + action + " alumne=" + alumne + " host=" + host + " protocol=" + protocol + " search=" + search + " pathname=" + pathname + " title=" + title + " browser=" + browser + " windowId=" + windowId + " tabId=" + tabId + " incognito=" + incognito + " favicon=" + favicon + " active=" + active + " audible=" + audible);
+    logger.trace("registerTabAction: action=" + action + " alumne=" + alumne + " host=" + host + " protocol=" + protocol + " search=" + search + " pathname=" + pathname + " title=" + title + " browser=" + browser + " windowId=" + windowId + " tabId=" + tabId + " incognito=" + incognito + " active=" + active + " audible=" + audible);
 
     if (action === "close") {
         allAlumnesStatus.closeTab(alumne, tabId, browser, timestamp);
@@ -471,7 +471,7 @@ function registerTabAction(action, alumne, timestamp, host, protocol, search, pa
 }
 
 function register(alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, action, audible) {
-    logger.trace("register: alumne=" + alumne + " host=" + host + " protocol=" + protocol + " search=" + search + " pathname=" + pathname + " title=" + title + " browser=" + browser + " windowId=" + windowId + " tabId=" + tabId + " incognito=" + incognito + " favicon=" + favicon + " active=" + active + " action=" + action + " audible=" + audible);
+    logger.trace("register: alumne=" + alumne + " host=" + host + " protocol=" + protocol + " search=" + search + " pathname=" + pathname + " title=" + title + " browser=" + browser + " windowId=" + windowId + " tabId=" + tabId + " incognito=" + incognito + " active=" + active + " action=" + action + " audible=" + audible);
     allAlumnesStatus.register(alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, action, audible);
 }
 
@@ -488,7 +488,7 @@ async function getAlumnesActivity() {
         try {
             allAlumnesStatus.alumnesStat[alumne].status = await alumneService.getAlumneStatus(alumne);
         } catch (err) {
-            console.error("Error getting alumne=" + alumne + " status. Esborrant alumne", err);
+            logger.error("Error getting alumne=" + alumne + " status. Esborrant alumne", err);
             allAlumnesStatus.alumnesStat[alumne] = undefined; // Esborra l'alumne
         }
     }
