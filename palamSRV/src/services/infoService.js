@@ -477,7 +477,7 @@ function register(alumne, timestamp, host, protocol, search, pathname, title, br
 
 
 function registerBrowserInfo(alumne, browser, tabsInfos, activeTab, timestamp) {
-    logger.trace("registerBrowserInfo: alumne=" + alumne + " browser=" + browser + " tabsInfos=" + JSON.stringify(tabsInfos) + " activeTab=" + activeTab );
+    logger.trace("registerBrowserInfo: alumne=" + alumne + " browser=" + browser + " tabsInfos=..." + " activeTab=" + activeTab );
     allAlumnesStatus.checkTabs(alumne, browser, tabsInfos, activeTab, timestamp);
 }
 

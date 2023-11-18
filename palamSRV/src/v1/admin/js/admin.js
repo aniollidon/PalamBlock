@@ -21,25 +21,28 @@ let visibilityAlumnes = {}
 let chromeTabsObjects = {}
 const storedAlumneInfo = {}
 
-function eliminarUpdateAt(obj) {
+function eliminarClauJSON(obj, clau) {
     if (obj && typeof obj === 'object') {
-        for (const clave in obj) {
-            if (clave === 'updatedAt') {
-                delete obj[clave];
+        for (const key in obj) {
+            if (key === clau) {
+                delete obj[key];
             } else {
-                eliminarUpdateAt(obj[clave]);
+                eliminarClauJSON(obj[key], clau);
             }
         }
     }
 }
 
-function compareNoUpdateAt(oobj1, oobj2) {
+function compareEqualTabs(oobj1, oobj2) {
     //copia els objectes per no modificar els originals
     const obj1 = JSON.parse(JSON.stringify(oobj1));
     const obj2 = JSON.parse(JSON.stringify(oobj2));
 
-    eliminarUpdateAt(obj1);
-    eliminarUpdateAt(obj2);
+    eliminarClauJSON(obj1, 'updatedAt');
+    eliminarClauJSON(obj2, 'updatedAt');
+
+    eliminarClauJSON(obj1, 'status');
+    eliminarClauJSON(obj2, 'status');
 
     const strobj1 = JSON.stringify(obj1);
     const strobj2 = JSON.stringify(obj2);
@@ -501,9 +504,9 @@ function obreDialogNormesApps(whoid, who = "alumne") {
 socket.on('alumnesActivity', function (data) {
     let alumnesList = document.getElementById("alumnesList");
 
-    for (let grup in grupAlumnesList){
-        for (let alumne in grupAlumnesList[grup].alumnes){
-            const alumneInfo = Object.hasOwnProperty.call(data, alumne)? data[alumne] : undefined;
+    for (let grup in grupAlumnesList) {
+        for (let alumne in grupAlumnesList[grup].alumnes) {
+            const alumneInfo = Object.hasOwnProperty.call(data, alumne) ? data[alumne] : undefined;
             let alumneDiv = undefined;
 
             // Draw alumne container
@@ -664,7 +667,7 @@ socket.on('alumnesActivity', function (data) {
                 alumneDivButtons.appendChild(historialAppButton);
             }
 
-            if(!alumneStatusButtonMain){
+            if (!alumneStatusButtonMain) {
                 alumneStatusButtonMain = document.getElementById(alumne + "-status-button-main");
                 setAlumneStatus(alumneInfo ? alumneInfo.status : "Inactiu");
             }
@@ -742,98 +745,124 @@ socket.on('alumnesActivity', function (data) {
                 }
 
                 for (const browser in alumneInfo.browsers) {
-                    if (Object.hasOwnProperty.call(alumneInfo.browsers, browser)) {
-                        const browserInfo = alumneInfo.browsers[browser];
+                    const browserInfo = alumneInfo.browsers[browser];
 
-                        if (!storedAlumneInfo[alumne]
-                            || !storedAlumneInfo[alumne].browsers
-                            || !storedAlumneInfo[alumne].browsers[browser]
-                            || !compareNoUpdateAt(storedAlumneInfo[alumne].browsers[browser], browserInfo)) {
+                    let browserDiv = document.getElementById(alumne + "-" + browser + "-browser");
+                    if(!browserDiv){
+                        browserDiv = document.createElement("div");
+                        browserDiv.setAttribute("class", "browser");
+                        browserDiv.setAttribute("id", alumne + "-" + browser + "-browser");
+                        alumneBrowsersDiv.appendChild(browserDiv);
+                    }
 
-                            // Create a browser
-                            let browserDiv = undefined;
+                    // Si el browser ja no és obert
+                    if (!browserInfo.opened) {
+                        browserDiv.remove();
+                        continue;
+                    }
 
-                            if (!document.getElementById(alumne + browser + "-browser")) {
-                                browserDiv = document.createElement("div");
-                                browserDiv.setAttribute("class", "chrome-tabs");
-                                browserDiv.setAttribute("id", alumne + browser + "-browser");
-                                browserDiv.style = "--tab-content-margin: 9px;";
-                                browserDiv.setAttribute("data-chrome-tabs-instance-id", browser);
-                                alumneBrowsersDiv.appendChild(browserDiv);
-                            } else {
-                                browserDiv = document.getElementById(alumne + browser + "-browser");
-                                browserDiv.innerHTML = "";
-                            }
+                    // Prepara i separa per finestres
+                    const windowInfo = {}
+                    for (const tab in browserInfo.tabs) {
+                        if (!browserInfo.tabs[tab].opened) continue;
+                        if (!windowInfo[browserInfo.tabs[tab].windowId])
+                            windowInfo[browserInfo.tabs[tab].windowId] = {};
 
-                            // Check if browser is opened
-                            if (!browserInfo.opened) {
-                                // delete browser
-                                browserDiv.remove();
-                                continue;
-                            }
+                        windowInfo[browserInfo.tabs[tab].windowId][tab] = browserInfo.tabs[tab];
+                    }
 
-                            const browserInfoDiv = document.createElement("div");
-                            browserInfoDiv.setAttribute("class", "browser-info");
-                            const browserIcon = document.createElement("img");
-                            browserIcon.setAttribute("src", "img/" + browserInfo.browser.toLowerCase() + ".png");
-                            browserIcon.setAttribute("class", "browser-icon");
-                            browserInfoDiv.appendChild(browserIcon);
-                            browserDiv.appendChild(browserInfoDiv);
+                    for (const windowId in windowInfo) {
 
-                            const browserContent = document.createElement("div");
-                            browserContent.setAttribute("class", "chrome-tabs-content");
-                            browserDiv.appendChild(browserContent);
+                        if (storedAlumneInfo[alumne]
+                             && storedAlumneInfo[alumne]
+                             && storedAlumneInfo[alumne][browser]
+                             && storedAlumneInfo[alumne][browser][windowId]
+                             && compareEqualTabs(storedAlumneInfo[alumne][browser][windowId], windowInfo[windowId])) {
+                            continue;
+                        }
 
-                            const browserTabsBottomBar = document.createElement("div");
-                            browserTabsBottomBar.setAttribute("class", "chrome-tabs-bottom-bar");
-                            browserDiv.appendChild(browserTabsBottomBar);
+                        let browserWin = undefined;
+                        const bw_id = alumne + "-" + browser + "-" + windowId;
+                        if (!document.getElementById(bw_id + "-browser-win")) {
+                            browserWin = document.createElement("div");
+                            browserWin.setAttribute("class", "chrome-tabs");
+                            browserWin.setAttribute("id", bw_id + "-browser-win");
+                            browserWin.style = "--tab-content-margin: 9px;";
+                            browserWin.setAttribute("data-chrome-tabs-instance-id", bw_id);
+                            browserDiv.appendChild(browserWin);
+                        } else {
+                            browserWin = document.getElementById(bw_id + "-browser-win");
+                            browserWin.innerHTML = "";
+                        }
 
-                            const menu_options = creaWebMenuJSON(alumne);
+                        const browserWinInfoDiv = document.createElement("div");
+                        browserWinInfoDiv.setAttribute("class", "browser-info");
+                        const browserIcon = document.createElement("img");
+                        browserIcon.setAttribute("src", "img/" + browserInfo.browser.toLowerCase() + ".png");
+                        browserIcon.setAttribute("class", "browser-icon");
+                        browserWinInfoDiv.appendChild(browserIcon);
+                        browserWin.appendChild(browserWinInfoDiv);
 
-                            // init chrome tabs
-                            if (!chromeTabsObjects[alumne])
-                                chromeTabsObjects[alumne] = {};
-                            chromeTabsObjects[alumne][browser] = new ChromeTabs()
-                            chromeTabsObjects[alumne][browser].init(browserDiv, menu_options)
+                        const browserContent = document.createElement("div");
+                        browserContent.setAttribute("class", "chrome-tabs-content");
+                        browserWin.appendChild(browserContent);
 
-                            //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
-                            //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
-                            browserDiv.addEventListener('tabRemove', ({detail}) => {
-                                //logger.info('Tab removed', detail.tabEl)
-                                socket.emit("closeTab", {
-                                    alumne: alumne,
-                                    browser: browserInfo.browser,
-                                    tabId: detail.tabEl.info.tabId
-                                })
-                            });
+                        const browserTabsBottomBar = document.createElement("div");
+                        browserTabsBottomBar.setAttribute("class", "chrome-tabs-bottom-bar");
+                        browserWin.appendChild(browserTabsBottomBar);
 
-                            for (const tab in browserInfo.tabs) {
-                                if (Object.hasOwnProperty.call(browserInfo.tabs, tab)) {
-                                    const tabInfo = browserInfo.tabs[tab];
-                                    if (!tabInfo.opened) continue;
-                                    /*let ttabDiv = document.createElement("div");
-                                    ttabDiv.setAttribute("class", "tab");
-                                    ttabDiv.setAttribute("id", tab);
-                                    const url = tabInfo.webPage.protocol + "//" + tabInfo.webPage.host + tabInfo.webPage.pathname + tabInfo.webPage.search
-                                    ttabDiv.innerHTML = `${tabInfo.tabId}  <a href="${url}"> ${tabInfo.webPage.title} </a> ${tabInfo.incognito ? "[INCOGNITO]" : ""} ${tabInfo.active ? "ACTIVE" : "INACTIVE"} favicon: ${tabInfo.webPage.favicon}`
-                                    tbrowserTabsDiv.appendChild(ttabDiv);*/
-                                    const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:"];
-                                    const noicon = (tabInfo.webPage.protocol && noprotocols.indexOf(tabInfo.webPage.protocol) !== -1)
-                                    chromeTabsObjects[alumne][browser].addTab({
-                                        title: tabInfo.webPage.title,
-                                        favicon: tabInfo.webPage.favicon ? tabInfo.webPage.favicon :
-                                            (noicon ? undefined : "img/undefined_favicon.png"),
-                                        info: tabInfo
-                                    }, {
-                                        background: !tabInfo.active
-                                    })
-                                }
-                            }
+                        const menu_options = creaWebMenuJSON(alumne);
+
+                        // init chrome tabs
+                        if (!chromeTabsObjects[alumne])
+                            chromeTabsObjects[alumne] = {};
+                        chromeTabsObjects[alumne][browser] = new ChromeTabs()
+                        chromeTabsObjects[alumne][browser].init(browserWin, menu_options)
+
+                        //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
+                        //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
+                        browserWin.addEventListener('tabRemove', ({detail}) => {
+                            //logger.info('Tab removed', detail.tabEl)
+                            socket.emit("closeTab", {
+                                alumne: alumne,
+                                browser: browserInfo.browser,
+                                tabId: detail.tabEl.info.tabId
+                            })
+                        });
+
+                        for (const tab in windowInfo[windowId]) {
+                            const tabInfo = windowInfo[windowId][tab];
+                            if (!tabInfo.opened) continue;
+                            const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:"];
+                            const noicon = (tabInfo.webPage.protocol && noprotocols.indexOf(tabInfo.webPage.protocol) !== -1)
+                            chromeTabsObjects[alumne][browser].addTab({
+                                title: tabInfo.webPage.title,
+                                favicon: tabInfo.webPage.favicon ? tabInfo.webPage.favicon :
+                                    (noicon ? undefined : "img/undefined_favicon.png"),
+                                info: tabInfo
+                            }, {
+                                background: !tabInfo.active
+                            })
+                        }
+
+                       // Store windows structure
+                        if(!storedAlumneInfo[alumne])
+                            storedAlumneInfo[alumne] = {};
+                        if(!storedAlumneInfo[alumne][browser])
+                            storedAlumneInfo[alumne][browser] = {};
+                        storedAlumneInfo[alumne][browser][windowId] = windowInfo[windowId];
+                    }
+
+                    // Cerca si hi ha alguna finestra tancada
+                    for (const windowId in storedAlumneInfo[alumne][browser]) {
+                        if (!windowInfo[windowId]) {
+                            delete storedAlumneInfo[alumne][browser][windowId];
+                            const browserWin = document.getElementById(alumne + "-" + browser + "-" + windowId + "-browser-win");
+                            if (browserWin)
+                                browserWin.remove();
                         }
                     }
                 }
-                // Store new alumne info
-                storedAlumneInfo[alumne] = alumneInfo;
             }
         }
     }
@@ -934,6 +963,7 @@ socket.on('grupAlumnesList', function (data) {
         grupSelector.appendChild(option);
     }
 });
+
 socket.on('normesWeb', function (data) {
     normesWebInfo = data;
 });
