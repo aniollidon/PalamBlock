@@ -104,7 +104,7 @@ export function drawAlumnesActivity(data) {
                     alumneStatusButtonDropdown.appendChild(li);
                 }
 
-                setAlumneStatus(alumneInfo ? alumneInfo.status : "Inactiu");
+                setAlumneStatus(grupAlumnesList[grup].alumnes[alumne].status);
                 alumneDivButtons.appendChild(alumneStatusButton);
                 alumneDivButtons.appendChild(document.createTextNode(' '))
 
