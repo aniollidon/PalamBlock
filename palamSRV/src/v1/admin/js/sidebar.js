@@ -100,8 +100,17 @@ export function drawHistorialWeb(alumne, historial) {
         const favicon = document.createElement("img");
         const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:"];
         const noicon = (webPage.protocol && noprotocols.indexOf(webPage.protocol) !== -1)
+        favicon.src = webPage.favicon && !noicon ? webPage.favicon : "img/undefined_favicon.png";
 
-        favicon.setAttribute("src", webPage.favicon && !noicon ? webPage.favicon : "img/undefined_favicon.png");
+        favicon.onload = () => {
+            if (favicon.naturalWidth === 0) {
+                favicon.src = "img/undefined_favicon.png";
+            }
+        }
+        favicon.onerror = () => {
+            favicon.src = "img/undefined_favicon.png";
+            return true;
+        }
         favicon.setAttribute("class", "historial-favicon");
         dTitile.appendChild(favicon);
 
