@@ -26,12 +26,3 @@ export function compareEqualTabs(oobj1, oobj2) {
 
     return strobj1 === strobj2;
 }
-
-export function getGrup(alumneId) {
-    for (let grup in grupAlumnesList) {
-        if (alumneId in grupAlumnesList[grup].alumnes)
-            return grup;
-    }
-
-    return undefined
-}

@@ -172,6 +172,19 @@ export function drawAlumnesActivity(data) {
 
                 historialAppButton.onclick = () => toogleSideBar(alumne, "apps")
                 alumneDivButtons.appendChild(historialAppButton);
+
+                // Delete button
+                if(alumne === "prova" || window.location.search.includes("super")){
+                    const deleteButton = document.createElement("button");
+                    deleteButton.setAttribute("class", "btn btn-danger");
+                    deleteButton.setAttribute("type", "button");
+                    deleteButton.innerHTML = "Esborra historial";
+                    deleteButton.onclick = () => {
+                        socket.emit("deleteHistorialFromAlumne", {alumne: alumne});
+                    }
+                    alumneDivButtons.appendChild(document.createTextNode(' '))
+                    alumneDivButtons.appendChild(deleteButton);
+                }
             }
 
             if (!alumneStatusButtonMain) {
@@ -470,6 +483,15 @@ export function preparaAlumnesGrups(data) {
         }
         grupSelector.appendChild(option);
     }
+}
+
+export function getGrup(alumneId) {
+    for (let grup in grupAlumnesList) {
+        if (alumneId in grupAlumnesList[grup].alumnes)
+            return grup;
+    }
+
+    return undefined
 }
 
 

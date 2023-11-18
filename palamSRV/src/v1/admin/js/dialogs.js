@@ -1,4 +1,4 @@
-import {getGrup} from "./utils.js";
+import {getGrup} from "./activity.js";
 import {socket} from "./socket.js";
 
 const hblockModalWeb = document.getElementById('bloquejaModalWeb')
