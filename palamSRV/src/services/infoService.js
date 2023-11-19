@@ -552,23 +552,47 @@ function registerApps(apps, alumne, status, timestamp) {
     allAlumnesStatus._onUpdateCallback();
 }
 
-function operaHasInfo(alumne, caption, since) {
+function checkBrowserHistorialItem(alumne, historyitem) {
     if (allAlumnesStatus.alumnesStat[alumne] === undefined) return false;
     const browserslist = allAlumnesStatus.alumnesStat[alumne].browsers;
-    // Search for opera browers
+
+    // PalamBlock pot estar configurant-se
+    if(historyitem.caption.toLowerCase().includes("palamblock")) return true;
+
+    // Search for browser
     for (const browsername in allAlumnesStatus.alumnesStat[alumne].browsers) {
-        if (browsername.toLowerCase().includes("opera")) {
+        let hbrowsername = historyitem.browser.toLowerCase();
+        let hbrowsercaption = historyitem.caption;
+
+        if(hbrowsercaption.includes(":")) // remove after last :
+            hbrowsercaption = hbrowsercaption.substring(0, hbrowsercaption.lastIndexOf(":"));
+
+        if(hbrowsercaption.includes("-")) // remove after last -
+        hbrowsercaption = hbrowsercaption.substring(0, hbrowsercaption.lastIndexOf("-"));
+
+        hbrowsername = hbrowsername.replace("browser", "");
+        if (browsername.toLowerCase() === hbrowsername) {
             // Search for tab with caption
             for (const tab in browserslist[browsername].tabs) {
-                if (browserslist[browsername].tabs[tab].webPage.title.includes(caption)) {
-                    if (browserslist[browsername].tabs[tab].updatedAt > since) {
-                        return true;
-                    }
+                if (browserslist[browsername].tabs[tab].webPage.title.includes(hbrowsercaption)) {
+                    return true;
                 }
             }
         }
     }
+
     return false;
+}
+function checkBrowserHistorial(alumne, history) {
+    if (allAlumnesStatus.alumnesStat[alumne] === undefined) return false;
+
+    for (const historyitem in history) {
+        if (!checkBrowserHistorialItem(alumne, history[historyitem])) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 module.exports = {
@@ -581,5 +605,5 @@ module.exports = {
     getBrowserPendingActions,
     normesWebHasChanged,
     registerApps,
-    operaHasInfo
+    checkBrowserHistorial
 }

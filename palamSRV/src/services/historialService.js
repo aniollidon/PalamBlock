@@ -46,7 +46,7 @@ function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, bro
 }
 
 function saveApp(alumne, timestamp, processName, processPath, caption, icon, iconType) {
-    logger.debug("saveApp: " + alumne + " " + timestamp + " " + processName + " " + processPath + " " + caption + " " + icon + " " + iconType);
+    logger.debug("saveApp: " + alumne + " " + timestamp + " " + processName + " " + processPath + " " + caption + " " + " " + iconType);
     // Fa una hora
     const now = new Date();
     const faUnaHora = new Date(Date.now() - 60 * 60 * 1000)
