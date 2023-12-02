@@ -260,6 +260,7 @@ class AppStatus {
         this.opened = true;
         this.iconB64 = app.iconType === "base64" ? app.icon : undefined
         this.iconSVG = app.iconType === "svg" ? app.icon : undefined
+        this.onTaskBar = app.onTaskBar;
     }
 
     update(status, timestamp) {

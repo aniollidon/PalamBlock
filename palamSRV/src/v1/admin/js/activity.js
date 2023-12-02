@@ -212,12 +212,28 @@ export function drawAlumnesActivity(data) {
                     const w11_first_container = document.createElement("div");
                     w11_first_container.setAttribute("class", "w11 w11-first-container");
 
+                    // create display hidden apps button
+                    /*const w11_hidden_apps_button = document.createElement("div");
+                    w11_hidden_apps_button.setAttribute("class", "w11 app-div w11-hidden-apps-button");
+                    w11_hidden_apps_button.setAttribute("id", alumne + "-hidden-apps-button");
+                    w11_hidden_apps_button.innerHTML = `<svg fill="#ffffff" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M499 270q57 0 104.5 28t75.5 76 28 104q0 39-15 76l122 122q97-81 142-198-36-91-104-162T694 206q-93-40-195-40-86 0-166 29l90 90q38-15 76-15zM83 157l95 94 19 20q-52 40-91.5 93T42 478q36 91 104.5 162T304 750q93 40 195 40 95 0 183-35l139 139 53-53-738-737zm230 230l65 64q-4 15-4 27 0 34 17 62.5t45.5 45.5 62.5 17q14 0 27-3l65 64q-45 22-92 22-56 0-104-28t-76-76-28-104q0-47 22-91zm180-33l131 131v-6q0-34-16.5-63t-45-45.5T500 354h-7z"></path></g></svg>`
+                    w11_hidden_apps_button.setAttribute("title", "Mostra les apps ocultes");
+                    w11_hidden_apps_button.onclick = () => {
+
+                        const hidden_apps = document.getElementsByClassName("hidden-app");
+                        for (const app of hidden_apps) {
+                            app.classList.toggle("hidden-app");
+                        }
+                    }
+                    w11_first_container.appendChild(w11_hidden_apps_button);*/
+
                     for (const app in alumneInfo.apps) {
                         if (Object.hasOwnProperty.call(alumneInfo.apps, app)) {
                             const appInfo = alumneInfo.apps[app];
                             if (!appInfo.opened) continue;
                             const w11_app = document.createElement("div");
                             w11_app.setAttribute("class", "w11 app-div");
+                            if(!appInfo.onTaskBar) w11_app.classList.add("hidden-app");
                             w11_app.setAttribute("title", appInfo.name + ": " + appInfo.title);
                             if (appInfo.iconB64) {
                                 const icon = document.createElement("img");

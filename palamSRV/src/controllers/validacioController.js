@@ -55,7 +55,7 @@ const postAppsAPI = (req, res) => {
     validacioAlumne.checkApps(apps).then((status) => {
         infoService.registerApps(apps, alumne, status, timestamp);
         for (const app of apps) {
-            historialService.saveApp(alumne, timestamp, app.name, app.path, app.title, app.icon, app.iconType);
+            historialService.saveApp(alumne, timestamp, app.name, app.path, app.title, app.icon, app.iconType, app.onTaskBar);
         }
         res.status(200).send({ do:status} );
     }).catch((err) => {

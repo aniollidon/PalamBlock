@@ -24,6 +24,7 @@ export function creaAppMenuJSON(alumne, app) {
         obreDialogBloquejaApps(info, alumne, "blocalumn");
     }
     const onTanca = (info) => {
+        alert("No implementat")
         //console.log("onTanca app")
     }
 
@@ -204,8 +205,8 @@ export function obreDialogBloquejaApps(info, alumne, action, severity = "block")
     }
 
     severitySelect.value = severity;
-    processInput.value = info.name;
-    filepathInput.value = info.path;
+    processInput.value = info.name? info.name : info.processName;
+    filepathInput.value = info.path ? info.path : info.processPath;
     filepathInput.setAttribute("disabled", "disabled");
     filepathregexSwitch.checked = false;
     filepathregexSwitch.setAttribute("disabled", "disabled");

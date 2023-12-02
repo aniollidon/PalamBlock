@@ -221,6 +221,8 @@ export function drawHistorialApps(alumne, historial) {
         const a = document.createElement("a");
         a.setAttribute("href", "#");
         a.setAttribute("class", "list-group-item list-group-item-action lh-tight py-1"); //active
+        if(!process.onTaskBar)
+            a.classList.add("hidden-app");
         const tooltip = process.processPath;
         a.setAttribute("title", tooltip);
 

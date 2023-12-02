@@ -211,6 +211,9 @@ main {
     margin: 0 10px;
 }
 
+.hidden-app{
+    display: none !important;
+}
 .app-div{
     --img-nav-height: calc(var(--nav-height) - 1rem) !important;
     padding-top: 4px;

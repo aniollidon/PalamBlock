@@ -176,6 +176,9 @@ const HistorialAppsSchema = new mongoose.Schema({
     },
     alumneid: {
         type: String
+    },
+    onTaskBar: {
+        type: Boolean
     }
 });
 const Alumne = mongoose.model('Alumne', AlumneSchema);

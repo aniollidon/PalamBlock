@@ -45,8 +45,8 @@ function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, bro
     });
 }
 
-function saveApp(alumne, timestamp, processName, processPath, caption, icon, iconType) {
-    logger.debug("saveApp: " + alumne + " " + timestamp + " " + processName + " " + processPath + " " + caption + " " + " " + iconType);
+function saveApp(alumne, timestamp, processName, processPath, caption, icon, iconType, onTaskBar) {
+    logger.debug("saveApp: " + alumne + " " + timestamp + " " + processName + " " + processPath + " " + caption + " " + iconType + " " + onTaskBar);
     // Fa una hora
     const now = new Date();
     const faUnaHora = new Date(Date.now() - 60 * 60 * 1000)
@@ -78,7 +78,8 @@ function saveApp(alumne, timestamp, processName, processPath, caption, icon, ico
                 processPath: processPath,
                 caption: caption,
                 iconB64: iconType === "base64" ? icon : undefined,
-                iconSVG: iconType === "svg" ? icon : undefined
+                iconSVG: iconType === "svg" ? icon : undefined,
+                onTaskBar: onTaskBar
             });
         }
     });

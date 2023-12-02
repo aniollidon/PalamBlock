@@ -148,16 +148,16 @@ class Validacio {
         for (const app of apps) {
             const name = app.name;
             const path = app.path;
-            statusForApps[app.pid] = "allow";
+            statusForApps[app.name] = "allow";
 
             for (const norma of normesApp) {
-                if(norma.processName === name || norma.processPath === path) {
-                    statusForApps[app.pid] = norma.severity;
+                if(norma.processName === name || path && norma.processPath === path) {
+                    statusForApps[app.name] = norma.severity;
                 }
-                else if (norma.processPathisRegex) {
+                else if (path && norma.processPathisRegex) {
                     const regex = new RegExp(norma.processPath);
                     if (regex.test(path)) {
-                        statusForApps[app.pid] = norma.severity;
+                        statusForApps[app.name] = norma.severity;
                     }
                 }
             }
