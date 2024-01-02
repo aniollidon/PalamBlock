@@ -12,6 +12,49 @@
 </head>
 <body>
 
+<!-- Modal llista blanca -->
+<div aria-hidden="true" aria-labelledby="llistaBlancaModal" class="modal fade text-left" id="llistaBlancaModal" role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pbk_modal_llistablanca_title">Llista blanca per <span id="llb-nomgrup"> GRUP </span></h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <div id="llb-weblist-container" class="d-none">
+                            <label for="llb-weblist">Llista blanca</label>
+                            <div id="llb-weblist">
+                            </div>
+                        </div>
+                        <label>Afegeix</label>
+                        <div class="row-input ">
+                            <input type="text" class="form-control" id="llb-webpage-input" placeholder="Introdueix la URL del lloc web">
+                            <button class="btn btn-primary" type="button" id="llb-webpage-input-button">Afegeix</button>
+                        </div>
+                        <div class="row-input ">
+                            <input type="text" class="form-control" id="llb-webtitle-input" placeholder="Introdueix una cerca al títol">
+                            <button class="btn btn-primary" type="button" id="llb-webtitle-input-button">Afegeix</button>
+                        </div>
+                        <label>Llocs habituals</label>
+                        <div>
+                            <div class="row row-cols-2 g-1" data-id="15" id="llb-common">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div id="pbk_modal_llistablanca"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" aria-label="Close" data-bs-dismiss="modal" >Tancar</button>
+                <button type="button" class="btn btn-primary" id="llb-confirma">Confirma i afegeix</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Normes-->
 <div aria-hidden="true" aria-labelledby="normesModalLabel" class="modal fade text-left" id="normesModal" role="dialog"
      tabindex="-1">
@@ -30,7 +73,7 @@
 </div>
 
 <!-- Modal Bloqueja Web -->
-<div aria-hidden="true" aria-labelledby="bloquejaModalWebLabel" class="modal fade text-left" id="bloquejaModalWeb"
+<div aria-hidden="true" aria-labelledby="bloquejaModalWebLabel" class="modal fade text-left modal-normes" id="bloquejaModalWeb"
      role="dialog"
      tabindex="-1">
     <div class="modal-dialog" role="document">
@@ -132,7 +175,7 @@
 </div>
 
 <!-- Modal Bloqueja App -->
-<div aria-hidden="true" aria-labelledby="bloquejaModalAppsLabel" class="modal fade text-left" id="bloquejaModalApps"
+<div aria-hidden="true" aria-labelledby="bloquejaModalAppsLabel" class="modal fade text-left modal-normes" id="bloquejaModalApps"
      role="dialog"
      tabindex="-1">
     <div class="modal-dialog" role="document">
@@ -211,7 +254,7 @@
     </div>
 </div>
 
-<!-- Menu -->
+<!-- Popup Menu -->
 <div class="menu">
     <ul class="menu-options">
         <li class="menu-option">Bloqueja</li>
@@ -237,7 +280,7 @@
     <!-- Main content -->
     <div class="main-content d-flex flex-column">
 
-        <!-- Opcions de grup -->
+        <!-- Capçalera amb selector de grup -->
         <div class="grup-opcions p-3 link-dark text-decoration-none border-bottom">
             <!-- Grup selector -->
             <select aria-label="Default select example" class="form-select" id="grupSelector">
@@ -276,10 +319,20 @@
                         </svg> Normes Apps
                     </span>
                 </button>
+                <!-- Llista blanca de grup -->
+                <button class="btn btn-primary" type="button" id="globalGroupAfegeixLlistaBlancaButton">Crea llista blanca</button>
             </div>
         </div>
 
-        <!-- Browsers d'alumnes -->
+        <!-- Avisos -->
+        <div class="informacions" role="alert">
+            <!--<div class="alert alert-info" role="alert">
+            </div>-->
+
+            <div id="avisos" ></div>
+        </div>
+
+        <!-- Alumnes -->
         <div id="alumnesList"></div>
     </div>
 

@@ -32,7 +32,7 @@ const postValidacioAPI = (req, res) => {
         //logger.info("host: " + host + " protocol: " + protocol + " search: " + search + " pathname: " + pathname + " title: " + title + " alumne: " + alumne + " browser: " + browser + " tabId: " + tabId + "incognito: " + incognito + " timestamp: " + timestamp);
         //logger.info("Do: " + status);
         res.status(200).send({ do:status} );
-        historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
+        historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon, status);
         infoService.register(alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, status, audible);
 
     }).catch((err) => {

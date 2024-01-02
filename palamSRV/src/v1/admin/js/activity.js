@@ -1,4 +1,5 @@
-import {creaAppMenuJSON, creaWebMenuJSON, obreDialogNormesApps, obreDialogNormesWeb} from "./dialogs.js";
+import {creaAppMenuJSON, creaWebMenuJSON, obreDialogNormesApps, obreDialogNormesWeb,
+    obreDialogAfegeixLlistaBlanca} from "./dialogs.js";
 import {toogleSideBar} from "./sidebar.js";
 import {compareEqualTabs} from "./utils.js";
 import {socket} from "./socket.js";
@@ -496,6 +497,11 @@ export function preparaAlumnesGrups(data) {
             const grupNormesAppsButton = document.getElementById("globalGroupNormesAppsButton");
             grupNormesAppsButton.removeAttribute("disabled");
             grupNormesAppsButton.onclick = (ev) => obreDialogNormesApps(grupSelector.value, "grup");
+
+            // Prepara el botó afegeixllistablanca
+            const grupAfegeixLlistaBlancaButton = document.getElementById("globalGroupAfegeixLlistaBlancaButton");
+            grupAfegeixLlistaBlancaButton.removeAttribute("disabled");
+            grupAfegeixLlistaBlancaButton.onclick = (ev) => obreDialogAfegeixLlistaBlanca(grupSelector.value);
         }
         grupSelector.appendChild(option);
     }

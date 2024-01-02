@@ -1,8 +1,8 @@
 const db = require("../database/db");
 const logger = require("../logger").logger;
 
-function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon) {
-    logger.debug("saveWeb: " + alumne + " " + timestamp + " " + host + " " + protocol + " " + search + " " + pathname + " " + title + " " + browser + " " + tabId + " " + incognito + " " + favicon);
+function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon, pbaction) {
+    logger.debug("saveWeb: " + alumne + " " + timestamp + " " + host + " " + protocol + " " + search + " " + pathname + " " + title + " " + browser + " " + tabId + " " + incognito + " " + favicon + " " + pbaction);
     if(protocol.includes("chrome")) return;
     if(protocol.includes("edge")) return;
     if(protocol.includes("secure")) return;
@@ -16,6 +16,7 @@ function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, bro
         pathname: pathname,
         search: search,
         browser: browser,
+        pbAction: pbaction,
         timestamp: {
             $gte: new Date(Date.now() - 5 * 60 * 1000),
         }
@@ -39,7 +40,8 @@ function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, bro
                 browser: browser,
                 tabId: tabId,
                 incognito: incognito,
-                favicon: favicon
+                favicon: favicon,
+                pbAction: pbaction
             });
         }
     });

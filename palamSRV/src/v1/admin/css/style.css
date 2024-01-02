@@ -7,6 +7,9 @@ body {
     width: 70px;
 }
 
+.informacions{
+    margin: 10px 0 0 0;
+}
 .browser-info {
     position: absolute;
     transform: translateX(-59px) translateY(-17px);
@@ -77,6 +80,19 @@ a.active {
     margin-bottom: 13px;
 }
 
+.nobottom{
+    margin-bottom: 0 !important;
+}
+
+.weblist-item{
+    background-color: #f4f9ff !important;
+}
+
+.google-services{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 10px;
+}
 /* 3nd card */
 info-span {
     margin-left: 0.5rem;
@@ -94,6 +110,11 @@ info-span {
 label {
     font-weight: 500;
     color: rgb(104, 104, 104);
+}
+
+.llb-child-google-service label{
+    font-weight: 400;
+    vertical-align: text-bottom;
 }
 
 .btn-success {
@@ -146,12 +167,24 @@ ul {
     padding: 0 1rem;
 }
 
-/* modal input disabled */
-.modal input:disabled {
+.modal-normes input:disabled {
     background-color: #ececec;
     color: #00000000;
 }
 
+.row-input {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0 5px;
+}
+.weblist-item-container{
+    margin-bottom: 13px;
+}
+
+.google-services{
+    margin: 5px 10px 0;
+}
 /* main */
 
 main {

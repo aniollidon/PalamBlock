@@ -1,6 +1,7 @@
 import {drawHistorialWeb, drawHistorialApps} from "./sidebar.js";
 import {drawAlumnesActivity, preparaAlumnesGrups} from "./activity.js";
 import {setnormesWebInfo, setnormesAppsInfo} from "./dialogs.js";
+import {warnNormesWeb} from "./warnings.js";
 import {socket} from "./socket.js";
 
 socket.on('alumnesActivity', function (data) {
@@ -13,6 +14,7 @@ socket.on('grupAlumnesList', function (data) {
 
 socket.on('normesWeb', function (data) {
     setnormesWebInfo(data);
+    warnNormesWeb(data);
 });
 
 socket.on('normesApps', function (data) {

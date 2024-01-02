@@ -88,6 +88,8 @@ export function drawHistorialWeb(alumne, historial) {
         const a = document.createElement("a");
         a.setAttribute("href", "#");
         a.setAttribute("class", "list-group-item list-group-item-action lh-tight py-1"); //active
+        if(webPage.pbAction === "block")
+            a.classList.add("text-danger");
         const tooltip = "Obert a " + webPage.browser + (webPage.incognito ? " en mode incognit" : "") + `\n${webPage.protocol}//${webPage.host}${webPage.pathname}${webPage.search}`;
         a.setAttribute("title", tooltip);
 

@@ -26,3 +26,15 @@ export function compareEqualTabs(oobj1, oobj2) {
 
     return strobj1 === strobj2;
 }
+
+export function safeURL(web) {
+    try {
+        const url = new URL(web);
+        return url;
+    }
+    catch (e) {
+        const url = new URL("https://" + web);
+        return url;
+    }
+
+}

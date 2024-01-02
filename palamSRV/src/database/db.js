@@ -18,7 +18,7 @@ const NormaWebSchema = new mongoose.Schema({
         type: String // warn, block
     },
     mode:{
-        type: String // whitelist (only accepted), blacklist
+        type: String // whitelist (legacy), blacklist
     },
     hosts_list: {
         type: [String]
@@ -37,6 +37,51 @@ const NormaWebSchema = new mongoose.Schema({
     },
     enabled_on: {
         type: [DateTimeEnabledSchema] // if empty, always enabled
+    }
+});
+
+const WebLineSchema = new mongoose.Schema({ // new def
+    host: {
+        type: [String]
+    },
+    protocol: {
+        type: [String]
+    },
+    search: {
+        type: [String]
+    },
+    pathname: {
+        type: [String]
+    },
+    browser: {
+        type: String  // default undefined
+    },
+    incognito: {
+        type: Boolean // default undefined
+    },
+    audible: {
+        type: Boolean // default undefined
+    }
+});
+
+const Norma2WebSchema = new mongoose.Schema({ //new def
+    severity: {
+        type: String // warn, block
+    },
+    mode:{
+        type: String // whitelist, blacklist
+    },
+    alive: {
+        type: Boolean // default true
+    },
+    enabled_on: {
+        type: [DateTimeEnabledSchema] // if empty, always enabled
+    },
+    lines: {
+        type: [WebLineSchema]
+    },
+    categories: {
+        type: [String]
     }
 });
 
@@ -63,8 +108,11 @@ const GrupSchema = new mongoose.Schema({
     nom: {
         type: String
     },
-    normesWeb: {
+    normesWeb: { //legacy, to deprecate
         type: [NormaWebSchema]
+    },
+    normes2Web: {
+        type: [Norma2WebSchema]
     },
     normesApp: {
         type: [NormaAppSchema]
@@ -96,8 +144,11 @@ const AlumneSchema = new mongoose.Schema({
     status: {
         type: String // Blocked, RuleFree, RuleOn
     },
-    normesWeb: {
+    normesWeb: { // legacy, to deprecate
         type: [NormaWebSchema]
+    },
+    normes2Web: {
+        type: [Norma2WebSchema]
     },
     normesApp: {
         type: [NormaAppSchema]
@@ -149,6 +200,9 @@ const HistorialWebSchema = new mongoose.Schema({
     },
     alumneid: {
         type: String
+    },
+    pbAction: {
+        type: String // block, warn, allow
     }
 });
 

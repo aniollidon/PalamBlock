@@ -1,5 +1,7 @@
 import {getGrup} from "./activity.js";
 import {socket} from "./socket.js";
+import {safeURL} from "./utils.js";
+import {commonPlaces, googleServices} from "./common-places.js";
 
 const hblockModalWeb = document.getElementById('bloquejaModalWeb')
 const blockModalWeb = new bootstrap.Modal(hblockModalWeb)
@@ -7,8 +9,11 @@ const hblockModalApps = document.getElementById('bloquejaModalApps')
 const blockModalApps = new bootstrap.Modal(hblockModalApps)
 const hnormesModal = document.getElementById('normesModal')
 const normesModal = new bootstrap.Modal(hnormesModal)
+const hllistaBlancaModal = document.getElementById('llistaBlancaModal')
+const llistaBlancaModal = new bootstrap.Modal(hllistaBlancaModal)
 let normesWebInfo = {}
 let normesAppsInfo = {}
+let llistaBlancaEnUs = {}
 
 export function setnormesWebInfo(normesWebInfo_) {
     normesWebInfo = normesWebInfo_;
@@ -427,4 +432,164 @@ export function obreDialogNormesApps(whoid, who = "alumne") {
         list.appendChild(listItem);
     }
     normesModal.show();
+}
+
+export function obreDialogAfegeixLlistaBlanca(grup){
+
+    document.getElementById("llb-nomgrup").innerHTML = grup;
+
+    const weblistcontainer = document.getElementById("llb-weblist-container");
+    const weblist = document.getElementById("llb-weblist");
+    const confirma = document.getElementById("llb-confirma");
+
+    const webpageInput = document.getElementById("llb-webpage-input");
+    const bAddWebpage = document.getElementById("llb-webpage-input-button");
+    const webtitleInput = document.getElementById("llb-webtitle-input");
+    const bAddWebTitle = document.getElementById("llb-webtitle-input-button");
+    const hcommonPlaces = document.getElementById("llb-common");
+
+    hcommonPlaces.innerHTML = "";
+
+    function addWebToLlistaBlanca(web){
+        if(!llistaBlancaEnUs[grup])
+            llistaBlancaEnUs[grup] = [];
+
+        llistaBlancaEnUs[grup].push(web);
+
+        weblistcontainer.classList.remove("d-none");
+
+        const item = document.createElement("div");
+        item.classList.add("weblist-item-container");
+        const row = document.createElement("div");
+        row.classList.add("row-input");
+        const input = document.createElement("input");
+        input.setAttribute("id", "llb-weblist-input-" + web);
+        input.setAttribute("type", "text");
+        input.setAttribute("class", "form-control nobottom weblist-item");
+        input.setAttribute("value", web);
+        input.setAttribute("disabled", "disabled");
+        const small = document.createElement("small");
+        const button = document.createElement("button");
+        button.setAttribute("type", "button");
+        button.setAttribute("class", "btn btn-outline-secondary btn-sm");
+        button.innerHTML= `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"></path>
+                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"></path>
+                           </svg>`;
+
+
+        small.appendChild(button);
+        row.appendChild(input);
+        row.appendChild(small);
+        item.appendChild(row);
+        if(web === "google.com"){
+            item.classList.add("google");
+            const hservices = document.createElement("div");
+            hservices.classList.add("google-services");
+            for (const service of googleServices) {
+                const hservice = document.createElement("div");
+                hservice.innerHTML = `<div class="llb-child-google-service">
+                            <input type="checkbox" checked id="llb-weblist-input-${service.title}">
+                            <label for="llb-weblist-input-${service.title}">
+                                ${service.title}
+                                </label>
+                            </div>`;
+                hservices.appendChild(hservice);
+            }
+            item.appendChild(hservices);
+        }
+        weblist.appendChild(item);
+
+        button.onclick = (event) => {
+            // visual remove
+            item.remove();
+
+            // reset button
+            for (const commonPlace of commonPlaces) {
+                if(commonPlace.url === web)
+                    document.getElementById("llb-add-" + commonPlace.title).removeAttribute("disabled");
+            }
+
+            // remove web
+            const index = llistaBlancaEnUs[grup].indexOf(web);
+            if (index > -1) {
+                llistaBlancaEnUs[grup].splice(index, 1);
+            }
+
+            if(llistaBlancaEnUs[grup].length === 0)
+                weblistcontainer.classList.add("d-none");
+        }
+    }
+
+    for (const commonPlace of commonPlaces) {
+        const div = document.createElement("div");
+        div.setAttribute("class", "col");
+        const button = document.createElement("button");
+        button.setAttribute("class", "btn btn-outline-secondary w-100 btn-sm");
+        button.setAttribute("data-url", commonPlace.url);
+        button.setAttribute("id", "llb-add-" + commonPlace.title);
+        button.innerHTML = commonPlace.svg + commonPlace.title;
+        div.appendChild(button);
+        hcommonPlaces.appendChild(div);
+
+        button.onclick = (event) => {
+            addWebToLlistaBlanca(commonPlace.url);
+            button.setAttribute("disabled", "disabled");
+        };
+    }
+
+    bAddWebpage.onclick = (event) => {
+        if(webpageInput.value === "") return;
+        addWebToLlistaBlanca(webpageInput.value);
+        webpageInput.value = "";
+    };
+
+    bAddWebTitle.onclick = (event) => {
+        if(webtitleInput.value === "") return;
+        addWebToLlistaBlanca("[title] " + webtitleInput.value);
+        webtitleInput.value = "";
+    }
+
+    confirma.onclick = (event) => {
+        console.log(llistaBlancaEnUs[grup])
+        const titles = [];
+        const hosts = [];
+        const pathnames = [];
+        const searches = [];
+
+
+        for (const web of llistaBlancaEnUs[grup]) {
+            if(web.startsWith("[title]") )
+                titles.push(web.substring(8));
+            else {
+                const url = safeURL(web)
+                const host = url.host;
+                const pathname = url.pathname;
+                const search = url.search;
+
+                if(host !== "")
+                    hosts.push(host);
+                if(pathname !== "" && pathname !== "/")
+                    pathnames.push(pathname);
+                if(search !== "")
+                    searches.push(search);
+            }
+        }
+
+        socket.emit("addNormaWeb", {
+            who: "grup",
+            whoid: grup,
+            severity: "block",
+            mode: "whitelist",
+            hosts_list: hosts,
+            //protocols_list: undefined,
+            searches_list: searches,
+            pathnames_list: pathnames,
+            titles_list: titles,
+            //enabled_on: undefined
+        })
+
+    }
+
+    llistaBlancaModal.show();
 }
