@@ -47,21 +47,17 @@ const postNormaAPI = (req, res) => {
     }
 }
 
-function addNormaWeb(who, whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
-                  titles_list, enabled_on) {
+function addNorma2Web(who, whoid, severity, mode, webList, enabled_on) {
     if(who === "grup") {
-        normaService.creaNormaWebGrup(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
-            titles_list, enabled_on).then((alumne) => {
-                //logger.info("NormaWeb afegida de grup");
+        normaService.creaNorma2WebGrup(whoid, severity, mode, webList, enabled_on).then((alumne) => {
+            //logger.info("NormaWeb afegida de grup");
         });
     } else if(who === "alumne"){
-        normaService.addNormaWebAlumne(whoid, severity, mode, hosts_list, protocols_list, searches_list, pathnames_list,
-            titles_list, enabled_on).then((alumne) => {
-                //logger.info("NormaWeb afegida d'alumne");
+        normaService.creaNorma2WebAlumne(whoid, severity, mode, webList, enabled_on).then((alumne) => {
+            //logger.info("NormaWeb afegida d'alumne");
         });
     }
 }
-
 function addNormaApps(who, whoid, severity, processName, processPath, processPathisRegex) {
     if(who === "grup") {
         normaService.creaNormaGrupApp(whoid, processName, processPath, processPathisRegex, severity).then((alumne) => {
@@ -73,16 +69,18 @@ function addNormaApps(who, whoid, severity, processName, processPath, processPat
         });
     }
 }
-const getAllNormesWeb = () => {
-    return normaService.getAllNormesWeb();
+
+const getAllNormes2Web = () => {
+    return normaService.getAllNormes2Web();
 }
+
 
 const getAllNormesApps = () => {
     return normaService.getAllNormesApps();
 }
 
-const removeNormaWeb = (who, whoid, normaid) => {
-    normaService.removeNormaWeb(who, whoid, normaid);
+const removeNorma2Web = (who, whoid, normaid) => {
+    normaService.removeNorma2Web(who, whoid, normaid);
 }
 
 const removeNormaApp = (who, whoid, normaid) => {
@@ -95,11 +93,11 @@ const registerOnUpdateCallback = (callback) => {
 
 module.exports = {
     postNormaAPI,
-    addNormaWeb,
+    addNorma2Web,
     addNormaApps,
-    getAllNormesWeb,
+    getAllNormes2Web,
     getAllNormesApps,
-    removeNormaWeb,
+    removeNorma2Web,
     removeNormaApp,
     registerOnUpdateCallback,
 }

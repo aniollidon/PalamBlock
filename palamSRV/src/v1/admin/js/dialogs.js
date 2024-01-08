@@ -62,7 +62,6 @@ export function creaWebMenuJSON(alumne) {
         {text: "Obre aquí", do: obreUrl},
         {text: "Bloqueja", do: onBloqueja},
         {text: "Bloqueja al grup", do: onBloquejaGrup},
-        {text: "Afegeix a llista blanca", do: onAfegeixLlistaBlanca},
     ]
 }
 
@@ -71,7 +70,6 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
     const ualumne = alumne.toUpperCase();
     const blocalumnLink = document.getElementById("pills-blocwebalumn-tab");
     const blocgrupLink = document.getElementById("pills-blocwebgrup-tab");
-    const llistablancaLink = document.getElementById("pills-llistablancawebweb-tab");
     const severitySelect = document.getElementById("pbk_modalblockweb_severity");
     const hostInput = document.getElementById("pbk_modalblockweb_host");
     const pathnameInput = document.getElementById("pbk_modalblockweb_pathname");
@@ -86,9 +84,8 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
     let normaWhoId = alumne;
     let normaMode = "blacklist";
 
-    blocalumnLink.innerHTML = `Bloqueja ${ualumne}`;
-    blocgrupLink.innerHTML = `Bloqueja ${ugrup}`;
-    llistablancaLink.innerHTML = `Crea llista blanca ${ugrup}`;
+    blocalumnLink.innerHTML = `Bloqueja alumne ${ualumne}`;
+    blocgrupLink.innerHTML = `Bloqueja grup ${ugrup}`;
 
     severitySelect.value = severity;
     hostInput.value = info.webPage.host;
@@ -123,11 +120,6 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
         normaMode = "blacklist";
     };
 
-    llistablancaLink.onclick = (event) => {
-        normaWhoSelection = "grup";
-        normaWhoId = ugrup;
-        normaMode = "whitelist";
-    };
 
     hostSwitch.onchange = (event) => {
         if (event.target.checked)
@@ -166,16 +158,22 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
     }
 
     normaButton.onclick = (event) => {
+        const list = [{
+            host: hostSwitch.checked ? hostInput.value : undefined,
+            protocol: undefined,
+            search: undefined,
+            pathname: pathnameSwitch.checked ? pathnameInput.value : undefined,
+            title: titleSwitch.checked ? "*" + titleInput.value + "*" : undefined,
+            browser: undefined,
+            incognito: undefined,
+            audible: undefined
+        }]
         socket.emit("addNormaWeb", {
             who: normaWhoSelection,
             whoid: normaWhoId,
             severity: severitySelect.value,
             mode: normaMode,
-            hosts_list: hostSwitch.checked ? [hostInput.value] : undefined,
-            //protocols_list: undefined,
-            searches_list: searchSwitch.checked ? [searchInput.value] : undefined,
-            pathnames_list: pathnameSwitch.checked ? [pathnameInput.value] : undefined,
-            titles_list: titleSwitch.checked ? [titleInput.value] : undefined,
+            list: list,
             //enabled_on: undefined
         })
 
@@ -200,8 +198,8 @@ export function obreDialogBloquejaApps(info, alumne, action, severity = "block")
     let normaWhoSelection = "alumne";
     let normaWhoId = alumne;
 
-    blocalumnLink.innerHTML = `Bloqueja ${ualumne}`;
-    blocgrupLink.innerHTML = `Bloqueja ${ugrup}`;
+    blocalumnLink.innerHTML = `Bloqueja alumne ${ualumne}`;
+    blocgrupLink.innerHTML = `Bloqueja alumne ${ugrup}`;
 
     if (action === "blocalumn") {
         blocalumnLink.click();
@@ -331,16 +329,30 @@ export function obreDialogNormesWeb(whoid, who = "alumne") {
         listItem.appendChild(itemHeading);
         const itemText = document.createElement("p");
         itemText.setAttribute("class", "mb-1");
-        if (normesWebInfo[whos][whoid][norma].hosts_list.length > 0)
-            itemText.innerHTML = "<b>Hosts:</b> " + normesWebInfo[whos][whoid][norma].hosts_list + "<br>";
-        if (normesWebInfo[whos][whoid][norma].protocols_list.length > 0)
-            itemText.innerHTML += "<b>Protocols:</b> " + normesWebInfo[whos][whoid][norma].protocols_list + "<br>";
-        if (normesWebInfo[whos][whoid][norma].searches_list.length > 0)
-            itemText.innerHTML += "<b>Searches:</b> " + normesWebInfo[whos][whoid][norma].searches_list + "<br>";
-        if (normesWebInfo[whos][whoid][norma].pathnames_list.length > 0)
-            itemText.innerHTML += "<b>Pathnames:</b> " + normesWebInfo[whos][whoid][norma].pathnames_list + "<br>";
-        if (normesWebInfo[whos][whoid][norma].titles_list.length > 0)
-            itemText.innerHTML += "<b>Titles:</b> " + normesWebInfo[whos][whoid][norma].titles_list + "<br>";
+        itemText.innerHTML = "";
+        if (normesWebInfo[whos][whoid][norma].lines.length > 0){
+            for (const line of normesWebInfo[whos][whoid][norma].lines){
+                const div = document.createElement("div");
+                div.setAttribute("class", "norma-line");
+                if(line.host)
+                    div.innerHTML += "<b>Host:</b> " + line.host + " ";
+                if(line.protocol)
+                    div.innerHTML += "<b>Protocol:</b> " + line.protocol + " ";
+                if(line.search)
+                    div.innerHTML += "<b>Search:</b> " + line.search + " ";
+                if(line.pathname)
+                    div.innerHTML += "<b>Pathname:</b> " + line.pathname + " ";
+                if(line.title)
+                    div.innerHTML += "<b>Title:</b> " + line.title + " ";
+                if(line.browser)
+                    div.innerHTML += "<b>Browser:</b> " + line.browser + " ";
+                if(line.incognito)
+                    div.innerHTML += "<b>Incognito:</b> " + line.incognito + " ";
+                if(line.audible)
+                    div.innerHTML += "<b>Audible:</b> " + line.audible + " ";
+                itemText.appendChild(div);
+            }
+        }
         listItem.appendChild(itemText);
         list.appendChild(listItem);
     }
@@ -449,11 +461,14 @@ export function obreDialogAfegeixLlistaBlanca(grup){
     const hcommonPlaces = document.getElementById("llb-common");
 
     hcommonPlaces.innerHTML = "";
+    llistaBlancaEnUs[grup] = [];
+    webpageInput.value = "";
+    webtitleInput.value = "";
+    weblist.innerHTML = "";
+    weblistcontainer.classList.add("d-none");
+
 
     function addWebToLlistaBlanca(web){
-        if(!llistaBlancaEnUs[grup])
-            llistaBlancaEnUs[grup] = [];
-
         llistaBlancaEnUs[grup].push(web);
 
         weblistcontainer.classList.remove("d-none");
@@ -489,7 +504,7 @@ export function obreDialogAfegeixLlistaBlanca(grup){
             for (const service of googleServices) {
                 const hservice = document.createElement("div");
                 hservice.innerHTML = `<div class="llb-child-google-service">
-                            <input type="checkbox" checked id="llb-weblist-input-${service.title}">
+                            <input type="checkbox" id="llb-weblist-input-${service.title}" data-url="${service.url}" ${service.default? "checked": ""}>
                             <label for="llb-weblist-input-${service.title}">
                                 ${service.title}
                                 </label>
@@ -551,44 +566,74 @@ export function obreDialogAfegeixLlistaBlanca(grup){
     }
 
     confirma.onclick = (event) => {
-        console.log(llistaBlancaEnUs[grup])
-        const titles = [];
-        const hosts = [];
-        const pathnames = [];
-        const searches = [];
+        const list = [];
 
 
         for (const web of llistaBlancaEnUs[grup]) {
             if(web.startsWith("[title]") )
-                titles.push(web.substring(8));
+                list.push({
+                    host: undefined,
+                    protocol: undefined,
+                    search: undefined,
+                    pathname: undefined,
+                    title: web.substring(8),
+                    browser: undefined,
+                    incognito: undefined,
+                    audible: undefined
+                });
             else {
                 const url = safeURL(web)
                 const host = url.host;
                 const pathname = url.pathname;
                 const search = url.search;
 
-                if(host !== "")
-                    hosts.push(host);
-                if(pathname !== "" && pathname !== "/")
-                    pathnames.push(pathname);
-                if(search !== "")
-                    searches.push(search);
+                if(web === "google.com") {
+                    const googleServices = document.getElementsByClassName("llb-child-google-service");
+                    for (const service of googleServices) {
+                        const input = service.getElementsByTagName("input")[0];
+                        if(input.checked){
+                            const gurl = input.getAttribute("data-url");
+                            gurl.split(',').forEach((url) => {
+                                const gsurl = safeURL(url);
+                                list.push({
+                                    host: gsurl.host === "" ? undefined : gsurl.host,
+                                    protocol: gsurl.protocol === "" ? undefined : gsurl.protocol,
+                                    search: gsurl.search === "" ? undefined : gsurl.search,
+                                    pathname: gsurl.pathname === ""  || gsurl.pathname === "/" ? undefined : gsurl.pathname,
+                                    title: undefined,
+                                    browser: undefined,
+                                    incognito: undefined,
+                                    audible: undefined
+                                })});
+                    }
+                    }
+                    continue;
+                }
+
+                list.push({
+                    host: host === "" ? undefined : host,
+                    protocol: undefined,
+                    search: search === "" ? undefined : search,
+                    pathname: pathname === ""  || pathname === "/" ? undefined : pathname,
+                    title: undefined,
+                    browser: undefined,
+                    incognito: undefined,
+                    audible: undefined
+                })
             }
         }
 
-        socket.emit("addNormaWeb", {
+
+        socket.emit("addNormaWeb", {  //TODO
             who: "grup",
             whoid: grup,
             severity: "block",
             mode: "whitelist",
-            hosts_list: hosts,
-            //protocols_list: undefined,
-            searches_list: searches,
-            pathnames_list: pathnames,
-            titles_list: titles,
+            list: list,
             //enabled_on: undefined
         })
 
+        llistaBlancaModal.hide();
     }
 
     llistaBlancaModal.show();

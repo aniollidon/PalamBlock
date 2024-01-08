@@ -25,7 +25,7 @@ function initializeWebSocket(server) {
     io.on('connection', async (socket) => {
         socket.emit('grupAlumnesList', await alumneController.getGrupAlumnesList());
         socket.emit('alumnesActivity', await infoController.getAlumnesActivity());
-        socket.emit('normesWeb', await normaController.getAllNormesWeb());
+        socket.emit('normesWeb', await normaController.getAllNormes2Web());
         socket.emit('normesApps', await normaController.getAllNormesApps());
 
         infoController.registerOnUpdateCallback(async (toUpdate) => {
@@ -39,8 +39,7 @@ function initializeWebSocket(server) {
 
         socket.on('addNormaWeb', (msg) => {
             //logger.info('addNormaWeb', msg);
-            normaController.addNormaWeb(msg.who, msg.whoid, msg.severity, msg.mode, msg.hosts_list,
-                msg.protocols_list, msg.searches_list, msg.pathnames_list, msg.titles_list, msg.enabled_on);
+            normaController.addNorma2Web(msg.who, msg.whoid, msg.severity, msg.mode, msg.list, msg.enabled_on);
         });
 
         socket.on('addNormaApps', (msg) => {
@@ -51,8 +50,9 @@ function initializeWebSocket(server) {
 
         socket.on('removeNormaWeb', (msg) => {
             //logger.info('removeNormaWeb', msg);
-            normaController.removeNormaWeb(msg.who, msg.whoid, msg.normaId);
+            normaController.removeNorma2Web(msg.who, msg.whoid, msg.normaId);
         });
+
 
         socket.on('removeNormaApps', (msg) => {
             //logger.info('removeNormaApps', msg);
@@ -66,7 +66,7 @@ function initializeWebSocket(server) {
 
         normaController.registerOnUpdateCallback(async () => {
             infoController.normesWebHasChanged();
-            socket.emit('normesWeb', await normaController.getAllNormesWeb());
+            socket.emit('normesWeb', await normaController.getAllNormes2Web());
             socket.emit('normesApps', await normaController.getAllNormesApps());
 
         });

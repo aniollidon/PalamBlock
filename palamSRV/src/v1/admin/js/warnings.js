@@ -15,6 +15,29 @@ export function warnNormesWeb(data){
                     div.classList.add("show");
                     div.setAttribute("role", "alert");
 
+                    const imsdiv = document.createElement("div");
+                    imsdiv.classList.add("warning-tip-icons")
+                    // Get images
+                    let firstgoogle = false;
+                    for (let line of data[who][whois][normaid].lines) {
+                       if(line.host) {
+
+                           if(line.host.toString().includes("google.com")){
+                               if (!firstgoogle)
+                                   firstgoogle = true;
+                               else
+                                   continue;
+                           }
+
+                           const favicon = document.createElement("img");
+                           favicon.setAttribute("src", "https://www.google.com/s2/favicons?domain=" + line.host.replaceAll("*","") + "&sz=64");
+                           favicon.setAttribute("alt", line.host);
+                           favicon.setAttribute("width", "20");
+                           favicon.setAttribute("height", "20");
+                           favicon.setAttribute("style", "margin-right: 5px");
+                           imsdiv.appendChild(favicon);
+                       }
+                    }
                     let strong = document.createElement("strong");
                     strong.innerHTML = "Alerta: ";
 
@@ -30,6 +53,7 @@ export function warnNormesWeb(data){
 
                     div.appendChild(strong);
                     div.appendChild(span);
+                    div.appendChild(imsdiv);
                     div.appendChild(button);
 
                     avisos.appendChild(div);

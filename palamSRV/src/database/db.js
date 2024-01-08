@@ -42,16 +42,19 @@ const NormaWebSchema = new mongoose.Schema({
 
 const WebLineSchema = new mongoose.Schema({ // new def
     host: {
-        type: [String]
+        type: String
     },
     protocol: {
-        type: [String]
+        type: String
     },
     search: {
-        type: [String]
+        type: String
     },
     pathname: {
-        type: [String]
+        type: String
+    },
+    title: {
+        type: String
     },
     browser: {
         type: String  // default undefined
@@ -238,10 +241,12 @@ const HistorialAppsSchema = new mongoose.Schema({
 const Alumne = mongoose.model('Alumne', AlumneSchema);
 const Grup = mongoose.model('Grup', GrupSchema);
 const NormaWeb = mongoose.model('NormaWeb', NormaWebSchema);
+const Norma2Web = mongoose.model('Norma2Web', Norma2WebSchema);
 const NormaApp = mongoose.model('NormaApp', NormaAppSchema);
 const HistorialWeb = mongoose.model('HistorialWeb', HistorialWebSchema);
 const HistorialApps = mongoose.model('HistorialApps', HistorialAppsSchema);
 const Admin = mongoose.model('Admin', AdminSchema);
+const WebLine = mongoose.model('WebLine', WebLineSchema);
 
 
 // Fes ids unics
@@ -251,6 +256,8 @@ GrupSchema.index({grupId: 1}, {unique: true});
 module.exports = {
     NormaWeb,
     NormaApp,
+    Norma2Web,
+    WebLine,
     Alumne,
     Grup,
     HistorialWeb,

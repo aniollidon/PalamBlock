@@ -28,13 +28,41 @@ export function compareEqualTabs(oobj1, oobj2) {
 }
 
 export function safeURL(web) {
-    try {
-        const url = new URL(web);
-        return url;
-    }
-    catch (e) {
-        const url = new URL("https://" + web);
-        return url;
-    }
+    if (web === undefined || web === null || web === "" || web === "*")
+        return {
+            host: undefined,
+            protocol: undefined,
+            search: undefined,
+            pathname: undefined
+        };
 
+    // remove spaces
+    web = web.replaceAll(" ", "");
+
+    // remove last /
+    if(web.endsWith("/"))
+        web = web.substring(0, web.length - 1);
+
+    // split string until // if not there leave empty
+    const protocol = web.includes("//") ? web.split("//")[0] : undefined;
+    // remove protocol
+    if(protocol){
+        web = web.replace(protocol + "//", "");
+    }
+    // split string until / or ?
+    const host = web.split(/\/|\?/)[0];
+    if(host) {
+        web = web.replace(host, "");
+    }
+    const search = web.includes("?") ? web.split("?")[1] : undefined;
+    if(search) {
+        web = web.replace("?" + search, "");
+    }
+    const pathname = web.length > 0 ? web : undefined;
+    return {
+        host: host,
+        protocol: protocol,
+        search: search,
+        pathname: pathname
+    }
 }

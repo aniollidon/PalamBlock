@@ -1,40 +1,53 @@
 const db = require("../database/db");
 let onUpdateCallback = () => {};
 
-async function addNormaWebAlumne(alumneId, severity, mode, hosts_list, protocols_list, searches_list,
-                   pathnames_list, titles_list, enabled_on) {
 
-    const norma =  await _creaNormaWeb(severity, mode, hosts_list, protocols_list,
-        searches_list, pathnames_list, titles_list, enabled_on);
+async function creaNorma2WebAlumne(alumneId, severity, mode, webList, enabled_on) {
 
-    const result = await db.Alumne.findOneAndUpdate({alumneId: alumneId}, {$push: {normesWeb: norma}}).populate("normesWeb");
+    const norma =  await _creaNorma2Web(severity, mode, webList, enabled_on);
+
+    const result = await db.Alumne.findOneAndUpdate({alumneId: alumneId}, {$push: {normes2Web: norma}}).populate("normes2Web");
     onUpdateCallback();
     return result;
 }
 
-async function creaNormaWebGrup(grupId, severity, mode, hosts_list, protocols_list, searches_list,
-                   pathnames_list, titles_list, enabled_on) {
 
-    const norma =  await _creaNormaWeb(severity, mode, hosts_list, protocols_list,
-        searches_list, pathnames_list, titles_list, enabled_on);
+async function creaNorma2WebGrup(grupId, severity, mode, webList, enabled_on) {
 
-    const result = db.Grup.findOneAndUpdate({grupId: grupId}, {$push: {normesWeb: norma}}).populate("normesWeb");
+    const norma =  await _creaNorma2Web(severity, mode, webList, enabled_on);
+
+    const result = db.Grup.findOneAndUpdate({grupId: grupId}, {$push: {normes2Web: norma}}).populate("normes2Web");
     onUpdateCallback();
     return result;
 }
 
-async function _creaNormaWeb(severity, mode, hosts_list, protocols_list, searches_list,
-                         pathnames_list, titles_list, enabled_on) {
-    return await db.NormaWeb.create({
+async function _creaNorma2Web(severity, mode, webList, enabled_on) {
+
+    const wlist = [];
+    for (const web of webList) {
+        //wlist.push(db.createWebLine(web.host, web.protocol, web.search, web.pathname, web.browser, web.incognito, web.audible));
+        wlist.push({
+            host: web.host,
+            protocol: web.protocol,
+            search: web.search,
+            pathname: web.pathname,
+            title: web.title,
+            browser: web.browser,
+            incognito: web.incognito,
+            audible: web.audible
+        })
+    }
+
+
+    return await db.Norma2Web.create({
         severity: severity,
-        hosts_list: hosts_list,
-        protocols_list: protocols_list,
-        searches_list: searches_list,
-        pathnames_list: pathnames_list,
-        titles_list: titles_list,
         mode: mode,
-        enabled_on: []
-    });
+        alive: true,
+        enabled_on: [],
+        lines: wlist,
+        categories: ["general"]
+        }
+    );
 }
 
 async function _creaNormaApp(processName, processPath, processPathisRegex, severity) {
@@ -62,23 +75,34 @@ async function creaNormaGrupApp(grupId, processName, processPath, processPathisR
     return result;
 }
 
-async function getAllNormesWeb() {
+
+async function getAllNormes2Web() {
     // Alumnes
-    const alumnes = await db.Alumne.find({}).populate("normesWeb");
+    const alumnes = await db.Alumne.find({}).populate("normes2Web")
 
     const normesAlumnnes = {};
 
     for (const alumne of alumnes) {
         normesAlumnnes[alumne.alumneId] = {}
-        for (norma of alumne.normesWeb) {
+        for (const norma of alumne.normes2Web) {
+            const lines = [];
+            for (const line of norma.lines) {
+                lines.push({
+                    host: line.host,
+                    protocol: line.protocol,
+                    search: line.search,
+                    pathname: line.pathname,
+                    title: line.title,
+                    browser: line.browser,
+                    incognito: line.incognito,
+                    audible: line.audible
+                })
+            }
+
             normesAlumnnes[alumne.alumneId][norma._id] = {
                 severity: norma.severity,
                 mode: norma.mode,
-                hosts_list: norma.hosts_list,
-                protocols_list: norma.protocols_list,
-                searches_list: norma.searches_list,
-                pathnames_list: norma.pathnames_list,
-                titles_list: norma.titles_list,
+                lines: lines,
                 enabled_on: norma.enabled_on
             };
         }
@@ -90,15 +114,25 @@ async function getAllNormesWeb() {
 
     for (const grup of grups) {
         normesGrups[grup.grupId] = {}
-        for (norma of grup.normesWeb) {
+        for (const norma of grup.normes2Web) {
+            const lines = [];
+            for (const line of norma.lines) {
+                lines.push({
+                    host: line.host,
+                    protocol: line.protocol,
+                    search: line.search,
+                    pathname: line.pathname,
+                    title: line.title,
+                    browser: line.browser,
+                    incognito: line.incognito,
+                    audible: line.audible
+                })
+            }
+
             normesGrups[grup.grupId][norma._id] = {
                 severity: norma.severity,
                 mode: norma.mode,
-                hosts_list: norma.hosts_list,
-                protocols_list: norma.protocols_list,
-                searches_list: norma.searches_list,
-                pathnames_list: norma.pathnames_list,
-                titles_list: norma.titles_list,
+                lines: lines,
                 enabled_on: norma.enabled_on
             };
         }
@@ -118,7 +152,7 @@ async function getAllNormesApps() {
 
     for (const alumne of alumnes) {
         normesAlumnnes[alumne.alumneId] = {}
-        for (norma of alumne.normesApp) {
+        for (const norma of alumne.normesApp) {
             normesAlumnnes[alumne.alumneId][norma._id] = {
                 severity: norma.severity,
                 processName: norma.processName,
@@ -133,7 +167,7 @@ async function getAllNormesApps() {
 
     for (const grup of grups) {
         normesGrups[grup.grupId] = {}
-        for (norma of grup.normesApp) {
+        for (const norma of grup.normesApp) {
             normesGrups[grup.grupId][norma._id] = {
                 severity: norma.severity,
                 processName: norma.processName,
@@ -148,13 +182,14 @@ async function getAllNormesApps() {
     };
 }
 
-async function removeNormaWeb(who, whoid, normaId) {
+
+async function removeNorma2Web(who, whoid, normaId) {
     if(who === "grup") {
-        await db.NormaWeb.deleteOne({_id: normaId});
-        await db.Grup.updateMany({}, {$pull: {normesWeb: {_id: normaId}}});
+        await db.Norma2Web.deleteOne({_id: normaId});
+        await db.Grup.updateMany({}, {$pull: {normes2Web: {_id: normaId}}});
     } else if(who === "alumne"){
-        await db.NormaWeb.deleteOne({_id: normaId});
-        await db.Alumne.updateMany({}, {$pull: {normesWeb: {_id: normaId}}});
+        await db.Norma2Web.deleteOne({_id: normaId});
+        await db.Alumne.updateMany({}, {$pull: {normes2Web: {_id: normaId}}});
     }
 
     onUpdateCallback();
@@ -174,11 +209,11 @@ function registerOnUpdateCallback(callback) {
 }
 
 module.exports = {
-    addNormaWebAlumne,
-    creaNormaWebGrup,
-    getAllNormesWeb,
+    creaNorma2WebAlumne,
+    creaNorma2WebGrup,
+    getAllNormes2Web,
     getAllNormesApps,
-    removeNormaWeb,
+    removeNorma2Web,
     removeNormaApp,
     registerOnUpdateCallback,
     creaNormaGrupApp,

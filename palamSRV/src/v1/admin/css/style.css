@@ -172,6 +172,15 @@ ul {
     color: #00000000;
 }
 
+.warning-tip-icons{
+    float: right;
+    background: white;
+    border-radius: 13px;
+    padding: 3px;
+    filter: grayscale(1);
+    top: -3px;
+    position: relative;
+}
 .row-input {
     display: flex;
     flex-direction: row;

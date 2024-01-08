@@ -10,6 +10,25 @@ function conteAlguna(text, paraules) {
     return paraules.some(paraula => text.includes(paraula));
 }
 
+
+function compara(paraula, norma, ishost = false) {
+    if (norma === undefined || norma === null || norma === "" || norma === "*")
+        return true;
+
+    // regex prepare
+    norma = norma.replaceAll("*", ".*");
+    norma = norma.replaceAll(".", "\\.");
+
+    // add optional www.
+    if (ishost) {
+        if(!norma.startsWith("www."))
+            norma = "^[w]{0,3}\\.{0,1}" + norma;
+    }
+
+    const regex = new RegExp(norma, "i");
+    return regex.test(paraula);
+}
+
 function compare_severity(severity1, severity2) {
     const severity = Math.max(severity_rank[severity1], severity_rank[severity2]);
     return Object.keys(severity_rank).find(key => severity_rank[key] === severity);
@@ -22,7 +41,7 @@ class Validacio {
     async checkWeb(host, protocol, search, pathname, title) {
         const alumne = await db.Alumne.findOne({alumneId: this.alumneid})
             .populate('grup')
-            .populate('normesWeb');
+            .populate('normes2Web');
 
         if(!alumne) {
             //logger.info("L'alumne no existeix: alumne=" + this.alumneid);
@@ -47,9 +66,9 @@ class Validacio {
             return "block";
 
         // Busca les normesWeb del grup
-        const normesgrup = await db.NormaWeb.find({_id: {$in: grup.normesWeb}});
+        const normesgrup = await db.Norma2Web.find({_id: {$in: grup.normes2Web}});
         // Busca les normesWeb de l'alumne
-        const normesalumne = await db.NormaWeb.find({_id: {$in: alumne.normesWeb}});
+        const normesalumne = await db.Norma2Web.find({_id: {$in: alumne.normes2Web}});
 
         const normesWeb = normesgrup.concat(normesalumne);
         const dataActual = new Date();
@@ -77,26 +96,34 @@ class Validacio {
             if(normaNotEnabled)
                 continue;
 
-            const matchHost = conteAlguna(host, norma.hosts_list);
-            const matchProtocol = conteAlguna(protocol, norma.protocols_list);
-            const matchSearch = conteAlguna(search, norma.searches_list);
-            const matchPathname = conteAlguna(pathname, norma.pathnames_list);
-            const matchTitle = conteAlguna(title, norma.titles_list);
-
-            const match = (matchHost || norma.hosts_list.length === 0)
-                && (matchProtocol || norma.protocols_list.length === 0)
-                && (matchSearch || norma.searches_list.length === 0)
-                && (matchPathname || norma.pathnames_list.length === 0)
-                && (matchTitle || norma.titles_list.length === 0);
-
             const mode = norma.mode;
+
+            let matchInLines = false;
+            for (const line of norma.lines) {
+                const matchHost = !line.host || compara(host, line.host, true);
+                const matchProtocol = !line.protocol || compara(protocol,line.protocol);
+                const matchSearch = !line.search || compara(search, line.search);
+                const matchPathname = !line.pathname || compara(pathname, line.pathname);
+                const matchTitle = !line.title || compara(title, line.title);
+                //const matchBrowser; TODO
+                //const matchIncognito;
+                //const matchAudible;
+
+                const match = matchHost && matchProtocol && matchSearch && matchPathname && matchTitle;
+                matchInLines = matchInLines || match;
+
+                if(match)
+                    break;
+            }
 
             let current_action = "allow";
 
-            if(mode === "whitelist")
-                current_action = match ? "allow" : norma.severity;
-            else if(mode === "blacklist")
-                current_action = match ? norma.severity: "allow";
+            if(mode === "whitelist") {
+                current_action = matchInLines ? "allow" : norma.severity;
+            }
+            else if(mode === "blacklist") {
+                current_action = matchInLines ? norma.severity : "allow";
+            }
 
             action = compare_severity(action, current_action);
         }
