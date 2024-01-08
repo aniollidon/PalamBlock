@@ -58,6 +58,7 @@ function addNorma2Web(who, whoid, severity, mode, webList, enabled_on) {
         });
     }
 }
+
 function addNormaApps(who, whoid, severity, processName, processPath, processPathisRegex) {
     if(who === "grup") {
         normaService.creaNormaGrupApp(whoid, processName, processPath, processPathisRegex, severity).then((alumne) => {
@@ -70,6 +71,18 @@ function addNormaApps(who, whoid, severity, processName, processPath, processPat
     }
 }
 
+function updateNorma2Web(who, whoid, normaId, severity, mode, list, enabled_on, alive){
+    if(who === "grup") {
+        normaService.updateNorma2WebGrup(whoid, normaId, severity, mode, list, enabled_on, alive).then((alumne) => {
+            //logger.info("NormaWeb actualitzada de grup");
+        });
+    } else if(who === "alumne"){
+        normaService.updateNorma2WebAlumne(whoid, normaId, severity, mode, list, enabled_on, alive).then((alumne) => {
+            //logger.info("NormaWeb actualitzada d'alumne");
+        });
+    }
+
+}
 const getAllNormes2Web = () => {
     return normaService.getAllNormes2Web();
 }
@@ -99,5 +112,6 @@ module.exports = {
     getAllNormesApps,
     removeNorma2Web,
     removeNormaApp,
+    updateNorma2Web,
     registerOnUpdateCallback,
 }

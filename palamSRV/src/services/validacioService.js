@@ -78,6 +78,9 @@ class Validacio {
 
         for(const norma of normesWeb) {
 
+            // si la norma no està activa, no la comprovem
+            if(!norma.alive) continue;
+
             // Troba si una norma està activa
             const normaNotEnabled = norma.enabled_on.find((enabled) => {
                 const duration = enabled.duration;

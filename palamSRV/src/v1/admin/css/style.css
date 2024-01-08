@@ -172,8 +172,22 @@ ul {
     color: #00000000;
 }
 
+.eye-button{
+    display: block;
+    color: #666;
+}
+
+.warning-right{
+    position: absolute;
+    right: 0;
+    top: 5px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+}
+
 .warning-tip-icons{
-    float: right;
     background: white;
     border-radius: 13px;
     padding: 3px;

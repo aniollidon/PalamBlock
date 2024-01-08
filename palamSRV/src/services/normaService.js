@@ -75,6 +75,26 @@ async function creaNormaGrupApp(grupId, processName, processPath, processPathisR
     return result;
 }
 
+async function updateNorma2WebGrup(whoid, normaId, severity, mode, list, enabled_on, alive){
+    const result = await db.Grup.findOneAndUpdate({grupId: whoid, "normes2Web._id": normaId}, {
+        $set: {
+            "normes2Web.$.alive": alive
+        }
+    }).populate("normes2Web");
+    onUpdateCallback();
+    return result;
+}
+
+async function updateNorma2WebAlumne(whoid, normaId, severity, mode, list, enabled_on, alive){
+
+    const result = await db.Alumne.findOneAndUpdate({alumneId: whoid, "normes2Web._id": normaId}, {
+        $set: {
+            "normes2Web.$.alive": alive
+        }
+    }).populate("normes2Web");
+    onUpdateCallback();
+    return result;
+}
 
 async function getAllNormes2Web() {
     // Alumnes
@@ -103,7 +123,8 @@ async function getAllNormes2Web() {
                 severity: norma.severity,
                 mode: norma.mode,
                 lines: lines,
-                enabled_on: norma.enabled_on
+                enabled_on: norma.enabled_on,
+                alive: norma.alive
             };
         }
     }
@@ -133,7 +154,8 @@ async function getAllNormes2Web() {
                 severity: norma.severity,
                 mode: norma.mode,
                 lines: lines,
-                enabled_on: norma.enabled_on
+                enabled_on: norma.enabled_on,
+                alive: norma.alive
             };
         }
     }
@@ -217,5 +239,7 @@ module.exports = {
     removeNormaApp,
     registerOnUpdateCallback,
     creaNormaGrupApp,
-    creaNormaAlumneApp
+    creaNormaAlumneApp,
+    updateNorma2WebGrup,
+    updateNorma2WebAlumne
 }

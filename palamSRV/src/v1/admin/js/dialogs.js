@@ -298,7 +298,7 @@ export function obreDialogNormesWeb(whoid, who = "alumne") {
         itemSubtitle.innerHTML = normesWebInfo[whos][whoid][norma].enabled_on;
         const trash = document.createElement("button");
         trash.setAttribute("type", "button");
-        trash.setAttribute("class", "btn btn-outline-secondary btn-sm");
+        trash.setAttribute("class", "btn btn-outline-secondary btn-sm mx-1");
         trash.innerHTML =
             `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                 <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"></path>
@@ -313,6 +313,23 @@ export function obreDialogNormesWeb(whoid, who = "alumne") {
                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
                 <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
             </svg>`
+        const eye = document.createElement("span");
+        const eyeclose = document.createElement("button");
+        eyeclose.setAttribute("type", "button");
+        eyeclose.setAttribute("class", "btn btn-outline-secondary btn-sm mx-1");
+        eyeclose.innerHTML =
+            `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash-fill" viewBox="0 0 16 16">
+              <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
+              <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
+            </svg>`;
+        const eyeopen = document.createElement("button");
+        eyeopen.setAttribute("type", "button");
+        eyeopen.setAttribute("class", "btn btn-outline-secondary btn-sm mx-1");
+        eyeopen.innerHTML =
+            `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+          <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+          <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+        </svg>`;
         trash.onclick = (event) => {
             socket.emit("removeNormaWeb", {normaId: norma, who: who, whoid: whoid});
             normesWebInfo[whos][whoid][norma].removed = true;
@@ -322,8 +339,29 @@ export function obreDialogNormesWeb(whoid, who = "alumne") {
             //TODO edit norma
             alert("Aquesta funció encara no està implementada")
         };
-        itemSubtitle.appendChild(trash);
+
+        if(normesWebInfo[whos][whoid][norma].alive) {
+            eye.appendChild(eyeclose);
+        }
+        else {
+            eye.appendChild(eyeopen);
+            itemTitle.innerHTML += " (inactiva)";
+        }
+
+        eyeopen.onclick = (event) => {
+            normesWebInfo[whos][whoid][norma].alive = true;
+            socket.emit("updateNormaWeb", {normaId: norma, who: who, whoid: whoid, alive: true});
+            obreDialogNormesWeb(whoid, who);
+        }
+        eyeclose.onclick = (event) => {
+            normesWebInfo[whos][whoid][norma].alive = false;
+            socket.emit("updateNormaWeb", {normaId: norma, who: who, whoid: whoid, alive: false});
+            obreDialogNormesWeb(whoid, who);
+        }
+
         itemSubtitle.appendChild(pencil);
+        itemSubtitle.appendChild(eye);
+        itemSubtitle.appendChild(trash);
         itemHeading.appendChild(itemTitle);
         itemHeading.appendChild(itemSubtitle);
         listItem.appendChild(itemHeading);
