@@ -39,7 +39,7 @@ export function creaAppMenuJSON(alumne, app) {
     ]
 }
 
-export function creaWebMenuJSON(alumne) {
+export function creaWebMenuJSON(alumne, browser) {
     // Opcions del menu contextual
     const obreUrl = (info) => {
         const url = info.webPage.protocol + "//" + info.webPage.host + info.webPage.pathname + info.webPage.search
@@ -54,15 +54,28 @@ export function creaWebMenuJSON(alumne) {
         obreDialogBloquejaWeb(info, alumne, "blocgrup");
     }
 
-    const onAfegeixLlistaBlanca = (info) => {
-        obreDialogBloquejaWeb(info, alumne, "llistablanca");
+    const onTanca = (info) => {
+        socket.emit("closeTab", {
+            alumne: alumne,
+            browser: browser,
+            tabId: info.tabId
+        })
     }
 
-    return [
+    let menu = [
         {text: "Obre aquí", do: obreUrl},
         {text: "Bloqueja", do: onBloqueja},
-        {text: "Bloqueja al grup", do: onBloquejaGrup},
+        {text: "Bloqueja al grup", do: onBloquejaGrup}
     ]
+
+    if(browser){
+        menu.push({
+            text: "Tanca",
+            do: onTanca
+        })
+    }
+
+    return menu;
 }
 
 export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") {

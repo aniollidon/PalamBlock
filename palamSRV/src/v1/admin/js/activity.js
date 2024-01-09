@@ -348,7 +348,7 @@ export function drawAlumnesActivity(data) {
                         browserTabsBottomBar.setAttribute("class", "chrome-tabs-bottom-bar");
                         browserWin.appendChild(browserTabsBottomBar);
 
-                        const menu_options = creaWebMenuJSON(alumne);
+                        const menu_options = creaWebMenuJSON(alumne, browserInfo.browser);
 
                         // init chrome tabs
                         if (!chromeTabsObjects[alumne])

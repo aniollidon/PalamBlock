@@ -40,7 +40,8 @@ export function toogleSideBar(alumne, tipus = "web") {
 
 export function drawHistorialWeb(alumne, historial) {
     const historialSideBarContent = document.getElementById("historialSidebarContent");
-    const opcionMenuContextual = creaWebMenuJSON(alumne);
+    const opcionMenuContextual = creaWebMenuJSON(alumne, undefined);
+
 
     let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
 
