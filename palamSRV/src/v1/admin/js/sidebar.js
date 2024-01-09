@@ -4,6 +4,15 @@ import {socket} from "./socket.js";
 
 export function toogleSideBar(alumne, tipus = "web") {
     const historialSidebar = document.getElementById("historialSidebar");
+    const historialSidebarClose = document.getElementById("historialSidebarClose");
+
+    historialSidebarClose.onclick = () => {
+        historialSidebar.style.setProperty('display', 'none', 'important');
+        // Refresca els chrome tabs
+        if (chromeTabsObjects[alumne])
+            for (let b in chromeTabsObjects[alumne])
+                chromeTabsObjects[alumne][b].layoutTabs();
+    }
 
     const prevTipus = historialSidebar.getAttribute("data-historial");
     const prevAlumne = historialSidebar.getAttribute("data-alumne");
@@ -23,11 +32,7 @@ export function toogleSideBar(alumne, tipus = "web") {
         historialSideBarContent.innerHTML = "";
         historialSidebar.style.display = "";
     } else {
-        historialSidebar.style.setProperty('display', 'none', 'important');
-        // Refresca els chrome tabs
-        if (chromeTabsObjects[alumne])
-            for (let b in chromeTabsObjects[alumne])
-                chromeTabsObjects[alumne][b].layoutTabs();
+        historialSidebarClose.click();
     }
 
 

@@ -7,6 +7,11 @@ body {
     width: 70px;
 }
 
+.historial-close{
+    position: absolute;
+    right: 0;
+}
+
 .informacions{
     margin: 10px 0 0 0;
 }
