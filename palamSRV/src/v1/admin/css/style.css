@@ -3,6 +3,9 @@ body {
     font-size: 12px;
 }
 
+.browsers{
+    margin: 10px 0 10px 10px
+}
 .browser-icon {
     width: 70px;
 }
