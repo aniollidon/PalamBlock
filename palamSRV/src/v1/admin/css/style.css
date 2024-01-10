@@ -265,6 +265,7 @@ main {
 }
 .apps{
     margin: 5px 0;
+    display:none;
 }
 
 .app{
