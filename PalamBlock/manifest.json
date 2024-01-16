@@ -28,7 +28,8 @@
         "resources": [
           "blocked.html",
           "login.html",
-          "login.js"
+          "login.js",
+          "blocked.js"
         ],
         "matches": ["<all_urls>"]
       }

@@ -59,7 +59,7 @@ export const googleServices = [
     },
     {
         title: "Drive",
-        url: "drive.google.com",
+        url: "drive.google.com,*googleusercontent.com",
         default: true,
 
     },

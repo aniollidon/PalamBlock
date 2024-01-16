@@ -11,7 +11,7 @@ chrome.storage.sync.get(['alumne'], function(result) {
         alumne:result.alumne
     }).then((message)=>{
         if(message.do === "block"){
-            window.location.href = chrome.runtime.getURL("blocked.html")
+            window.location.href = chrome.runtime.getURL(`blocked.html?title=${document.title}`)
         }
         else if(message.do === "warn"){
             document.body.innerHTML = `
