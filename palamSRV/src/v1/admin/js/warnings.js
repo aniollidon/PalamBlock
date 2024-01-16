@@ -25,7 +25,7 @@ export function warnNormesWeb(data){
                     for (let line of data[who][whois][normaid].lines) {
                        if(line.host) {
 
-                           if(line.host.toString().includes("google.com")){
+                           if(line.host.toString().includes("google.com") || line.host.toString().includes("googleusercontent.com")){
                                if (!firstgoogle)
                                    firstgoogle = true;
                                else
