@@ -146,6 +146,7 @@ export function drawAlumnesActivity(data) {
                 const normesAppButton = document.createElement("button");
                 normesAppButton.setAttribute("class", "btn btn-dark");
                 normesAppButton.setAttribute("type", "button");
+                normesAppButton.style.display = "none";
                 const NormesAppInner = document.createElement("div");
                 NormesAppInner.innerHTML =
                     `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-window-stack" viewBox="0 0 16 16">
@@ -162,6 +163,7 @@ export function drawAlumnesActivity(data) {
                 const historialAppButton = document.createElement("button");
                 historialAppButton.setAttribute("class", "btn btn-dark");
                 historialAppButton.setAttribute("type", "button");
+                historialAppButton.style.display = "none";
                 const historialAppInner = document.createElement("div");
                 historialAppInner.innerHTML =
                     `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history" viewBox="0 0 16 16">
