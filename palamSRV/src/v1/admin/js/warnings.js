@@ -1,4 +1,5 @@
 import {socket} from "./socket.js";
+import {normaTempsActiva} from "./utils.js";
 
 export function warnNormesWeb(data){
     let avisos = document.getElementById("avisos");
@@ -9,6 +10,8 @@ export function warnNormesWeb(data){
             for (let normaid in data[who][whois]) {
                 if(!data[who][whois][normaid].alive) continue;
                 if(data[who][whois][normaid].mode === "whitelist"){
+                    if(! normaTempsActiva(data[who][whois][normaid].enabled_on)) continue;
+
                     const whotxt = who.replace("s","");
                     let div = document.createElement("div");
                     div.classList.add("alert");

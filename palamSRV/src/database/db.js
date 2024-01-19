@@ -7,6 +7,9 @@ const DateTimeEnabledSchema = new mongoose.Schema({
     days: {
         type: [String] // if empty, all days are enabled
     },
+    startHours: {
+        type: [String] // if empty, all hours are enabled
+    },
     duration: {
         type: Number // in minutes (0 means no limit)
     }
@@ -240,9 +243,6 @@ const HistorialAppsSchema = new mongoose.Schema({
 });
 const Alumne = mongoose.model('Alumne', AlumneSchema);
 const Grup = mongoose.model('Grup', GrupSchema);
-const NormaWeb = mongoose.model('NormaWeb', NormaWebSchema);
-const Norma2Web = mongoose.model('Norma2Web', Norma2WebSchema);
-const NormaApp = mongoose.model('NormaApp', NormaAppSchema);
 const HistorialWeb = mongoose.model('HistorialWeb', HistorialWebSchema);
 const HistorialApps = mongoose.model('HistorialApps', HistorialAppsSchema);
 const Admin = mongoose.model('Admin', AdminSchema);
@@ -254,9 +254,6 @@ AlumneSchema.index({alumneId: 1}, {unique: true});
 GrupSchema.index({grupId: 1}, {unique: true});
 
 module.exports = {
-    NormaWeb,
-    NormaApp,
-    Norma2Web,
     WebLine,
     Alumne,
     Grup,

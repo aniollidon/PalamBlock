@@ -114,3 +114,76 @@ export const googleServices = [
         default: false
     }
 ];
+
+export const commonHorari = [
+    "8:00", "9:15", "10:10", "11:00", "11:40", "12:40", "13:35", "14:30"
+]
+
+export const teacherHorari = {
+    "aniol-m6-fpb1": [
+        {
+            days: ["dilluns"],
+            startHours: ["11:40"],
+            duration: 115
+        },
+        {
+            days: ["dimarts"],
+            startHours: ["12:40"],
+            duration: 55
+        },
+        {
+            days: ["dimecres"],
+            startHours: ["12:40"],
+            duration: 110
+        },
+        {
+            days: ["dijous"],
+            startHours: ["13:35"],
+            duration: 55
+        },
+        {
+            days: ["divendres"],
+            startHours: ["09:15"],
+            duration: 105
+        }
+    ],
+    "alex-m8-fpb1": [
+        {
+            days: ["dilluns"],
+            startHours: ["10:10"],
+            duration: 50
+        },
+        {
+            days: ["dimarts"],
+            startHours: ["08:00"],
+            duration: 130
+        },
+        {
+            days: ["dimecres"],
+            startHours: ["09:15"],
+            duration: 105
+        },
+        {
+            days: ["dijous"],
+            startHours: ["11:40"],
+            duration: 115
+        }
+    ],
+    "alex-m5-fpb1": [
+        {
+            days: ["dimarts"],
+            startHours: ["11:40"],
+            duration: 60
+        },
+        {
+            days: ["divendres"],
+            startHours: ["08:00"],
+            duration: 75
+        },
+    ],
+    "prova":[{
+        days: ["divendres"],
+        startHours: ["23:00"],
+        duration: 75
+    }]
+}

@@ -39,24 +39,23 @@ async function _creaNorma2Web(severity, mode, webList, enabled_on) {
     }
 
 
-    return await db.Norma2Web.create({
+    return {
         severity: severity,
         mode: mode,
         alive: true,
-        enabled_on: [],
+        enabled_on: enabled_on? enabled_on : [],
         lines: wlist,
         categories: ["general"]
-        }
-    );
+    };
 }
 
 async function _creaNormaApp(processName, processPath, processPathisRegex, severity) {
-    return await db.NormaApp.create({
+    return {
         processName: processName,
         processPath: processPath,
         processPathisRegex: processPathisRegex,
         severity: severity
-    });
+    };
 }
 
 async function creaNormaAlumneApp(alumneId, processName, processPath, processPathisRegex, severity) {
@@ -81,6 +80,7 @@ async function updateNorma2WebGrup(whoid, normaId, severity, mode, list, enabled
             "normes2Web.$.alive": alive
         }
     }).populate("normes2Web");
+
     onUpdateCallback();
     return result;
 }
@@ -130,7 +130,7 @@ async function getAllNormes2Web() {
     }
 
     // Grups
-    const grups = await db.Grup.find({}).populate("normesWeb");
+    const grups = await db.Grup.find({}).populate("normes2Web");
     const normesGrups = {};
 
     for (const grup of grups) {
@@ -207,10 +207,8 @@ async function getAllNormesApps() {
 
 async function removeNorma2Web(who, whoid, normaId) {
     if(who === "grup") {
-        await db.Norma2Web.deleteOne({_id: normaId});
         await db.Grup.updateMany({}, {$pull: {normes2Web: {_id: normaId}}});
     } else if(who === "alumne"){
-        await db.Norma2Web.deleteOne({_id: normaId});
         await db.Alumne.updateMany({}, {$pull: {normes2Web: {_id: normaId}}});
     }
 

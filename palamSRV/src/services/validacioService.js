@@ -10,14 +10,19 @@ function conteAlguna(text, paraules) {
     return paraules.some(paraula => text.includes(paraula));
 }
 
+function hhmmToMinutes(hhmm){
+    const h = parseInt(hhmm.split(":")[0])
+    const m = parseInt(hhmm.split(":")[1])
+    return h*60 + m;
+}
 
 function compara(paraula, norma, ishost = false) {
     if (norma === undefined || norma === null || norma === "" || norma === "*")
         return true;
 
     // regex prepare
-    norma = norma.replaceAll("*", ".*");
     norma = norma.replaceAll(".", "\\.");
+    norma = norma.replaceAll("*", ".*");
 
     // add optional www.
     if (ishost) {
@@ -53,7 +58,7 @@ class Validacio {
         else if(alumne.status === "Blocked")
             return "block";
 
-        const grup = await db.Grup.findOne({grupId: alumne.grup})
+        const grup = await db.Grup.findOne({grupId: alumne.grup}).populate('normes2Web');
 
         if(!grup){
             //logger.info("L'alumne no té grup assignat: alumne=" + this.alumneid);
@@ -66,11 +71,14 @@ class Validacio {
             return "block";
 
         // Busca les normesWeb del grup
-        const normesgrup = await db.Norma2Web.find({_id: {$in: grup.normes2Web}});
-        // Busca les normesWeb de l'alumne
-        const normesalumne = await db.Norma2Web.find({_id: {$in: alumne.normes2Web}});
+        const normesWeb = [];
+        for (const norma of grup.normes2Web) {
+            normesWeb.push(norma);
+        }
+        for (const norma of alumne.normes2Web) {
+            normesWeb.push(norma);
+        }
 
-        const normesWeb = normesgrup.concat(normesalumne);
         const dataActual = new Date();
         const datetime_ara = dataActual.getTime();
         const dia_avui = dataActual.toLocaleDateString('ca-ES',  { weekday: 'long' });
@@ -81,23 +89,46 @@ class Validacio {
             // si la norma no està activa, no la comprovem
             if(!norma.alive) continue;
 
-            // Troba si una norma està activa
-            const normaNotEnabled = norma.enabled_on.find((enabled) => {
-                const duration = enabled.duration;
+            // Si la norma té marques de temps mira si està activa
+            if(norma.enabled_on) {
+                const norma_enabled =  norma.enabled_on.find((enabled) => {
+                    const duration = enabled.duration || 0;
 
-                for(const datetime of duration.datetimes) {
-                    if(datetime_ara < datetime.getTime())  // No ha arribat l'hora
-                        return true;
-                    else if(duration === 0 && datetime_ara > datetime.getTime() + duration * 60000) // Ha passat l'hora
-                        return true;
-                }
+                    // Mira per datetime
+                    for (const datetime of enabled.datetimes) {
+                        const timestamp = datetime.getTime();
+                        if (duration === 0 && datetime_ara > timestamp)
+                            return true;
+                        else if (datetime_ara > timestamp && datetime_ara < timestamp + duration * 60000)
+                            return true;
 
-                const todayactive = enabled.days.includes(dia_avui);
-                return !todayactive;
-            });
+                    }
 
-            if(normaNotEnabled)
-                continue;
+                    let horaTrobada = false;
+                    // Mira per hora
+                    for (const startHour of enabled.startHours) {
+                        const startHourM = hhmmToMinutes(startHour);
+                        const endHourM = startHourM + duration;
+                        const momentM = hhmmToMinutes(dataActual.toLocaleTimeString('ca-ES', {hour: '2-digit', minute:'2-digit'}));
+                        if(momentM >= startHourM && momentM <= endHourM)
+                        {
+                            horaTrobada = true;
+                            break;
+                        }
+                    }
+
+                    // Mira per dia
+                    const diaTrobat = enabled.days.includes(dia_avui);
+
+                    // Comprova
+                    return horaTrobada && diaTrobat
+                        || enabled.startHours === 0 && diaTrobat
+                        || horaTrobada && enabled.days.length === 0;
+                });
+
+                if(!norma_enabled)
+                    continue;
+            }
 
             const mode = norma.mode;
 
