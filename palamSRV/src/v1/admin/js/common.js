@@ -180,10 +180,5 @@ export const teacherHorari = {
             startHours: ["08:00"],
             duration: 75
         },
-    ],
-    "prova":[{
-        days: ["divendres"],
-        startHours: ["23:00"],
-        duration: 75
-    }]
+    ]
 }
