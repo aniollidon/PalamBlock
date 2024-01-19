@@ -3,8 +3,8 @@ export const commonPlaces = [{
     url: "google.com",
     svg: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="w-4 h-4 me-1" viewBox="0 0 20 20"><path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z"></path></svg>`,
 }, {
-    title: "DuckDuckGo",
-    url: "duckduckgo.com",
+    title: "DuckDuckGo & Bing",
+    url: "duckduckgo.combing.com",
     svg: `<svg width="20" height="20" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" fill="none" class="w-4 h-4 me-2"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="12" d="M96 170c40.869 0 74-33.131 74-74 0-40.87-33.131-74-74-74S22 55.13 22 96c0 40.869 33.131 74 74 74Z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="12" d="M80 166 64.844 94.354C61.318 77.686 74.033 62 91.07 62v0c12.301 0 23.023 8.372 26.006 20.305L118 86c6 28-28 14-20 40s16 38 16 38M90 62c-2-8-10-12-18-12"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="12" d="M118 100c6 0 14-2 20-6m-34 18c6 4 16 6 27 4"/></svg>`
 }, {
     title: "Wikipedia",
