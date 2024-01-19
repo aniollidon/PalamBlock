@@ -97,10 +97,10 @@ function construeixEnabledOn(opcioSeleccionada, nowHM){
             dataActual.setHours(0,0,0,0);
             enabled_on = [{
                 datetimes: [dataActual],
-                duration: 60*24
+                duration: 1440
             }];
         }
-        if (opcioSeleccionada.startsWith("*")) {
+        else if (opcioSeleccionada.startsWith("*")) {
             const nom = opcioSeleccionada.substring(1);
             if (teacherHorari[nom]) {
                 enabled_on = teacherHorari[nom];
