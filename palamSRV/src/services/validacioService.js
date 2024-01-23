@@ -90,7 +90,7 @@ class Validacio {
             if(!norma.alive) continue;
 
             // Si la norma té marques de temps mira si està activa
-            if(norma.enabled_on) {
+            if(norma.enabled_on && norma.enabled_on.length>0) {
                 const norma_enabled =  norma.enabled_on.find((enabled) => {
                     const duration = enabled.duration || 0;
 
