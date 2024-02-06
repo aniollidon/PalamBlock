@@ -8,7 +8,8 @@ const bodyParser = require('body-parser');
 const mongoose= require('mongoose');
 const http = require('http');
 const cors = require("cors")
-const initializeWebSocket = require('./v1/ws');
+const initializeAdminWebSocket = require('./v1/ws-admin');
+const initializeExtentionWebSocket = require('./v1/ws-extention');
 const logger = require("./logger").logger;
 
 const app = express();
@@ -38,7 +39,8 @@ app.use('/admin', express.static(path.join(__dirname, '/v1/admin')))
 app.use('/privacy', express.static(path.join(__dirname, '/v1/privacy')))
 
 // WebSocket
-initializeWebSocket(server);
+initializeAdminWebSocket(server);
+initializeExtentionWebSocket(server);
 
 server.listen(PORT, () => {
   logger.info(`API is listening on port ${PORT}`);

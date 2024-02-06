@@ -558,7 +558,7 @@ function checkBrowserHistorialItem(alumne, historyitem) {
     const browserslist = allAlumnesStatus.alumnesStat[alumne].browsers;
 
     // PalamBlock pot estar configurant-se
-    if(historyitem.caption.toLowerCase().includes("palamblock")) return true;
+    if(historyitem.caption && historyitem.caption.toLowerCase().includes("palamblock")) return true;
 
     // Search for browser
     for (const browsername in allAlumnesStatus.alumnesStat[alumne].browsers) {

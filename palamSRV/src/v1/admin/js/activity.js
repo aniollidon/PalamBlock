@@ -65,7 +65,8 @@ export function drawAlumnesActivity(data) {
                 alumneDivHeader.setAttribute("class", "alumne-header");
                 alumneDivHeader.setAttribute("id", alumne + "-header");
                 alumneDiv.appendChild(alumneDivHeader);
-                alumneDivHeader.innerHTML = ` <h3>Alumne: ${alumne}</h3>`;
+                const vextensio = alumneInfo ? alumneInfo.version : "v0";
+                alumneDivHeader.innerHTML = ` <h3>Alumne: ${alumne}</h3> <span class="version">Versió: ${vextensio}</span>`;
                 alumnesList.appendChild(alumneDiv);
 
                 const alumneDivButtons = document.createElement("div");

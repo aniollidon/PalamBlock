@@ -38,6 +38,37 @@ const postTabInfoAPI = (req, res) => {
     res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser) });
 }
 
+const postTabInfoWS = (msg) =>{
+    const alumne = msg.alumne;
+    const action = msg.action;
+    const host = msg.host;
+    const protocol = msg.protocol;
+    const search = msg.search;
+    const pathname = msg.pathname;
+    const title = msg.title;
+    const browser = msg.browser
+    const windowId = msg.windowId;
+    const tabId = msg.tabId;
+    const incognito = msg.incognito;
+    const favicon = msg.favicon;
+    const active = msg.active;
+    const audible = msg.audible;
+    const timestamp = new Date();
+
+    if(!alumne || !browser || !tabId) {
+        return;
+    }
+
+    if(action !== "active" && action !== "close" && action !== "update") {
+        return;
+    }
+
+    infoService.registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, audible);
+    if(action === "update") {
+        historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
+    }
+}
+
 const postBrowserInfoAPI = (req, res) => {
     const alumne = req.body.alumne;
     const browser = req.body.browser;
@@ -53,6 +84,16 @@ const postBrowserInfoAPI = (req, res) => {
     infoService.registerBrowserInfo(alumne, browser, tabsInfos, activeTab, timestamp);
 
     res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser) });
+}
+
+const postBrowserInfoWS = (msg) => {
+    const alumne = msg.alumne;
+    const browser = msg.browser;
+    const timestamp = new Date();
+    const tabsInfos = msg.tabsInfos;
+    const activeTab = msg.activeTab;
+
+    infoService.registerBrowserInfo(alumne, browser, tabsInfos, activeTab, timestamp);
 }
 
 function getAlumnesActivity() {
@@ -89,7 +130,9 @@ const validateHistoryBrowsersAPI = (req, res) => {
 
 module.exports = {
     postTabInfoAPI,
+    postTabInfoWS,
     postBrowserInfoAPI,
+    postBrowserInfoWS,
     getAlumnesActivity,
     registerOnUpdateCallback,
     remoteCloseTab,

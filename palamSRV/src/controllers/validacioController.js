@@ -41,6 +41,42 @@ const postValidacioAPI = (req, res) => {
     });
 }
 
+const postValidacioWS = (msg, resCallback) => {
+    const host = msg.host;
+    const protocol = msg.protocol;
+    const search = msg.search;
+    const pathname = msg.pathname;
+    const title = msg.title;
+    const alumne = msg.alumne;
+    const browser = msg.browser
+    const windowId = msg.windowId;
+    const tabId = msg.tabId;
+    const incognito = msg.incognito;
+    const favicon = msg.favicon;
+    const active = msg.active;
+    const audible = msg.audible;
+
+    const timestamp = new Date();
+
+    if(!alumne || !browser || !tabId) {
+        return;
+    }
+
+    const validacioAlumne = new validacioService.Validacio(alumne);
+    const validacio = validacioAlumne.checkWeb(host, protocol, search, pathname, title);
+
+    validacio.then((status) => {
+        //logger.info("host: " + host + " protocol: " + protocol + " search: " + search + " pathname: " + pathname + " title: " + title + " alumne: " + alumne + " browser: " + browser + " tabId: " + tabId + "incognito: " + incognito + " timestamp: " + timestamp);
+        //logger.info("Do: " + status);
+        resCallback(tabId, status);
+        historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon, status);
+        infoService.register(alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, status, audible);
+
+    }).catch((err) => {
+        logger.error(err);
+    });
+}
+
 const postAppsAPI = (req, res) => {
     const apps = req.body.apps;
     const alumne = req.body.alumne;
@@ -66,5 +102,6 @@ const postAppsAPI = (req, res) => {
 
 module.exports = {
     postValidacioAPI,
+    postValidacioWS,
     postAppsAPI
 };

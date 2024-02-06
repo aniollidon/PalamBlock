@@ -6,8 +6,10 @@ const alumneController = require("../../controllers/alumneController");
 const adminController = require("../../controllers/adminController");
 const logger = require("../../logger").logger;
 
-function initializeWebSocket(server) {
-    const io = new Server(server)
+function initializeAdminWebSocket(server) {
+    const io = new Server(server, {
+        path: '/ws-admin',
+    })
 
     io.use((socket, next) => {
         // Obtenim les credencials de l'usuari i la contrasenya
@@ -97,4 +99,4 @@ function initializeWebSocket(server) {
 
 }
 
-module.exports = initializeWebSocket;
+module.exports = initializeAdminWebSocket;
