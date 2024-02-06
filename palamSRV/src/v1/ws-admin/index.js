@@ -8,7 +8,7 @@ const logger = require("../../logger").logger;
 
 function initializeAdminWebSocket(server) {
     const io = new Server(server, {
-        path: '/ws-admin',
+        path: '/ws-admin'
     })
 
     io.use((socket, next) => {

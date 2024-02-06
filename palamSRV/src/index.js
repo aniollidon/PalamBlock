@@ -43,7 +43,7 @@ initializeAdminWebSocket(server);
 initializeExtentionWebSocket(server);
 
 server.listen(PORT, () => {
-  logger.info(`API is listening on port ${PORT}`);
+  logger.info(`Server is listening on port ${PORT}`);
 });
 
 

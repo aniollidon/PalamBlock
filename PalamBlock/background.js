@@ -6,6 +6,18 @@ const API_BROWSER_INFO = API_URL + 'info/browser';
 const API_REGISTER = API_URL + 'alumne/auth';
 
 importScripts('ua-parser.min.js')
+importScripts('socket.io.msgpack.min.js')
+
+const socket = io('http://localhost:4000');
+
+socket.on('connect', function () {
+    console.log('Connected to server');
+});
+
+// Gestiona errors d'autenticació
+socket.on('connect_error', (error) => {
+    console.log('Error', error.message);
+});
 
 async function getBrowser() {
     const stored = await chrome.storage.sync.get(['browser']);
@@ -120,6 +132,10 @@ function handleMessage(request, sender, sendResponse) {
             if (!tab_info) return;
 
             tab_info.action = "validacio";
+            socket.emit('tabInfo', tab_info);
+            sendResponse({do: "allow"});
+
+            /*
             fetch(API_TAB_VALIDACIO, {
                 method: 'POST',
                 headers: {
@@ -137,7 +153,7 @@ function handleMessage(request, sender, sendResponse) {
             }).catch((error) => {
                 //console.error(error);
                 sendResponse({do: "allow", aim: "error"});
-            });
+            });*/
         });
     } else if (request.type === 'autentificacio') {
         fetch(API_REGISTER, {
@@ -171,17 +187,7 @@ chrome.tabs.onRemoved.addListener(function (tabid, removed) {
         short_info.action = "close";
         short_info.tabId = tabid;
         short_info.windowId = removed.windowId;
-        fetch(API_TAB_INFO, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(short_info),
-        }).then((response) => {
-            // do nothing
-        }).catch((error) => {
-            //console.error(error);
-        });
+        socket.emit('tabInfo', short_info);
     });
 });
 
@@ -190,17 +196,7 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
         customTabInfo(tab).then((tab_info) => {
             if (!tab_info) return;
             tab_info.action = "active";
-            fetch(API_TAB_INFO, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(tab_info),
-            }).then((response) => {
-                // do nothing
-            }).catch((error) => {
-                //console.error(error);
-            });
+            socket.emit('tabInfo', tab_info);
         });
     });
 });
@@ -217,17 +213,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
                 tab_info.browser = "Avast";
             }
 
-            fetch(API_TAB_INFO, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(tab_info),
-            }).then((response) => {
-                // do nothing
-            }).catch((error) => {
-                //console.error(error);
-            });
+            socket.emit('tabInfo', tab_info);
         });
     }
 });
@@ -240,30 +226,11 @@ function pingMessage() {
         const {tabsInfos, activeTab, alumne, browser} = await customTabsInfo(tabs);
         if (!alumne || !browser) return;
 
-        fetch(API_BROWSER_INFO, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                browser: browser,
-                alumne: alumne,
-                tabsInfos: tabsInfos,
-                activeTab: activeTab
-            }),
-        }).then((response) => {
-            response.json().then((data) => {
-                if (data.actions && data.actions.length > 0)
-                    data.actions.forEach((action) => {
-                        if (action.action === "close") {
-                            chrome.tabs.remove(parseInt(action.tabId));
-                        } else if (action.action === "refresh") {
-                            chrome.tabs.reload(parseInt(action.tabId));
-                        }
-                    });
-            });
-        }).catch((error) => {
-            //console.error(error);
+        socket.emit('browserInfo', {
+            alumne: alumne,
+            browser: browser,
+            tabsInfos: tabsInfos,
+            activeTab: activeTab
         });
     });
 }
