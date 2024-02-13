@@ -1,46 +1,45 @@
 const db = require("../database/db");
 const logger = require("../logger").logger;
 
-function saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon, pbaction) {
-    logger.debug("saveWeb: " + alumne + " " + timestamp + " " + host + " " + protocol + " " + search + " " + pathname + " " + title + " " + browser + " " + tabId + " " + incognito + " " + favicon + " " + pbaction);
-    if(protocol.includes("chrome")) return;
-    if(protocol.includes("edge")) return;
-    if(protocol.includes("secure")) return;
+function saveWeb(browserDetails, tabDetails, timestamp, pbaction) {
+    if(tabDetails.webPage.protocol.includes("chrome")) return;
+    if(tabDetails.webPage.protocol.includes("edge")) return;
+    if(tabDetails.webPage.protocol.includes("secure")) return;
 
     // Si fa menys de 5 minuts, i és el mateix web actualitzem
     return db.HistorialWeb.findOneAndUpdate({
-        alumneid: alumne,
-        tabId: tabId,
-        protocol: protocol,
-        host: host,
-        pathname: pathname,
-        search: search,
-        browser: browser,
-        pbAction: pbaction,
+        alumneid: browserDetails.owner,
+        tabId: tabDetails.tabId,
+        browser: browserDetails.browser,
+        protocol: tabDetails.webPage.protocol,
+        host: tabDetails.webPage.host,
+        pathname: tabDetails.webPage.pathname,
+        search: tabDetails.webPage.search,
         timestamp: {
             $gte: new Date(Date.now() - 5 * 60 * 1000),
         }
     }, {
-        title: title,
-        incognito: incognito,
-        favicon: favicon
+        title: tabDetails.webPage.title,
+        incognito: tabDetails.incognito,
+        favicon: tabDetails.webPage.favicon,
+        pbAction: pbaction
     }, {
         new: true
     }).then((doc) => {
         if (!doc) {
             // Si no, creem una nova
             db.HistorialWeb.create({
-                alumneid: alumne,
+                alumneid: browserDetails.owner,
+                browser: browserDetails.browser,
                 timestamp: timestamp,
-                host: host,
-                protocol: protocol,
-                search: search,
-                pathname: pathname,
-                title: title,
-                browser: browser,
-                tabId: tabId,
-                incognito: incognito,
-                favicon: favicon,
+                protocol: tabDetails.webPage.protocol,
+                host: tabDetails.webPage.host,
+                pathname: tabDetails.webPage.pathname,
+                search: tabDetails.webPage.search,
+                title: tabDetails.webPage.title,
+                tabId: tabDetails.tabId,
+                incognito: tabDetails.incognito,
+                favicon: tabDetails.webPage.favicon,
                 pbAction: pbaction
             });
         }

@@ -1,185 +1,58 @@
-//const API_URL = 'http://185.61.126.170:4000/api/v1/';
-const API_URL = 'http://localhost:4000/api/v1/';
-const API_TAB_INFO = API_URL + 'info/tab';
-const API_TAB_VALIDACIO = API_URL + 'validacio/tab';
-const API_BROWSER_INFO = API_URL + 'info/browser';
+//const SERVER = 'http://185.61.126.170:4000';
+const SERVER = 'http://localhost:4000';
+const API_URL = SERVER + '/api/v1/';
 const API_REGISTER = API_URL + 'alumne/auth';
 
-importScripts('ua-parser.min.js')
-importScripts('socket.io.msgpack.min.js')
+// get manifest version
+const manifestData = chrome.runtime.getManifest();
+const version = manifestData.version;
 
-const socket = io('http://localhost:4000');
+import io from 'https://cdn.jsdelivr.net/npm/socket.io-client@4.7.1/+esm';
+import {customTabsInfo, customTabInfo, customShortInfo, closeTab, warnTab, forceLoginTab, blockTab} from './tabs.js';
+
+var socket = io.connect('http://localhost:4000', {
+    transports: ["websocket"],
+    path: '/ws-extention',
+});
 
 socket.on('connect', function () {
     console.log('Connected to server');
+    registerBrowser();
+    sendCurrentBrowserState();
 });
 
-// Gestiona errors d'autenticació
 socket.on('connect_error', (error) => {
     console.log('Error', error.message);
+    return false;
 });
 
-async function getBrowser() {
-    const stored = await chrome.storage.sync.get(['browser']);
-    if(!stored || !stored.browser || stored.browser === "unknown") {
-        try {
-            if (navigator.brave.isBrave())
-                chrome.storage.sync.set({browser: "Brave"});
-                return "Brave"
-        } catch (e) {
-        }
 
-        const uap = new UAParser();
-        chrome.storage.sync.set({browser: uap.getBrowser().name});
-        return uap.getBrowser().name;
+socket.on('do', function (data) {
+    console.log('do', data);
+    if(data.action === "block"){
+        blockTab(data.tabId);
     }
-    else {
-        return stored.browser;
+    else if(data.action === "warn"){
+        warnTab(data.tabId);
     }
-}
-
-async function customTabInfo(chromeTab) {
-    return new Promise((resolve, reject) => {
-        chrome.storage.sync.get(['alumne'], async (result) => {
-
-            if (!result.alumne) {
-                resolve(null);
-                return;
-            }
-            const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
-            const basetab_info = {
-                host: url ? url.host : "",
-                protocol: url ? url.protocol : "",
-                search: url ? url.search : "",
-                pathname: url ? url.pathname : "",
-                title: chromeTab.title,
-                favicon: chromeTab.favIconUrl,
-                alumne: result.alumne,
-                browser: await getBrowser(),
-                windowId: chromeTab.windowId,
-                tabId: chromeTab.id,
-                incognito: chromeTab.incognito,
-                active: chromeTab.active,
-                audible: chromeTab.audible,
-            }
-            resolve(basetab_info);
-        });
-    });
-}
-
-async function customShortInfo() {
-    return new Promise((resolve, reject) => {
-        chrome.storage.sync.get(['alumne'], async (result) => {
-            if (!result.alumne) {
-                resolve(null);
-                return;
-            }
-            resolve({
-                alumne: result.alumne,
-                browser: await getBrowser(),
-            });
-        });
-    });
-}
-
-async function customTabsInfo(chromeTabs) {
-    return new Promise((resolve, reject) => {
-        chrome.storage.sync.get(['alumne'], async (result) => {
-            if (!result.alumne) {
-                resolve(null);
-                return;
-            }
-            const browser = await getBrowser();
-            const alumne = result.alumne;
-            let tabsInfos = {};
-            let activeTab = null;
-            for (let i = 0; i < chromeTabs.length; i++) {
-                if (chromeTabs[i].active) {
-                    activeTab = chromeTabs[i].id;
-                }
-
-                const chromeTab = chromeTabs[i];
-                const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
-                tabsInfos[chromeTab.id] = {
-                    host: url ? url.host : "",
-                    protocol: url ? url.protocol : "",
-                    search: url ? url.search : "",
-                    pathname: url ? url.pathname : "",
-                    title: chromeTab.title,
-                    favicon: chromeTab.favIconUrl,
-                    alumne: alumne,
-                    browser: browser,
-                    windowId: chromeTab.windowId,
-                    tabId: chromeTab.id,
-                    incognito: chromeTab.incognito,
-                    active: chromeTab.active,
-                    audible: chromeTab.audible,
-                };
-            }
-            resolve({
-                tabsInfos: tabsInfos,
-                activeTab: activeTab,
-                alumne: alumne,
-                browser: browser
-            });
-        });
-    });
-}
-
-function handleMessage(request, sender, sendResponse) {
-    if (request.type === 'validacio') {
-        customTabInfo(sender.tab).then((tab_info) => {
-            if (!tab_info) return;
-
-            tab_info.action = "validacio";
-            socket.emit('tabInfo', tab_info);
-            sendResponse({do: "allow"});
-
-            /*
-            fetch(API_TAB_VALIDACIO, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(tab_info)
-            }).then((response) => {
-                response.json().then((data) => {
-                    if (response.status === 200) {
-                        sendResponse({do: data.do});
-                    } else {
-                        sendResponse({do: "allow"}); // TODO: potser canviar-ho per block
-                    }
-                });
-            }).catch((error) => {
-                //console.error(error);
-                sendResponse({do: "allow", aim: "error"});
-            });*/
-        });
-    } else if (request.type === 'autentificacio') {
-        fetch(API_REGISTER, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                alumne: request.alumne,
-                clau: request.clau
-            })
-        }).then((response) => {
-            response.json().then((data) => {
-                if (response.status === 200) {
-                    sendResponse({status: "OK"});
-                } else {
-                    sendResponse({status: "FAILED"});
+    else if(data.action === "close") {
+        closeTab(data.tabId).catch((error) => {
+            console.error("Can't close tab " + data.tabId);
+            // Check if tab still exists
+            chrome.tabs.get(parseInt(data.tabId), (tab) => {
+                if (tab) {
+                    customTabInfo(tab).then((tab_info) => {
+                        if (!tab_info) return;
+                        tab_info.action = "update";
+                        socket.emit('tabInfo', tab_info);
+                    }).catch((error) => {
+                    });
                 }
             });
-        }).catch((error) => {
-            //console.error(error);
-            sendResponse({status: "FAILED"});
         });
     }
-    return true;
-}
+});
+
 
 chrome.tabs.onRemoved.addListener(function (tabid, removed) {
     customShortInfo().then((short_info) => {
@@ -188,7 +61,9 @@ chrome.tabs.onRemoved.addListener(function (tabid, removed) {
         short_info.tabId = tabid;
         short_info.windowId = removed.windowId;
         socket.emit('tabInfo', short_info);
-    });
+    }).catch((error) => {});
+
+    console.log("Tab removed", tabid);
 });
 
 chrome.tabs.onActivated.addListener(function (activeInfo) {
@@ -197,42 +72,113 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
             if (!tab_info) return;
             tab_info.action = "active";
             socket.emit('tabInfo', tab_info);
-        });
+        }).catch((error) => {});
     });
+    console.log("Tab activated", activeInfo);
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    if (changeInfo.title || changeInfo.favIconUrl) {
+    //Si és una pàgina de l'extenció, no cal enviar la informació
+    console.log(tab.url, tab.url.startsWith("chrome-extension://"));
+    if(tab.url.startsWith("chrome-extension://")) return;
+
+    if (changeInfo.status === "complete") {
+        customTabInfo(tab).then((tab_info) => {
+            if (!tab_info) return;
+            tab_info.action = "validacio";
+            socket.emit('tabInfo', tab_info);
+        }).catch((error) => {
+            // Si l'alumne no està registrat, s'obrirà la finestra de login
+            if (error === "alumne") {
+                forceLoginTab();
+            }
+        });
+    }
+    else if (changeInfo.title || changeInfo.favIconUrl) {
         customTabInfo(tab).then(async (tab_info) => {
             if (!tab_info) return;
             tab_info.action = "update";
 
             if(tab_info.protocol === "secure:") {
                 // Avast només es pot detectar en obrir una pestanya nova
-                await chrome.storage.sync.set({browser: "Avast"});
+                await chrome.storage.sync.set({browser: "Avast"}); //TODO mirar
                 tab_info.browser = "Avast";
             }
 
             socket.emit('tabInfo', tab_info);
+        }).catch((error) => {
+            // Si l'alumne no està registrat, s'obrirà la finestra de login
+            if (error === "alumne") {
+                forceLoginTab();
+            }
         });
     }
+    console.log("Tab updated", tabId, changeInfo, tab);
 });
 
-chrome.runtime.onMessage.addListener(handleMessage);
 
-// Send ping to server every minute
-function pingMessage() {
+// Envia la informació dels tabs oberts al servidor
+function sendCurrentBrowserState() {
     chrome.tabs.query({}, async function (tabs) {
-        const {tabsInfos, activeTab, alumne, browser} = await customTabsInfo(tabs);
-        if (!alumne || !browser) return;
+        customTabsInfo(tabs).then((res) => {
+            const {tabsInfos,  activeTab, alumne, browser} = res;
+            if (!alumne || !browser) return;
 
-        socket.emit('browserInfo', {
-            alumne: alumne,
-            browser: browser,
-            tabsInfos: tabsInfos,
-            activeTab: activeTab
+            socket.emit('browserInfo', {
+                alumne: alumne,
+                browser: browser,
+                tabsInfos: tabsInfos,
+                activeTab: activeTab,
+                extVersion: version,
+            });
+        }).catch((error) => {
+            // Si l'alumne no està registrat, s'obrirà la finestra de login
+            if (error === "alumne") {
+                forceLoginTab();
+            }
         });
     });
 }
 
-setInterval(pingMessage, 10000); // 10 s
+// message from login.js
+chrome.runtime.onMessage.addListener(
+    function (request, sender, sendResponse) {
+        if (request.type === 'autentificacio') {
+            fetch(API_REGISTER, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    alumne: request.alumne,
+                    clau: request.clau
+                })
+            }).then((response) => {
+                response.json().then((data) => {
+                    if (response.status === 200) {
+                        sendResponse({status: "OK"});
+                        registerBrowser();
+                        sendCurrentBrowserState();
+                    } else {
+                        sendResponse({status: "FAILED"});
+                    }
+                });
+            }).catch((error) => {
+                //console.error(error);
+                sendResponse({status: "FAILED"});
+            });
+        }
+        else{
+            console.error("Unknown request", request);
+            sendResponse({status: "FAILED"});
+        }
+        return true;
+    }
+);
+
+function registerBrowser() {
+    customShortInfo().then((short_info) => {
+        if (!short_info) return;
+        socket.emit('registerBrowser', short_info);
+    }).catch((error) => {});
+}

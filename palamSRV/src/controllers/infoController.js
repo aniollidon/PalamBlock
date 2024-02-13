@@ -1,7 +1,8 @@
 const infoService = require("../services/infoService");
 const historialService = require("../services/historialService");
+const {WebPage, BrowserDetails, TabDetails} = require("../services/structures");
 
-const postTabInfoAPI = (req, res) => {
+const postTabInfoAPI = (req, res) => { //DEPRECATED
     const action = req.body.action;
     const host = req.body.host;
     const protocol = req.body.protocol;
@@ -28,45 +29,17 @@ const postTabInfoAPI = (req, res) => {
         return;
     }
 
+    const browserDetails = new BrowserDetails(alumne, browser, "1.0", "API");
+    const tabDetails = new TabDetails(tabId, new WebPage(host, protocol, search, pathname, title, favicon), windowId, incognito, active, audible);
+
     if (action === "active" || action === "close" || action === "update") {
-        infoService.registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, audible);
+        infoService.registerTab(action, browserDetails, tabDetails, timestamp);
         if(action === "update") {
-            historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
+            historialService.saveWeb(browserDetails, tabDetails, timestamp);
         }
     }
 
     res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser) });
-}
-
-const postTabInfoWS = (msg) =>{
-    const alumne = msg.alumne;
-    const action = msg.action;
-    const host = msg.host;
-    const protocol = msg.protocol;
-    const search = msg.search;
-    const pathname = msg.pathname;
-    const title = msg.title;
-    const browser = msg.browser
-    const windowId = msg.windowId;
-    const tabId = msg.tabId;
-    const incognito = msg.incognito;
-    const favicon = msg.favicon;
-    const active = msg.active;
-    const audible = msg.audible;
-    const timestamp = new Date();
-
-    if(!alumne || !browser || !tabId) {
-        return;
-    }
-
-    if(action !== "active" && action !== "close" && action !== "update") {
-        return;
-    }
-
-    infoService.registerTabAction(action, alumne, timestamp, host, protocol, search, pathname, title, browser, windowId, tabId, incognito, favicon, active, audible);
-    if(action === "update") {
-        historialService.saveWeb(alumne, timestamp, host, protocol, search, pathname, title, browser, tabId, incognito, favicon);
-    }
 }
 
 const postBrowserInfoAPI = (req, res) => {
@@ -81,19 +54,55 @@ const postBrowserInfoAPI = (req, res) => {
         return;
     }
 
-    infoService.registerBrowserInfo(alumne, browser, tabsInfos, activeTab, timestamp);
+    const browserDetails = new BrowserDetails(alumne, browser, "1.0", "API");
+    infoService.registerBrowser(browserDetails, tabsInfos, activeTab, timestamp);
 
     res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser) });
 }
 
-const postBrowserInfoWS = (msg) => {
-    const alumne = msg.alumne;
-    const browser = msg.browser;
+const postTabInfoWS = (sid, msg) =>{
+    const action = msg.action;
+    const timestamp = new Date();
+
+    const webPage = new WebPage(msg.host, msg.protocol, msg.search, msg.pathname, msg.title, msg.favicon);
+    const browserDetails = new BrowserDetails(msg.alumne, msg.browser, msg.extVersion, sid);
+    const tabDetails = new TabDetails(msg.tabId, webPage, msg.windowId, msg.incognito, msg.active, msg.audible);
+
+    if(action !== "active" && action !== "close" && action !== "update") {
+        return;
+    }
+
+    infoService.registerTab(action, browserDetails, tabDetails, timestamp);
+
+    if(action === "update") {
+        historialService.saveWeb(browserDetails, tabDetails, timestamp);
+    }
+}
+
+const postBrowserInfoWS = (sid, msg) => {
     const timestamp = new Date();
     const tabsInfos = msg.tabsInfos;
-    const activeTab = msg.activeTab;
+    const browserDetails = new BrowserDetails(msg.alumne, msg.browser, msg.extVersion, sid);
+    const structuredTabsInfos = {};
 
-    infoService.registerBrowserInfo(alumne, browser, tabsInfos, activeTab, timestamp);
+    for (const tabId in tabsInfos) {
+        const tab = tabsInfos[tabId];
+        structuredTabsInfos[tabId] = new TabDetails(
+            tab.tabId,
+            new WebPage(tab.host, tab.protocol, tab.search, tab.pathname, tab.title, tab.favicon),
+            tab.windowId,
+            tab.incognito,
+            tab.active,
+            tab.audible);
+    }
+
+    infoService.registerBrowser(browserDetails, structuredTabsInfos, timestamp);
+}
+
+const disconnectWS = (sid) => {
+    const timestamp = new Date();
+
+    infoService.unregisterBrowser(sid, timestamp);
 }
 
 function getAlumnesActivity() {
@@ -110,32 +119,25 @@ function remoteCloseTab(alumne, browser, tab) {
     infoService.remoteCloseTab(alumne, browser, tab);
 }
 
-function normesWebHasChanged() {
+function normesWebHasChanged() { //DEPRECATED
     infoService.normesWebHasChanged();
 }
 
-const validateHistoryBrowsersAPI = (req, res) => {
-    const alumne = req.params.alumneId;
-    const { body } = req;
-    const history = body.history;
-
-    if(!alumne) {
-        res.status(500).send({status: "ERROR", data: "Falten dades de la info. Cal especificar alumne"});
-        return;
-    }
-
-    const news = infoService.checkBrowserHistorial(alumne, history);
-    res.send({news: news});
+function registerActionListenerWS(sid, msg, callback) {
+    if(!callback) return;
+    const browserDetails = new BrowserDetails(msg.alumne, msg.browser, msg.extVersion, sid);
+    infoService.registerActionListener(browserDetails, callback);
 }
 
 module.exports = {
     postTabInfoAPI,
-    postTabInfoWS,
     postBrowserInfoAPI,
+    postTabInfoWS,
     postBrowserInfoWS,
     getAlumnesActivity,
     registerOnUpdateCallback,
     remoteCloseTab,
     normesWebHasChanged,
-    validateHistoryBrowsersAPI
+    disconnectWS,
+    registerActionListenerWS
 }

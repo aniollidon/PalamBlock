@@ -65,8 +65,7 @@ export function drawAlumnesActivity(data) {
                 alumneDivHeader.setAttribute("class", "alumne-header");
                 alumneDivHeader.setAttribute("id", alumne + "-header");
                 alumneDiv.appendChild(alumneDivHeader);
-                const vextensio = alumneInfo ? alumneInfo.version : "v0";
-                alumneDivHeader.innerHTML = ` <h3>Alumne: ${alumne}</h3> <span class="version">Versió: ${vextensio}</span>`;
+                alumneDivHeader.innerHTML = ` <h3>Alumne: ${alumne}</h3>`;
                 alumnesList.appendChild(alumneDiv);
 
                 const alumneDivButtons = document.createElement("div");
@@ -292,6 +291,7 @@ export function drawAlumnesActivity(data) {
                         browserDiv = document.createElement("div");
                         browserDiv.setAttribute("class", "browser");
                         browserDiv.setAttribute("id", alumne + "-" + browser + "-browser");
+                        browserDiv.setAttribute("data-version", browserInfo.extVersion);
                         alumneBrowsersDiv.appendChild(browserDiv);
                     }
 
@@ -330,6 +330,16 @@ export function drawAlumnesActivity(data) {
                             browserWin.style = "--tab-content-margin: 9px;";
                             browserWin.setAttribute("data-chrome-tabs-instance-id", bw_id);
                             browserDiv.appendChild(browserWin);
+                            //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
+                            //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
+                            browserWin.addEventListener('tabRemove', function tabRemoveListener({detail}) {
+                                //logger.info('Tab removed', detail.tabEl)
+                                socket.emit("closeTab", {
+                                    alumne: alumne,
+                                    browser: browserInfo.browser,
+                                    tabId: detail.tabEl.info.tabId
+                                })
+                            });
                         } else {
                             browserWin = document.getElementById(bw_id + "-browser-win");
                             browserWin.innerHTML = "";
@@ -358,17 +368,6 @@ export function drawAlumnesActivity(data) {
                             chromeTabsObjects[alumne] = {};
                         chromeTabsObjects[alumne][browser] = new ChromeTabs()
                         chromeTabsObjects[alumne][browser].init(browserWin, menu_options)
-
-                        //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
-                        //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
-                        browserWin.addEventListener('tabRemove', ({detail}) => {
-                            //logger.info('Tab removed', detail.tabEl)
-                            socket.emit("closeTab", {
-                                alumne: alumne,
-                                browser: browserInfo.browser,
-                                tabId: detail.tabEl.info.tabId
-                            })
-                        });
 
                         for (const tab in windowInfo[windowId]) {
                             const tabInfo = windowInfo[windowId][tab];

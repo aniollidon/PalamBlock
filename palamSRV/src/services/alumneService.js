@@ -69,7 +69,6 @@ async function getGrupAlumnesList(){
             alumneId: alumne.alumneId,
             nom: alumne.nom,
             cognoms: alumne.cognoms,
-            version: "v0",
             status: alumne.status,
             grup: alumne.grup
         }
@@ -92,6 +91,7 @@ async function getAlumneStatus(alumneId){
 
     return alumne.status;
 }
+
 
 module.exports = {
     creaAlumne,

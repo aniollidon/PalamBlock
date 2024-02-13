@@ -12,7 +12,6 @@ router.post("/alumne", alumneController.postAlumneAPI); // TODO mantenir endpoin
 router.post("/alumne/auth", alumneController.autentificaAlumneAPI); // TODO mantenir endpoint
 router.post("/admin/login", adminController.autentificaAdminAPI); // TODO mantenir endpoint
 
-router.post("/alumne/:alumneId/validate/history", infoController.validateHistoryBrowsersAPI); // TODO deprecated?
 router.post("/validacio/tab", validacioController.postValidacioAPI);
 router.post("/info/tab", infoController.postTabInfoAPI);
 router.post("/info/browser", infoController.postBrowserInfoAPI);
