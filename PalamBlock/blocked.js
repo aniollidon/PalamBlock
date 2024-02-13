@@ -10,6 +10,7 @@ data[tmp[0]] = tmp[1];
 }
 
 document.title = "[Block] " +  decodeURIComponent(data.title);
+document.getElementById('blocked').innerText = 'a ' + data['host'];
 
 setTimeout(function() {
 window.close();

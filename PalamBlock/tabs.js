@@ -3,6 +3,11 @@ import uaParserJs from 'https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.37/+esm'
 const manifestData = chrome.runtime.getManifest();
 const version = manifestData.version;
 
+function urlToHost(url) {
+    let s =  new URL(url).host;
+    return s.replace("www.", "");
+}
+
 async function getBrowser() {
     const stored = await chrome.storage.sync.get(['browser']);
     if(!stored || !stored.browser || stored.browser === "unknown") {
@@ -163,7 +168,7 @@ export async function blockTab(tabId) {
         // find tab by id
         chrome.tabs.get(tabId, (tab) => {
             // Set tab url
-            chrome.tabs.update(tabId, {url: chrome.runtime.getURL("blocked.html?title="+ tab.title)}, (tab) => {
+            chrome.tabs.update(tabId, {url: chrome.runtime.getURL("blocked.html?title="+ tab.title + "&host=" + urlToHost(tab.url))}, (tab) => {
                 resolve(tab);
             });
         });

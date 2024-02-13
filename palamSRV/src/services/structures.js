@@ -49,6 +49,10 @@ class WebPage {
         }
         return changed;
     }
+
+    toString() {
+        return "url: " + this.join() + " title: " + this.title + " favicon: " + this.favicon;
+    }
 }
 
 class BroserDetails {
@@ -65,16 +69,21 @@ class BroserDetails {
         this.extVersion = other.extVersion;
         this.id = other.id;
     }
+
+    toString() {
+        return "owner: " + this.owner + " browser: " + this.browser + " v: " + this.extVersion + " id: " + this.id;
+    }
 }
 
 class TabDetails{
-    constructor(tabId, webPage, windowId, incognito, active, audible) {
+    constructor(tabId, webPage, windowId, incognito, active, audible, pbStatus= undefined) {
         this.tabId = tabId;
         this.webPage = webPage ? webPage : new WebPage();
         this.windowId = windowId;
         this.incognito = incognito;
         this.active = active;
         this.audible = audible;
+        this.pbStatus = pbStatus;
     }
 
     from(other) {
@@ -84,6 +93,7 @@ class TabDetails{
         this.incognito = other.incognito;
         this.active = other.active;
         this.audible = other.audible;
+        this.pbStatus = other.pbStatus;
     }
 
     update(newTabDetails) {
@@ -108,8 +118,17 @@ class TabDetails{
             this.audible = newTabDetails.audible;
             changed = true;
         }
+        if(this.pbStatus !== newTabDetails.pbStatus) {
+            this.pbStatus = newTabDetails.pbStatus;
+            changed = true;
+        }
         changed = this.webPage.update(newTabDetails.webPage) || changed;
         return changed;
+    }
+
+    toString() {
+        return "tabId: " + this.tabId + " " + this.webPage.toString() + " windowId: " + this.windowId + " incognito: " +
+            this.incognito + " active: " + this.active + " audible: " + this.audible + " pbStatus: " + this.pbStatus;
     }
 }
 

@@ -1,7 +1,7 @@
 const db = require("../database/db");
 const logger = require("../logger").logger;
 
-function saveWeb(browserDetails, tabDetails, timestamp, pbaction) {
+function saveWeb(browserDetails, tabDetails, timestamp) {
     if(tabDetails.webPage.protocol.includes("chrome")) return;
     if(tabDetails.webPage.protocol.includes("edge")) return;
     if(tabDetails.webPage.protocol.includes("secure")) return;
@@ -22,7 +22,7 @@ function saveWeb(browserDetails, tabDetails, timestamp, pbaction) {
         title: tabDetails.webPage.title,
         incognito: tabDetails.incognito,
         favicon: tabDetails.webPage.favicon,
-        pbAction: pbaction
+        pbAction: tabDetails.pbStatus
     }, {
         new: true
     }).then((doc) => {
@@ -40,7 +40,7 @@ function saveWeb(browserDetails, tabDetails, timestamp, pbaction) {
                 tabId: tabDetails.tabId,
                 incognito: tabDetails.incognito,
                 favicon: tabDetails.webPage.favicon,
-                pbAction: pbaction
+                pbAction: tabDetails.pbStatus
             });
         }
     });

@@ -376,7 +376,7 @@ const allAlumnesStatus = new AllAlumnesStatus();
 function registerTab(action, browserDetails, tabDetails, timestamp) {
     if (action === "close") {
         allAlumnesStatus.closeTab(browserDetails.owner, tabDetails.tabId, browserDetails.browser, timestamp);
-    } else if (action === "update" || action === "active") {
+    } else if (action === "complete" || action === "update" || action === "active") {
         allAlumnesStatus.updateBrowser(browserDetails, tabDetails, timestamp);
     }
 }
@@ -405,7 +405,6 @@ function registerOnUpdateCallback(callback) {
 }
 
 function remoteCloseTab(alumne, browser, tabId) { // TODO: Métode legacy v1.0
-    logger.trace("remoteCloseTab: alumne=" + alumne + " browser=" + browser + " tabId=" + tabId);
 
     // Si la versió és 1.0 afegeix l'acció a la llista d'accions pendents
     if(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion === "1.0") {
@@ -427,7 +426,6 @@ function remoteCloseTab(alumne, browser, tabId) { // TODO: Métode legacy v1.0
 }
 
 function getBrowserPendingActions(alumne, browser) {
-    logger.trace("getBrowserPendingActions: alumne=" + alumne + " browser=" + browser);
     if (!allAlumnesStatus.pendingBrowserActions[alumne]) return undefined;
     if (!allAlumnesStatus.pendingBrowserActions[alumne][browser]) return undefined;
     const pending = allAlumnesStatus.pendingBrowserActions[alumne][browser];
@@ -459,7 +457,6 @@ async function normesWebHasChanged() {
 }
 
 function registerApps(apps, alumne, status, timestamp) {
-    logger.trace("registerApps: apps=" + apps + " alumne=" + alumne + " status=" + status);
     for (const appinfo of apps) {
 
         allAlumnesStatus.registerApp(appinfo, alumne, status[appinfo.name], timestamp);
@@ -469,8 +466,6 @@ function registerApps(apps, alumne, status, timestamp) {
 }
 
 function unregisterBrowser(sid, timestamp) {
-    logger.trace("unregisterBrowser: sid=" + sid);
-
     for (const alumne in allAlumnesStatus.alumnesStat) {
         for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
             if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].id === sid) {
@@ -485,6 +480,15 @@ function registerActionListener(browserDetails, callback) {
     allAlumnesStatus.updateActionCallback(browserDetails, callback);
 }
 
+
+function remoteSetTabStatus(browserDetails, tabId, status) {
+    if(allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser])
+        allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].remoteAction(status, tabId);
+    else {
+        logger.error("Remote set status for tab " + tabId + " but browser " + browserDetails.browser + " not found");
+    }
+}
+
 module.exports = {
     registerTab,
     registerBrowser,
@@ -496,4 +500,5 @@ module.exports = {
     getBrowserPendingActions,
     normesWebHasChanged,
     registerApps,
+    remoteSetTabStatus,
 }

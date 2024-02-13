@@ -85,7 +85,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if (changeInfo.status === "complete") {
         customTabInfo(tab).then((tab_info) => {
             if (!tab_info) return;
-            tab_info.action = "validacio";
+            tab_info.action = "complete";
             socket.emit('tabInfo', tab_info);
         }).catch((error) => {
             // Si l'alumne no està registrat, s'obrirà la finestra de login

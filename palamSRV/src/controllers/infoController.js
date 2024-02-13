@@ -1,6 +1,8 @@
 const infoService = require("../services/infoService");
 const historialService = require("../services/historialService");
 const {WebPage, BrowserDetails, TabDetails} = require("../services/structures");
+const {logger} = require("../logger");
+const validacioService = require("../services/validacioService");
 
 const postTabInfoAPI = (req, res) => { //DEPRECATED
     const action = req.body.action;
@@ -68,40 +70,68 @@ const postTabInfoWS = (sid, msg) =>{
     const browserDetails = new BrowserDetails(msg.alumne, msg.browser, msg.extVersion, sid);
     const tabDetails = new TabDetails(msg.tabId, webPage, msg.windowId, msg.incognito, msg.active, msg.audible);
 
-    if(action !== "active" && action !== "close" && action !== "update") {
+    if(action !== "active" && action !== "close" && action !== "update" && action !== "complete") {
         return;
     }
 
-    infoService.registerTab(action, browserDetails, tabDetails, timestamp);
+    logger.trace("postTabInfoWS: " + action + " " + browserDetails.toString() + " " + tabDetails.toString() + " at:" + timestamp);
 
-    if(action === "update") {
-        historialService.saveWeb(browserDetails, tabDetails, timestamp);
+    if(action === "complete") {
+        const validacioAlumne = new validacioService.Validacio(msg.alumne);
+        const validacio = validacioAlumne.checkWeb(webPage);
+
+        validacio.then((status) => {
+            tabDetails.pbStatus = status;
+            infoService.registerTab("complete", browserDetails, tabDetails, timestamp);
+            infoService.remoteSetTabStatus(browserDetails, tabDetails.tabId, status);
+            historialService.saveWeb(browserDetails, tabDetails, timestamp).catch((err) => {
+                logger.error(err);
+            });
+
+        }).catch((err) => {
+            logger.error(err);
+        });
+    }
+    else {
+        infoService.registerTab(action, browserDetails, tabDetails, timestamp);
+
+        if (action === "update") {
+            historialService.saveWeb(browserDetails, tabDetails, timestamp);
+        }
     }
 }
 
-const postBrowserInfoWS = (sid, msg) => {
+const postBrowserInfoWS = async (sid, msg) => {
     const timestamp = new Date();
     const tabsInfos = msg.tabsInfos;
     const browserDetails = new BrowserDetails(msg.alumne, msg.browser, msg.extVersion, sid);
     const structuredTabsInfos = {};
 
+    const validacioAlumne = new validacioService.Validacio(msg.alumne);
+
     for (const tabId in tabsInfos) {
         const tab = tabsInfos[tabId];
+        const webPage = new WebPage(tab.host, tab.protocol, tab.search, tab.pathname, tab.title, tab.favicon);
+        const status = await validacioAlumne.checkWeb(webPage);
         structuredTabsInfos[tabId] = new TabDetails(
             tab.tabId,
-            new WebPage(tab.host, tab.protocol, tab.search, tab.pathname, tab.title, tab.favicon),
+            webPage,
             tab.windowId,
             tab.incognito,
             tab.active,
-            tab.audible);
-    }
+            tab.audible,
+            status);
 
+        infoService.remoteSetTabStatus(browserDetails, structuredTabsInfos[tabId].tabId, status);
+    }
+    logger.trace("postBrowserInfoWS: " + browserDetails.toString() + " at:" + timestamp);
     infoService.registerBrowser(browserDetails, structuredTabsInfos, timestamp);
 }
 
 const disconnectWS = (sid) => {
     const timestamp = new Date();
 
+    logger.trace("disconnectWS: " + sid + " at:" + timestamp);
     infoService.unregisterBrowser(sid, timestamp);
 }
 

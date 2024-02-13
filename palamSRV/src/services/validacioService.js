@@ -43,7 +43,8 @@ class Validacio {
     constructor(alumneid) {
         this.alumneid = alumneid;
     }
-    async checkWeb(host, protocol, search, pathname, title) {
+    async checkWeb(webPage) {
+
         const alumne = await db.Alumne.findOne({alumneId: this.alumneid})
             .populate('grup')
             .populate('normes2Web');
@@ -134,11 +135,11 @@ class Validacio {
 
             let matchInLines = false;
             for (const line of norma.lines) {
-                const matchHost = !line.host || compara(host, line.host, true);
-                const matchProtocol = !line.protocol || compara(protocol,line.protocol);
-                const matchSearch = !line.search || compara(search, line.search);
-                const matchPathname = !line.pathname || compara(pathname, line.pathname);
-                const matchTitle = !line.title || compara(title, line.title);
+                const matchHost = !line.host || compara(webPage.host, line.host, true);
+                const matchProtocol = !line.protocol || compara(webPage.protocol,line.protocol);
+                const matchSearch = !line.search || compara(webPage.search, line.search);
+                const matchPathname = !line.pathname || compara(webPage.pathname, line.pathname);
+                const matchTitle = !line.title || compara(webPage.title, line.title);
                 //const matchBrowser; TODO
                 //const matchIncognito;
                 //const matchAudible;
