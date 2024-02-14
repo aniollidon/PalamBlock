@@ -23,6 +23,16 @@ let normesWebInfo = {}
 let normesAppsInfo = {}
 let llistaBlancaEnUs = {}
 
+function obre_confirmacio(missatge, siCallback){
+    const confirmacio = document.getElementById("pbk_modal_confirmacio");
+    const confirmacioModal = new bootstrap.Modal(confirmacio);
+    const confirmacioMissatge = document.getElementById("pbk_modal_confirmacio_missatge");
+    const confirmacioSi = document.getElementById("pbk_modal_confirmacio_dacord");
+    confirmacioMissatge.innerHTML = missatge;
+    confirmacioSi.onclick = siCallback;
+    confirmacioModal.show();
+}
+
 export function setnormesWebInfo(normesWebInfo_) {
     normesWebInfo = normesWebInfo_;
 }
@@ -242,13 +252,21 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
             alert("Has de seleccionar almenys un camp per bloquejar")
             return;
         }
-        socket.emit("addNormaWeb", {
-            who: normaWhoSelection,
-            whoid: normaWhoId,
-            severity: severitySelect.value,
-            mode: normaMode,
-            list: list,
-            enabled_on: enabled_on
+
+        const text_confirmacio = "S'afegirà una nova norma de " + normaWhoSelection + " a " + normaWhoId + ". " +
+            "<br> Tingues en compte que això pot afectar a altres professors o assignatures" +
+            hSelectDurada.value === "always" ? " ja que la norma que has definit està sempre activa." : "." +
+            "<br> Estàs segur que vols continuar?"
+
+        obre_confirmacio(text_confirmacio, ()=>{
+            socket.emit("addNormaWeb", {
+                who: normaWhoSelection,
+                whoid: normaWhoId,
+                severity: severitySelect.value,
+                mode: normaMode,
+                list: list,
+                enabled_on: enabled_on
+            })
         })
 
         blockModalWeb.hide();
