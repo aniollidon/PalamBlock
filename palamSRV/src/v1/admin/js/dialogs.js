@@ -23,6 +23,24 @@ let normesWebInfo = {}
 let normesAppsInfo = {}
 let llistaBlancaEnUs = {}
 
+function obre_confirmacio(missatge, siCallback){
+    if(!missatge){
+        siCallback();
+        return;
+    }
+
+    const confirmacio = document.getElementById("pbk_modal_confirmacio");
+    const confirmacioModal = new bootstrap.Modal(confirmacio);
+    const confirmacioMissatge = document.getElementById("pbk_modal_confirmacio_missatge");
+    const confirmacioSi = document.getElementById("pbk_modal_confirmacio_dacord");
+    confirmacioMissatge.innerHTML = missatge;
+    confirmacioSi.onclick = ()=>{
+        siCallback();
+        confirmacioModal.hide();
+    }
+    confirmacioModal.show();
+}
+
 export function setnormesWebInfo(normesWebInfo_) {
     normesWebInfo = normesWebInfo_;
 }
@@ -242,13 +260,29 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
             alert("Has de seleccionar almenys un camp per bloquejar")
             return;
         }
-        socket.emit("addNormaWeb", {
-            who: normaWhoSelection,
-            whoid: normaWhoId,
-            severity: severitySelect.value,
-            mode: normaMode,
-            list: list,
-            enabled_on: enabled_on
+
+        let text_confirmacio = undefined;
+
+        if(hSelectDurada.value === "always" || hSelectDurada.value === "today") {
+            text_confirmacio = "Segur que vols afegir una nova norma a <i>" + normaWhoId + "</i>? " +
+                                "Tingues en compte que això pot afectar a altres professors o assignatures" +
+                                (hSelectDurada.value === "always" ? " ja que la norma que has definit està <strong>sempre activa</strong>." : ".");
+        }
+
+        if(hostInput.value.includes("google")){
+            text_confirmacio = "Estàs segur que vols bloquejar un servei de Google a <i>" + normaWhoId + "</i>? " +
+                "Això pot afectar a <strong>altres serveis</strong> de Google que es fan servir a l'escola.";
+        }
+
+        obre_confirmacio(text_confirmacio, ()=>{
+            socket.emit("addNormaWeb", {
+                who: normaWhoSelection,
+                whoid: normaWhoId,
+                severity: severitySelect.value,
+                mode: normaMode,
+                list: list,
+                enabled_on: enabled_on
+            })
         })
 
         blockModalWeb.hide();

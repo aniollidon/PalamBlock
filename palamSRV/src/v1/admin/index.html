@@ -11,6 +11,24 @@
 
 </head>
 <body>
+<!-- Modal confirmació -->
+<div class="modal fade" tabindex="-1" role="dialog"  id="pbk_modal_confirmacio">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">N'estàs segur?</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div id="pbk_modal_confirmacio_missatge" class="modal-message">Modal body text goes here.</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="pbk_modal_confirmacio_dacord">D'acord</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel·la</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Modal llista blanca -->
 <div aria-hidden="true" aria-labelledby="llistaBlancaModal" class="modal fade text-left" id="llistaBlancaModal" role="dialog"
