@@ -265,15 +265,15 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
 
         if(hSelectDurada.value === "always" || hSelectDurada.value === "today") {
             text_confirmacio = "S'afegirà una nova norma a " + normaWhoId + ". " +
-                                "<br> Tingues en compte que això pot afectar a altres <stong> professors </strong> o <stong>assignatures </strong>" +
+                                "Tingues en compte que això pot afectar a altres professors o assignatures" +
                                 (hSelectDurada.value === "always" ? " ja que la norma que has definit està <stong>sempre activa</strong>." : ".") +
-                                "<br><br> Segur que vols continuar?";
+                                " <stong> Segur que vols continuar?  </stong> ";
         }
 
         if(hostInput.value.includes("google")){
             text_confirmacio = "Estàs segur que vols bloquejar un servei de Google? " +
                 "Això pot afectar a altres serveis de Google que es fan servir a l'escola." +
-                "<br><br> Segur que vols continuar?";
+                "<stong> Segur que vols continuar?  </stong>";
         }
 
         obre_confirmacio(text_confirmacio, ()=>{
