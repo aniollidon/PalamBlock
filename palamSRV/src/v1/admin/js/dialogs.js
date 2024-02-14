@@ -270,7 +270,7 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
                                 "<br><br> Segur que vols continuar?";
         }
 
-        if(hostInput.value.contains("google")){
+        if(hostInput.value.includes("google")){
             text_confirmacio = "Estàs segur que vols bloquejar un servei de Google? " +
                 "Això pot afectar a altres serveis de Google que es fan servir a l'escola." +
                 "<br><br> Segur que vols continuar?";
