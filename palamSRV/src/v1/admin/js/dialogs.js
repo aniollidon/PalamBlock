@@ -29,7 +29,10 @@ function obre_confirmacio(missatge, siCallback){
     const confirmacioMissatge = document.getElementById("pbk_modal_confirmacio_missatge");
     const confirmacioSi = document.getElementById("pbk_modal_confirmacio_dacord");
     confirmacioMissatge.innerHTML = missatge;
-    confirmacioSi.onclick = siCallback;
+    confirmacioSi.onclick = ()=>{
+        siCallback();
+        confirmacioModal.hide();
+    }
     confirmacioModal.show();
 }
 
