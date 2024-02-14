@@ -255,7 +255,7 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
 
         const text_confirmacio = "S'afegirà una nova norma de " + normaWhoSelection + " a " + normaWhoId + ". " +
             "<br> Tingues en compte que això pot afectar a altres professors o assignatures" +
-            hSelectDurada.value === "always" ? " ja que la norma que has definit està sempre activa." : "." +
+            (hSelectDurada.value === "always" ? " ja que la norma que has definit està sempre activa." : ".") +
             "<br> Estàs segur que vols continuar?"
 
         obre_confirmacio(text_confirmacio, ()=>{
