@@ -1,5 +1,7 @@
-import {creaAppMenuJSON, creaWebMenuJSON, obreDialogNormesApps, obreDialogNormesWeb,
-    obreDialogAfegeixLlistaBlanca} from "./dialogs.js";
+import {
+    creaAppMenuJSON, creaWebMenuJSON, obreDialogNormesApps, obreDialogNormesWeb,
+    obreDialogAfegeixLlistaBlanca, obre_confirmacio
+} from "./dialogs.js";
 import {toogleSideBar} from "./sidebar.js";
 import {compareEqualTabs} from "./utils.js";
 import {socket} from "./socket.js";
@@ -98,8 +100,26 @@ export function drawAlumnesActivity(data) {
                     a.setAttribute("id", alumne + "-status-" + s.id);
                     a.innerHTML = s.text;
                     a.onclick = () => {
-                        socket.emit("setAlumneStatus", {alumne: alumne, status: s.id});
-                        setAlumneStatus(s.id);
+                        let text_confirmacio = undefined;
+                        switch (s.id) {
+                            case "RuleFree":
+                                text_confirmacio = "Segur que vols desactivar PalamBlock a <i>" + alumne  + "</i>? " +
+                                    "Això permetrà a l'alumne accedir a qualsevol web, sense restriccions. Aquest canvi " +
+                                    "pot afectar altres professors i assignatures. No es recomana fer-ho. Si s'escau, " +
+                                    "reverteix aquest canvi un cop hagis acabat.";
+                                break;
+                            case "Blocked":
+                                text_confirmacio = "Segur que vols activar el mode bloqueig total de PalamBlock a <i>" + alumne  + "</i>? Això " +
+                                    "impedirà a l'alumne accedir a qualsevol web, sense excepcions. Aquest " +
+                                    "canvi pot afectar altres professors i assignatures. Reverteix aquest " +
+                                    "canvi un cop hagis acabat.";
+                                break;
+                        }
+
+                        obre_confirmacio(text_confirmacio, ()=>{
+                            socket.emit("setAlumneStatus", {alumne: alumne, status: s.id});
+                            setAlumneStatus(s.id);
+                        })
                     }
                     li.appendChild(a);
                     alumneStatusButtonDropdown.appendChild(li);
@@ -456,22 +476,32 @@ export function preparaAlumnesGrups(data) {
                 grupStatus.classList.remove("btn-warning");
                 grupStatus.classList.remove("btn-success");
                 grupStatus.classList.remove("btn-danger");
+                let text_confirmacio = undefined;
 
-                if (status === "RuleOn")
+                if (status === "RuleOn"){
                     grupStatus.classList.add("btn-success");
-                else if (status === "RuleFree")
-                    grupStatus.classList.add("btn-warning");
-                else if (status === "Blocked")
-                    grupStatus.classList.add("btn-danger");
-
-                if (status === "RuleOn")
                     grupStatus.innerHTML = "Filtre actiu";
-                else if (status === "RuleFree")
+                }
+                else if (status === "RuleFree") {
+                    grupStatus.classList.add("btn-warning");
                     grupStatus.innerHTML = "Desactivat";
-                else if (status === "Blocked")
+                    text_confirmacio = "Segur que vols desactivar PalamBlock a tots els alumnes del grup? " +
+                        "Això permetrà als alumnes accedir a qualsevol web, sense restriccions. Aquest canvi pot afectar" +
+                        " altres professors i assignatures. No es recomana fer-ho. Si s'escau, reverteix aquest canvi un cop hagis acabat.";
+                }
+                else if (status === "Blocked"){
+                    grupStatus.classList.add("btn-danger");
                     grupStatus.innerHTML = "Tot bloquejat";
+                    text_confirmacio = "Segur que vols activar el mode bloqueig total de PalamBlock per a tots els " +
+                        "alumnes del grup? Això impedirà als alumnes accedir a qualsevol web, sense excepcions. Aquest" +
+                        " canvi pot afectar altres professors i assignatures. Reverteix aquest canvi un cop hagis acabat.";
+                }
 
-                if (send) socket.emit("setGrupStatus", {grup: grupSelector.value, status: status});
+                if (send) {
+                    obre_confirmacio(text_confirmacio, () => {
+                        socket.emit("setGrupStatus", {grup: grupSelector.value, status: status});
+                    });
+                }
             }
 
             grupStatus.classList.remove("btn-dark");

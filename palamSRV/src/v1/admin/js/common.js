@@ -121,18 +121,6 @@ export const commonHorari = [
 ]
 
 export const teacherHorari = {
-    "excepte el pati":[{
-        days: ["dilluns", "dimarts", "dimecres", "dijous", "divendres"],
-        startHours: ["08:00"],
-        duration: 180
-    },
-    {
-        days: ["dilluns", "dimarts", "dimecres", "dijous", "divendres"],
-        startHours: ["11:40"],
-        duration: 200
-    },
-    ],
-
     "aniol-m6-fpb1": [
         {
             days: ["dilluns"],
