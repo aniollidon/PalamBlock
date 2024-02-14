@@ -23,7 +23,7 @@ let normesWebInfo = {}
 let normesAppsInfo = {}
 let llistaBlancaEnUs = {}
 
-function obre_confirmacio(missatge, siCallback){
+export function obre_confirmacio(missatge, siCallback){
     if(!missatge){
         siCallback();
         return;
@@ -118,6 +118,18 @@ function construeixEnabledOn(opcioSeleccionada, nowHM){
                 duration: 1440
             }];
         }
+        else if(opcioSeleccionada === "nopati") {
+            enabled_on =[{
+                    days: ["dilluns", "dimarts", "dimecres", "dijous", "divendres"],
+                    startHours: ["08:00"],
+                    duration: 180
+                },
+                {
+                    days: ["dilluns", "dimarts", "dimecres", "dijous", "divendres"],
+                    startHours: ["11:40"],
+                    duration: 200
+                }];
+        }
         else if (opcioSeleccionada.startsWith("*")) {
             const nom = opcioSeleccionada.substring(1);
             if (teacherHorari[nom]) {
@@ -143,6 +155,7 @@ function preparaSelectDurada(hSelectDurada, nowHM, opcioSeleccionada = "primera"
     if(next2Hora) hSelectDurada.appendChild(new Option("Dues sessions (fins les " + next2Hora + ")", next2Hora));
     hSelectDurada.appendChild(new Option("Avui", "today"), false, opcioSeleccionada === "today");
     hSelectDurada.appendChild(new Option("Sempre", "always", false, opcioSeleccionada === "always"));
+    hSelectDurada.appendChild(new Option("Excepte al pati", "nopati", false, opcioSeleccionada === "nopati"));
     for (const nom in teacherHorari) {
         hSelectDurada.appendChild(new Option(">carrega horari " + nom, "*"+nom));
     }
@@ -263,15 +276,24 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
 
         let text_confirmacio = undefined;
 
-        if(hSelectDurada.value === "always" || hSelectDurada.value === "today") {
-            text_confirmacio = "Segur que vols afegir una nova norma a <i>" + normaWhoId + "</i>? " +
-                                "Tingues en compte que això pot afectar a altres professors o assignatures" +
-                                (hSelectDurada.value === "always" ? " ja que la norma que has definit està <strong>sempre activa</strong>." : ".");
+        if(hSelectDurada.value === "always" || hSelectDurada.value === "today" || hSelectDurada.value === "nopati") {
+            text_confirmacio = "Segur que vols afegir una nova norma per " +  (hSelectDurada.value === "today" ?
+                    "tot avui" : "sempre") + " a <i>" + normaWhoId + "</i>? Tingues en compte que això pot afectar a " +
+                    "altres professors o assignatures" + (hSelectDurada.value === "always" || hSelectDurada.value === "nopati" ? " ja que la norma que has " +
+                    "definit està <strong>sempre activa</strong>." : ".")+ " És recomenable definir una durada més " +
+                    "concreta. Si saps el que fas, endavant!";
         }
 
-        if(hostInput.value.includes("google")){
+        if(hostInput.value.includes("google") && hostSwitch.checked && !titleSwitch.checked){
             text_confirmacio = "Estàs segur que vols bloquejar un servei de Google a <i>" + normaWhoId + "</i>? " +
-                "Això pot afectar a <strong>altres serveis</strong> de Google que es fan servir a l'escola.";
+                "Això pot afectar a <strong>altres serveis</strong> de Google que es fan servir a l'escola. " +
+                "És recomenable definir un filtre per títol en aquest cas. Si saps el que fas, endavant!";
+        }
+
+        if(!hostSwitch.checked && (titleSwitch.checked || pathnameSwitch.checked || searchSwitch.checked)){
+            text_confirmacio = "Estàs segur que vols bloquejar una pàgina a <i>" + normaWhoId + "</i> sense especificar-ne l'adreça amfitrió? " +
+                "Això pot comprometre <strong>altres pàgines</strong> que es fan servir a l'escola. " +
+                "És recomenable definir també un filtre per host en aquest cas. Si saps el que fas, endavant!";
         }
 
         obre_confirmacio(text_confirmacio, ()=>{
@@ -808,13 +830,17 @@ export function obreDialogAfegeixLlistaBlanca(grup){
             alert("No hi ha cap web a la llista blanca");
             return;
         }
-        socket.emit("addNormaWeb", {  //TODO
-            who: "grup",
-            whoid: grup,
-            severity: "block",
-            mode: "whitelist",
-            list: list,
-            enabled_on: enabled_on
+        obre_confirmacio("Segur que vols crear una llista blanca? La llista blanca bloqueja tot el tràfic que " +
+            "no coincideix amb la norma. Si la durada no és la correcta pot interferir amb altres professors i assignatures. ",
+            () => {
+            socket.emit("addNormaWeb", {  //TODO
+                who: "grup",
+                whoid: grup,
+                severity: "block",
+                mode: "whitelist",
+                list: list,
+                enabled_on: enabled_on
+            })
         })
 
         llistaBlancaModal.hide();
