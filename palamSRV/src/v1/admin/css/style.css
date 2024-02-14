@@ -10,6 +10,10 @@ body {
     width: 70px;
 }
 
+.modal-message{
+    font-size: medium;
+}
+
 .historial-close{
     position: absolute;
     right: 0;

@@ -24,6 +24,11 @@ let normesAppsInfo = {}
 let llistaBlancaEnUs = {}
 
 function obre_confirmacio(missatge, siCallback){
+    if(!missatge){
+        siCallback();
+        return;
+    }
+
     const confirmacio = document.getElementById("pbk_modal_confirmacio");
     const confirmacioModal = new bootstrap.Modal(confirmacio);
     const confirmacioMissatge = document.getElementById("pbk_modal_confirmacio_missatge");
@@ -256,10 +261,20 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
             return;
         }
 
-        const text_confirmacio = "S'afegirà una nova norma de " + normaWhoSelection + " a " + normaWhoId + ". " +
-            "<br> Tingues en compte que això pot afectar a altres professors o assignatures" +
-            (hSelectDurada.value === "always" ? " ja que la norma que has definit està sempre activa." : ".") +
-            "<br> Estàs segur que vols continuar?"
+        let text_confirmacio = undefined;
+
+        if(hSelectDurada.value === "always" || hSelectDurada.value === "today") {
+            text_confirmacio = "S'afegirà una nova norma a " + normaWhoId + ". " +
+                                "<br> Tingues en compte que això pot afectar a altres <stong> professors </strong> o <stong>assignatures </strong>" +
+                                (hSelectDurada.value === "always" ? " ja que la norma que has definit està <stong>sempre activa</strong>." : ".") +
+                                "<br><br> Segur que vols continuar?";
+        }
+
+        if(hostInput.value.contains("google")){
+            text_confirmacio = "Estàs segur que vols bloquejar un servei de Google? " +
+                "Això pot afectar a altres serveis de Google que es fan servir a l'escola." +
+                "<br><br> Segur que vols continuar?";
+        }
 
         obre_confirmacio(text_confirmacio, ()=>{
             socket.emit("addNormaWeb", {
