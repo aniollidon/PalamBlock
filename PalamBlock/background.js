@@ -36,9 +36,13 @@ socket.on('do', function (data) {
         warnTab(data.tabId);
     }
     else if(data.action === "close") {
-        closeTab(data.tabId).catch((error) => {
+        closeTab(data.tabId)
+            .then((res) => {
+                console.log("Tab closed", data.tabId);
+            })
+            .catch((error) => {
             console.error("Can't close tab " + data.tabId);
-            // Check if tab still exists
+            // Check if tab still existsS
             chrome.tabs.get(parseInt(data.tabId), (tab) => {
                 if (tab) {
                     customTabInfo(tab).then((tab_info) => {

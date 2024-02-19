@@ -72,6 +72,7 @@ class BrowserStatus extends BrowserDetails {
         }
         this.opened = false;
         this.updatedAt = timestamp;
+        this._onUpdateCallback();
     }
 
     setAlive(timestamp) {
@@ -299,6 +300,14 @@ class AllAlumnesStatus {
         this._onUpdateCallback = onUpdateCallback;
     }
 
+    updateBrowserDetails(browserDetails) {
+        if (!this.alumnesStat[browserDetails.owner]) {
+            this.alumnesStat[browserDetails.owner] = new AlumneStatus(browserDetails.owner, this._onUpdateCallback);
+        }
+        else{
+            this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].from(browserDetails);
+        }
+    }
     updateActionCallback(browserDetails, callback) {
         if (!this.alumnesStat[browserDetails.owner]) {
             this.alumnesStat[browserDetails.owner] = new AlumneStatus(browserDetails.owner, this._onUpdateCallback);
@@ -440,16 +449,21 @@ async function normesWebHasChanged() {
         const validacio = new validacioService.Validacio(alumne);
         for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
             for (const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
-                const action = {action: 'refresh', tabId: tab}; // TODO: fer el que calgui a la v2.0
                 const webPage = allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].webPage;
-                const permition = await validacio.checkWeb(webPage.host, webPage.protocol, webPage.search, webPage.pathname, webPage.title);
+                const permition = await validacio.checkWeb(webPage);
 
                 if (permition !== "allow") {
-                    allAlumnesStatus._onSavePending = true;
-                    if (!allAlumnesStatus.pendingBrowserActions[alumne]) allAlumnesStatus.pendingBrowserActions[alumne] = {};
-                    if (!allAlumnesStatus.pendingBrowserActions[alumne][browser]) allAlumnesStatus.pendingBrowserActions[alumne][browser] = [];
-                    allAlumnesStatus.pendingBrowserActions[alumne][browser].push(action)
-                    allAlumnesStatus._onSavePending = false;
+                    if(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion === "1.0") {
+                        const action = {action: 'refresh', tabId: tab};
+                        allAlumnesStatus._onSavePending = true;
+                        if (!allAlumnesStatus.pendingBrowserActions[alumne]) allAlumnesStatus.pendingBrowserActions[alumne] = {};
+                        if (!allAlumnesStatus.pendingBrowserActions[alumne][browser]) allAlumnesStatus.pendingBrowserActions[alumne][browser] = [];
+                        allAlumnesStatus.pendingBrowserActions[alumne][browser].push(action)
+                        allAlumnesStatus._onSavePending = false;
+                    }
+                    else {
+                        allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction(permition, tab);
+                    }
                 }
             }
         }
@@ -477,6 +491,9 @@ function unregisterBrowser(sid, timestamp) {
 
 function registerActionListener(browserDetails, callback) {
     if (!callback) return;
+
+    // Update browserDetails
+    allAlumnesStatus.updateBrowserDetails(browserDetails);
     allAlumnesStatus.updateActionCallback(browserDetails, callback);
 }
 

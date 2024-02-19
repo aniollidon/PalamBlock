@@ -353,7 +353,7 @@ export function drawAlumnesActivity(data) {
                             //browserDiv.addEventListener('activeTabChange', ({ detail }) => console.log('Active tab changed', detail.tabEl))
                             //browserDiv.addEventListener('tabAdd', ({ detail }) => console.log('Tab added', detail.tabEl))
                             browserWin.addEventListener('tabRemove', function tabRemoveListener({detail}) {
-                                //logger.info('Tab removed', detail.tabEl)
+                                console.log('Tab removed', detail.tabEl)
                                 socket.emit("closeTab", {
                                     alumne: alumne,
                                     browser: browserInfo.browser,

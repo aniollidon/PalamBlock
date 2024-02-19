@@ -103,6 +103,7 @@
 
             this.tabEls.forEach((tabEl) => this.setTabCloseEventListener(tabEl))
             this.tabEls.forEach((tabEl) => this.setTabClickEventListener(tabEl))
+            this.tabEls.forEach((tabEl) => this.setTabMiddleClickEventListener(tabEl))
 
         }
 
@@ -198,7 +199,7 @@
         addTab(tabProperties, { animate = true, background = false } = {}) {
             const tabEl = this.createNewTabEl()
             const tabContentEl = tabEl.querySelector('.chrome-tab-content')
-            if(tabProperties.info.status === 'block')
+            if(tabProperties.info.pbStatus === 'block')
                 tabContentEl.classList.add('chrome-tab-blocked')
             else
                 tabContentEl.classList.remove('chrome-tab-blocked')
@@ -222,6 +223,7 @@
             this.tabContentEl.appendChild(tabEl)
             this.setTabCloseEventListener(tabEl)
             this.setTabClickEventListener(tabEl)
+            this.setTabMiddleClickEventListener(tabEl)
             this.updateTab(tabEl, tabProperties)
             this.emit('tabAdd', { tabEl })
             if (!background) this.setCurrentTab(tabEl)
@@ -242,6 +244,15 @@
                 // Opcions del menu
 
                 openMenu(e, this.menu_options, tabEl.info);
+            })
+        }
+
+        setTabMiddleClickEventListener(tabEl) {
+            tabEl.querySelector('.chrome-tab-content').addEventListener('mouseup', e => {
+                if (e.button === 1) {
+                    this.removeTab(tabEl);
+                    closeMenu(e);
+                }
             })
         }
 
