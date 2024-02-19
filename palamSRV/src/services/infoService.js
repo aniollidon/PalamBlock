@@ -3,6 +3,7 @@ require('dotenv').config();
 const alumneService = require("./alumneService");
 const logger = require('../logger').logger;
 const {BrowserDetails, TabDetails} = require("./structures");
+const {estructuraPublica} = require("./utils");
 
 class TabStatus extends TabDetails  {
     constructor(details, timestamp) {
@@ -53,12 +54,13 @@ class BrowserStatus extends BrowserDetails {
         this._passiveupdatedAt = timestamp; // (v1.0) used to check if the browser is disconnected
         this._onUpdateCallback = onUpdateCallback;
         this._onActionCallback = () => {};
+        this._checkInterval = undefined; // (v1.0) used to check if the browser is disconnected
         this.opened = true;
 
         if(this.extVersion === "1.0") { // Legacy support version 1.0
             // Comprova si el browser s'ha desconnectat
             const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
-            setInterval(() => {
+            this._checkInterval = setInterval(() => {
                 if (this.opened && this._passiveupdatedAt && (new Date() - this._passiveupdatedAt) > NOCONN_TIME) {
                     this.close(new Date());
                 }
@@ -66,13 +68,23 @@ class BrowserStatus extends BrowserDetails {
         }
     }
 
-    close(timestamp) {
+    updateDetails(details) {
+        const prevVersion = this.extVersion;
+        super.from(details);
+
+        if (prevVersion !== this.extVersion && this.extVersion !== "1.0") {
+            clearInterval(this._checkInterval);
+        }
+    }
+
+
+    close(timestamp, silent=false) {
         for (const tab in this.tabs) {
             this.tabs[tab].close(timestamp);
         }
         this.opened = false;
         this.updatedAt = timestamp;
-        this._onUpdateCallback();
+        if(!silent) this._onUpdateCallback();
     }
 
     setAlive(timestamp) {
@@ -305,7 +317,7 @@ class AllAlumnesStatus {
             this.alumnesStat[browserDetails.owner] = new AlumneStatus(browserDetails.owner, this._onUpdateCallback);
         }
         else{
-            this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].from(browserDetails);
+            this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].updateDetails(browserDetails);
         }
     }
     updateActionCallback(browserDetails, callback) {
@@ -405,7 +417,7 @@ async function getAlumnesActivity() {
             allAlumnesStatus.alumnesStat[alumne] = undefined; // Esborra l'alumne
         }
     }
-    return allAlumnesStatus.alumnesStat;
+    return estructuraPublica(allAlumnesStatus.alumnesStat);
 }
 
 function registerOnUpdateCallback(callback) {

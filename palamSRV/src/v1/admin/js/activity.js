@@ -370,6 +370,10 @@ export function drawAlumnesActivity(data) {
                         const browserIcon = document.createElement("img");
                         browserIcon.setAttribute("src", "img/" + browserInfo.browser.toLowerCase() + ".png");
                         browserIcon.setAttribute("class", "browser-icon");
+                        const browserVersion = document.createElement("div");
+                        browserVersion.setAttribute("class", "browser-version");
+                        browserVersion.innerHTML = "v" + browserInfo.extVersion;
+                        browserWinInfoDiv.appendChild(browserVersion);
                         browserWinInfoDiv.appendChild(browserIcon);
                         browserWin.appendChild(browserWinInfoDiv);
 

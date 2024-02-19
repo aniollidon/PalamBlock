@@ -31,7 +31,7 @@ const postValidacioAPI = (req, res) => { // Deprecated
     const tabDetails = new TabDetails(tabId, webPage, windowId, incognito, active, audible);
 
     const validacioAlumne = new validacioService.Validacio(alumne);
-    const validacio = validacioAlumne.checkWeb();
+    const validacio = validacioAlumne.checkWeb(webPage);
 
     validacio.then((status) => {
         //logger.info("host: " + host + " protocol: " + protocol + " search: " + search + " pathname: " + pathname + " title: " + title + " alumne: " + alumne + " browser: " + browser + " tabId: " + tabId + "incognito: " + incognito + " timestamp: " + timestamp);

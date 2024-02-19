@@ -57,7 +57,13 @@ const postBrowserInfoAPI = (req, res) => {
     }
 
     const browserDetails = new BrowserDetails(alumne, browser, "1.0", "API");
-    infoService.registerBrowser(browserDetails, tabsInfos, activeTab, timestamp);
+    const structuredTabsInfos = {};
+
+    for (const tabId in tabsInfos) {
+        const tab = tabsInfos[tabId];
+        structuredTabsInfos[tabId] = new TabDetails(tab.tabId, new WebPage(tab.host, tab.protocol, tab.search, tab.pathname, tab.title, tab.favicon), tab.windowId, tab.incognito, tab.active, tab.audible);
+    }
+    infoService.registerBrowser(browserDetails, structuredTabsInfos, activeTab, timestamp);
 
     res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser) });
 }

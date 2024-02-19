@@ -10,6 +10,17 @@ body {
     width: 70px;
 }
 
+.browser-version{
+    position: absolute;
+    left: 19px;
+    top: 27px;
+    color: #ffffff;
+    font-weight: 800;
+    background: black;
+    border-radius: 16px;
+    padding: 2px 9px;
+}
+
 .modal-message{
     font-size: medium;
     padding: 0 10px;
