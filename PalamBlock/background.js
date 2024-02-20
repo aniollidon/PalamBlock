@@ -1,5 +1,5 @@
-//const SERVER = 'http://185.61.126.170:4000';
-const SERVER = 'http://localhost:4000';
+const SERVER = 'http://185.61.126.170:4000';
+//const SERVER = 'http://localhost:4000';
 const API_URL = SERVER + '/api/v1/';
 const API_REGISTER = API_URL + 'alumne/auth';
 
@@ -10,7 +10,7 @@ const version = manifestData.version;
 import io from 'https://cdn.jsdelivr.net/npm/socket.io-client@4.7.1/+esm';
 import {customTabsInfo, customTabInfo, customShortInfo, closeTab, warnTab, forceLoginTab, blockTab} from './tabs.js';
 
-var socket = io.connect('http://localhost:4000', {
+var socket = io.connect(SERVER, {
     transports: ["websocket"],
     path: '/ws-extention',
 });
