@@ -165,6 +165,10 @@ function registerActionListenerWS(sid, msg, callback) {
     infoService.registerActionListener(browserDetails, callback);
 }
 
+function sendMessageToAlumne(alumne, msg) {
+    infoService.sendMessageToAlumne(alumne, msg);
+}
+
 module.exports = {
     postTabInfoAPI,
     postBrowserInfoAPI,
@@ -175,5 +179,6 @@ module.exports = {
     remoteCloseTab,
     normesWebHasChanged,
     disconnectWS,
-    registerActionListenerWS
+    registerActionListenerWS,
+    sendMessageToAlumne
 }

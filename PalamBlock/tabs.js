@@ -217,3 +217,39 @@ export async function warnTab(tabId) {
         return true;
     });
 }
+
+
+export async function printMesasgeToTab(tabId, message) {
+    tabId = parseInt(tabId);
+    return new Promise((resolve, reject) => {
+        chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: (message) => {
+
+                if(document.getElementById("palablock"))
+                    document.getElementById("palablock").remove();
+
+                document.body.innerHTML = `
+                        <div id="palablock" style="background-color: rgb(77 77 86 / 65%);
+                        position: fixed; z-index: 9999; height: 100%;width: 100%;
+                        display: flex; justify-content: center; align-content: center;
+                        align-items: center; user-select: none; color: white;">
+                            <div style="background: #00000096; padding: 50px; text-align: center">
+                                <div style="font-size: 50px;"> Missatge de PalamBlock: ${message} </div>
+                                <div style="font-size: 20px;"> Clica per continuar</div>
+                            </div>
+                        </div> ` + document.body.innerHTML;
+
+                document.getElementById("palablock").addEventListener("click", function(){
+                    document.getElementById("palablock").remove();
+                });
+            },
+            args: [message]
+        }).then(() => {
+            resolve();
+        }).catch((error) => {
+            reject(error);
+        });
+        return true;
+    });
+}

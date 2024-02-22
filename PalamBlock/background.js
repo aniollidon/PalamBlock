@@ -8,7 +8,7 @@ const manifestData = chrome.runtime.getManifest();
 const version = manifestData.version;
 
 import io from 'https://cdn.jsdelivr.net/npm/socket.io-client@4.7.1/+esm';
-import {customTabsInfo, customTabInfo, customShortInfo, closeTab, warnTab, forceLoginTab, blockTab} from './tabs.js';
+import {customTabsInfo, customTabInfo, customShortInfo, closeTab, warnTab, forceLoginTab, blockTab, printMesasgeToTab} from './tabs.js';
 
 var socket = io.connect(SERVER, {
     transports: ["websocket"],
@@ -54,6 +54,9 @@ socket.on('do', function (data) {
                 }
             });
         });
+    }
+    else if (data.action === "message") {
+        printMesasgeToTab(data.tabId, data.message);
     }
 });
 

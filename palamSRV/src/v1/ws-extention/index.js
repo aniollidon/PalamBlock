@@ -17,8 +17,8 @@ function initializeExtentionWebSocket(server) {
         console.log('Un client s\'ha connectat ' + socket.id );
 
         socket.on('registerBrowser', (data) => {
-            infoController.registerActionListenerWS(socket.id, data, (action, tabId) => {
-                socket.emit('do', {action: action, tabId: tabId});
+            infoController.registerActionListenerWS(socket.id, data, (action, tabId, message= undefined) => {
+                socket.emit('do', {action: action, tabId: tabId, message: message});
             });
         });
 

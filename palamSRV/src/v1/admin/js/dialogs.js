@@ -55,7 +55,7 @@ export function creaAppMenuJSON(alumne, app) {
         obreDialogBloquejaApps(info, alumne, "blocalumn");
     }
     const onTanca = (info) => {
-        alert("No implementat")
+        bootbox.alert("No implementat")
         //console.log("onTanca app")
     }
 
@@ -270,7 +270,7 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
         }]
 
         if(!list[0].host && !list[0].pathname && !list[0].title){
-            alert("Has de seleccionar almenys un camp per bloquejar")
+            bootbox.alert("Has de seleccionar almenys un camp per bloquejar")
             return;
         }
 
@@ -467,7 +467,7 @@ export function obreDialogNormesWeb(whoid, who = "alumne") {
         };
         pencil.onclick = (event) => {
             //TODO edit norma
-            alert("Aquesta funció encara no està implementada")
+            bootbox.alert("Aquesta funció encara no està implementada")
         };
 
 
@@ -621,7 +621,7 @@ export function obreDialogNormesApps(whoid, who = "alumne") {
         };
         pencil.onclick = (event) => {
             //TODO edit norma
-            alert("Aquesta funció encara no està implementada")
+            bootbox.alert("Aquesta funció encara no està implementada")
         };
         itemSubtitle.appendChild(trash);
         itemSubtitle.appendChild(pencil);
@@ -827,7 +827,7 @@ export function obreDialogAfegeixLlistaBlanca(grup){
 
         const enabled_on = construeixEnabledOn(hSelectDurada.value, nowHM);
         if(list.length === 0) {
-            alert("No hi ha cap web a la llista blanca");
+            bootbox.alert("No hi ha cap web a la llista blanca");
             return;
         }
         obre_confirmacio("Segur que vols crear una llista blanca? La llista blanca bloqueja tot el tràfic que " +

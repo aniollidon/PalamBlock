@@ -185,8 +185,8 @@ class BrowserStatus extends BrowserDetails {
         return changes;
     }
 
-    remoteAction(action, tabId) {
-        this._onActionCallback(action, tabId);
+    remoteAction(action, tabId, message= undefined) {
+        this._onActionCallback(action, tabId, message);
     }
 
 }
@@ -518,6 +518,17 @@ function remoteSetTabStatus(browserDetails, tabId, status) {
     }
 }
 
+function sendMessageToAlumne(alumne, message) {
+    if (!allAlumnesStatus.alumnesStat[alumne]) return;
+    for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
+        if(parseInt(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion) >= 1)
+            for (const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
+                if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].active)
+                    allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction("message", tab, message);
+            }
+    }
+}
+
 module.exports = {
     registerTab,
     registerBrowser,
@@ -530,4 +541,5 @@ module.exports = {
     normesWebHasChanged,
     registerApps,
     remoteSetTabStatus,
+    sendMessageToAlumne
 }

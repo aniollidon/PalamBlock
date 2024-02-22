@@ -94,6 +94,10 @@ function initializeAdminWebSocket(server) {
         socket.on('updateNormaWeb', async (msg) => {
             await normaController.updateNorma2Web(msg.who, msg.whoid, msg.normaId, msg.severity, msg.mode, msg.list, msg.enabled_on, msg.alive);
         });
+
+        socket.on('sendMessageToAlumne', async (msg) => {
+            await infoController.sendMessageToAlumne(msg.alumne, msg.message);
+        });
     });
 
 
