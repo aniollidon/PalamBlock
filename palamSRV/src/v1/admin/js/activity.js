@@ -210,8 +210,10 @@ export function drawAlumnesActivity(data) {
                 }
 
                 const sendMessageButton = document.createElement("button");
+                sendMessageButton.setAttribute("id", alumne + "-send-message-button");
                 sendMessageButton.setAttribute("class", "btn btn-dark");
                 sendMessageButton.setAttribute("type", "button");
+                sendMessageButton.setAttribute("disabled", "disabled");
                 sendMessageButton.innerHTML =`
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
                       <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
@@ -313,6 +315,7 @@ export function drawAlumnesActivity(data) {
 
                 // Browsers List
                 let alumneBrowsersDiv = undefined;
+                let countActiveBrowsers = 0;
 
                 if (!document.getElementById(alumne + "-browsers")) {
                     alumneBrowsersDiv = document.createElement("div");
@@ -340,6 +343,8 @@ export function drawAlumnesActivity(data) {
                         browserDiv.remove();
                         continue;
                     }
+
+                    countActiveBrowsers++;
 
                     // Prepara i separa per finestres
                     const windowInfo = {}
@@ -446,6 +451,15 @@ export function drawAlumnesActivity(data) {
                         }
                     }
                 }
+
+                const sendMessageButton = document.getElementById(alumne + "-send-message-button");
+                if(countActiveBrowsers === 0){
+                    // Desactiva el botó de missatge
+                    sendMessageButton.setAttribute("disabled", "disabled");
+                } else {
+                    sendMessageButton.removeAttribute("disabled");
+                }
+
             }
         }
     }
