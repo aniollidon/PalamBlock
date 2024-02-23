@@ -131,7 +131,7 @@ const postBrowserInfoWS = async (sid, msg) => {
         infoService.remoteSetTabStatus(browserDetails, structuredTabsInfos[tabId].tabId, status);
     }
     logger.trace("postBrowserInfoWS: " + browserDetails.toString() + " at:" + timestamp);
-    infoService.registerBrowser(browserDetails, structuredTabsInfos, timestamp);
+    infoService.registerBrowser(browserDetails, structuredTabsInfos, msg.activeTab, timestamp);
 }
 
 const disconnectWS = (sid) => {
