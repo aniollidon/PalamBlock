@@ -126,7 +126,7 @@ class BrowserStatus extends BrowserDetails {
         tabId = tabId.toString();
 
         if (!this.tabs[tabId]) {
-            logger.error("Tab " + tabId + " not found");
+            logger.error("on closeTab - tab " + tabId + " not found");
             return; //TODO algo millor
         }
 
@@ -146,7 +146,7 @@ class BrowserStatus extends BrowserDetails {
 
         // Comprovacions
         if (!this.tabs[tabId]) {
-            logger.error("Tab " + tabId + " not found");
+            logger.error("on setActiveTab - tab " + tabId + " not found");
             return changes;
         }
 
