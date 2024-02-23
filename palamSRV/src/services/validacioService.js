@@ -166,10 +166,11 @@ class Validacio {
 
             action = compare_severity(action, current_action);
 
-            tracelog += "La norma " + norma._id + " ha donat " + current_action + "\n";
+            if(current_action !== "allow")
+                tracelog += "La norma " + norma._id + " ha donat " + current_action + "\n";
         }
 
-        if(action === "block")
+        if(action !== "allow")
             logger.debug(tracelog);
 
         return action;
