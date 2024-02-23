@@ -1,4 +1,5 @@
 const db = require("../database/db");
+const {logger} = require("../logger");
 
 const severity_rank = {
     "allow": 0,
@@ -45,6 +46,7 @@ class Validacio {
     }
     async checkWeb(webPage) {
 
+        let tracelog = "";
         const alumne = await db.Alumne.findOne({alumneId: this.alumneid})
             .populate('grup')
             .populate('normes2Web');
@@ -84,6 +86,8 @@ class Validacio {
         const datetime_ara = dataActual.getTime();
         const dia_avui = dataActual.toLocaleDateString('ca-ES',  { weekday: 'long' });
         let action = "allow";
+
+        tracelog = "En " + this.alumneId + "del grup " + grup.grupId + ":\n";
 
         for(const norma of normesWeb) {
 
@@ -161,7 +165,12 @@ class Validacio {
             }
 
             action = compare_severity(action, current_action);
+
+            tracelog += "La norma " + norma._id + " ha donat " + current_action + " per la pàgina " + webPage.url + "\n";
         }
+
+        if(action === "block")
+            logger.debug(tracelog);
 
         return action;
     }
