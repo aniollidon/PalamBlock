@@ -87,7 +87,7 @@ class Validacio {
         const dia_avui = dataActual.toLocaleDateString('ca-ES',  { weekday: 'long' });
         let action = "allow";
 
-        tracelog = "En " + this.alumneId + "del grup " + grup.grupId + ":\n";
+        tracelog = "En " + this.alumneId + "del grup " + grup.grupId + ": " + webPage.join() + "\n";
 
         for(const norma of normesWeb) {
 
@@ -166,7 +166,7 @@ class Validacio {
 
             action = compare_severity(action, current_action);
 
-            tracelog += "La norma " + norma._id + " ha donat " + current_action + " per la pàgina " + webPage.url + "\n";
+            tracelog += "La norma " + norma._id + " ha donat " + current_action + "\n";
         }
 
         if(action === "block")
