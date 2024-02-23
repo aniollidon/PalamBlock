@@ -87,7 +87,7 @@ class Validacio {
         const dia_avui = dataActual.toLocaleDateString('ca-ES',  { weekday: 'long' });
         let action = "allow";
 
-        tracelog = "En " + this.alumneId + "del grup " + grup.grupId + ": " + webPage.join() + "\n";
+        tracelog = "En " + this.alumneid + " del grup " + grup.grupId + ": " + webPage.join() + "\n";
 
         for(const norma of normesWeb) {
 
