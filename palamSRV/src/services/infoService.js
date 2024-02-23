@@ -317,7 +317,10 @@ class AllAlumnesStatus {
             this.alumnesStat[browserDetails.owner] = new AlumneStatus(browserDetails.owner, this._onUpdateCallback);
         }
         else{
-            this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].updateDetails(browserDetails);
+            if(!this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser])
+                this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser] = new BrowserStatus(browserDetails, new Date(), this._onUpdateCallback);
+            else
+                this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].updateDetails(browserDetails);
         }
     }
     updateActionCallback(browserDetails, callback) {
