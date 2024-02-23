@@ -425,6 +425,9 @@ export function obreDialogNormesWeb(whoid, who = "alumne") {
         titol += (severity === "block" ? "bloqueja" : "avisa");
         itemTitle.innerHTML = capitalizeFirstLetter(titol);
 
+        if(window.location.search.includes("super"))
+            itemTitle.innerHTML += " <small>(" + norma + ")</small>";
+
         const itemSubtitle = document.createElement("small");
         const trash = document.createElement("button");
         trash.setAttribute("type", "button");
