@@ -1,6 +1,6 @@
 import {
     creaAppMenuJSON, creaWebMenuJSON, obreDialogNormesApps, obreDialogNormesWeb,
-    obreDialogAfegeixLlistaBlanca, obre_confirmacio
+    obreDialogAfegeixLlistaBlanca, obre_confirmacio, obreDialogBloquejaWeb
 } from "./dialogs.js";
 import {toogleSideBar} from "./sidebar.js";
 import {compareEqualTabs} from "./utils.js";
@@ -572,6 +572,14 @@ export function preparaAlumnesGrups(data) {
             const grupAfegeixLlistaBlancaButton = document.getElementById("globalGroupAfegeixLlistaBlancaButton");
             grupAfegeixLlistaBlancaButton.removeAttribute("disabled");
             grupAfegeixLlistaBlancaButton.onclick = (ev) => obreDialogAfegeixLlistaBlanca(grupSelector.value);
+
+            // Prepara el botó nova norma
+            const grupNovaNormaButton = document.getElementById("globalGroupAfegeixNormaButton");
+            grupNovaNormaButton.removeAttribute("disabled");
+
+            grupNovaNormaButton.onclick = (ev) => obreDialogBloquejaWeb({
+                    host:"", pathname:"", search:"", title:"" },
+                undefined, grupSelector.value,  "blocgrup");
         }
         grupSelector.appendChild(option);
     }
@@ -586,5 +594,16 @@ export function getGrup(alumneId) {
     return undefined
 }
 
+export function getGrups() {
+    const grups = [];
+    for (let grup in grupAlumnesList) {
+           grups.push(grup);
+    }
+    return grups
+}
+
+export function getAlumnes(grup) {
+    return grupAlumnesList[grup].alumnes
+}
 
 export {chromeTabsObjects};

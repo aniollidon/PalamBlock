@@ -122,7 +122,6 @@ export function normaTempsActiva(enabled_on) {
                 return true;
             else if(datetime_ara > timestamp  && datetime_ara < timestamp + duration * 60000)
                 return true;
-
         }
 
         let horaTrobada = false;
@@ -147,6 +146,7 @@ export function normaTempsActiva(enabled_on) {
             || horaTrobada && enabled.days.length === 0;
     }) !== undefined;
 }
+
 export function getIntervalHorari(moment, sessions){
 
     const momentM = hhmmToMinutes(moment);
@@ -160,6 +160,31 @@ export function getIntervalHorari(moment, sessions){
             if(count_sessions >= sessions)
                 return commonHorari[hhmm];
         }
+    }
+
+    return undefined;
+}
+
+export function reconstrueixDuradaOpcio(enabled_on){
+    if(enabled_on === undefined || enabled_on === null || enabled_on.length === 0)
+        return "always";
+
+    const avui = new Date();
+    avui.setHours(0,0,0,0);
+    if (enabled_on.length === 1 && enabled_on[0].datetimes.length === 1 && enabled_on[0].duration === 1440 &&
+        new Date(enabled_on[0].datetimes[0]).getTime() === avui.getTime())
+        return "today";
+
+    const nowHM = new Date().toLocaleTimeString('ca-ES', {hour: '2-digit', minute:'2-digit'});
+    const nextHora =  getIntervalHorari(nowHM, 1);
+    const next2Hora =  getIntervalHorari(nowHM, 2);
+
+    if(enabled_on.length === 1 && enabled_on[0].datetimes.length === 1 && enabled_on[0].duration){
+        const endTime = new Date(enabled_on[0].datetimes[0]).getTime() + enabled_on[0].duration * 60000;
+        const endFormatted = new Date(endTime).toLocaleTimeString('ca-ES', {hour: '2-digit', minute:'2-digit'});
+
+        if(endFormatted === nextHora) return nextHora;
+        if(endFormatted === next2Hora) return next2Hora;
     }
 
     return undefined;

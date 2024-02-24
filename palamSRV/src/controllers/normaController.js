@@ -35,8 +35,8 @@ function updateNorma2Web(who, whoid, normaId, severity, mode, list, enabled_on, 
             //logger.info("NormaWeb actualitzada d'alumne");
         });
     }
-
 }
+
 const getAllNormes2Web = () => {
     return normaService.getAllNormes2Web();
 }

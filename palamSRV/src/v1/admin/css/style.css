@@ -21,6 +21,9 @@ body {
     padding: 2px 9px;
 }
 
+.bootbox-body{
+    font-size: 14px;
+}
 .modal-message{
     font-size: medium;
     padding: 0 10px;

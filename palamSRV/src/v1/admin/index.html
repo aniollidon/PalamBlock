@@ -11,24 +11,6 @@
 
 </head>
 <body>
-<!-- Modal confirmació -->
-<div class="modal fade" tabindex="-1" role="dialog"  id="pbk_modal_confirmacio">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Mans enlaire! N'estàs segur?</h5>
-                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
-            </div>
-            <div class="modal-body">
-                <div id="pbk_modal_confirmacio_missatge" class="modal-message">Modal body text goes here.</div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="pbk_modal_confirmacio_dacord">Continua</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel·la</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Modal llista blanca -->
 <div aria-hidden="true" aria-labelledby="llistaBlancaModal" class="modal fade text-left" id="llistaBlancaModal" role="dialog"
@@ -145,7 +127,7 @@
                             <input checked class="form-check-input" id="pbk_modalblockweb_host_switch" type="checkbox">
                         </div>
                     </div>
-                    <input class="form-control" id="pbk_modalblockweb_host" placeholder="example.com"/>
+                    <input class="form-control" id="pbk_modalblockweb_host" placeholder="exemple.cat"/>
 
                     <div style="display: flex;justify-content: space-between;">
                         <label for="pbk_modalblockweb_pathname">Path</label>
@@ -246,7 +228,7 @@
                                    type="checkbox">
                         </div>
                     </div>
-                    <input class="form-control" id="pbk_modalblockapp_process" placeholder="example.com"/>
+                    <input class="form-control" id="pbk_modalblockapp_process" placeholder="exemple.exe"/>
 
                     <div style="display: flex;justify-content: space-between;">
                         <label for="pbk_modalblockapp_filepath">filepath</label>
@@ -279,6 +261,25 @@
 <div class="menu">
     <ul class="menu-options">
     </ul>
+</div>
+
+<!-- Modal confirmació -->
+<div class="modal fade" tabindex="-1" role="dialog"  id="pbk_modal_confirmacio">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mans enlaire! N'estàs segur?</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div id="pbk_modal_confirmacio_missatge" class="modal-message">Modal body text goes here.</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="pbk_modal_confirmacio_dacord">Continua</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel·la</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <main>
@@ -338,6 +339,8 @@
                         </svg> Normes Apps
                     </span>
                 </button>
+                <!-- Nova norma grup -->
+                <button class="btn btn-primary" type="button" id="globalGroupAfegeixNormaButton">Nova norma</button>
                 <!-- Llista blanca de grup -->
                 <button class="btn btn-primary" type="button" id="globalGroupAfegeixLlistaBlancaButton">Crea llista blanca</button>
             </div>

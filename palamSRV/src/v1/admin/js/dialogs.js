@@ -1,4 +1,4 @@
-import {getGrup} from "./activity.js";
+import {getGrup, getAlumnes, getGrups} from "./activity.js";
 import {socket} from "./socket.js";
 import {
     getIntervalHorari,
@@ -6,7 +6,7 @@ import {
     hhmmToMinutes,
     capitalizeFirstLetter,
     normaTempsActiva,
-    minutstoDDHHMM
+    minutstoDDHHMM, reconstrueixDuradaOpcio
 } from "./utils.js";
 
 import {commonPlaces, googleServices, teacherHorari} from "./common.js";
@@ -52,7 +52,7 @@ export function setnormesAppsInfo(normesAppsInfo_) {
 export function creaAppMenuJSON(alumne, app) {
     // Opcions del menu contextual
     const onBloqueja = (info) => {
-        obreDialogBloquejaApps(info, alumne, "blocalumn");
+        obreDialogBloquejaApps(info, alumne, "blocalumne");
     }
     const onTanca = (info) => {
         bootbox.alert("No implementat")
@@ -73,11 +73,11 @@ export function creaWebMenuJSON(alumne, browser) {
 
     }
     const onBloqueja = (info) => {
-        obreDialogBloquejaWeb(info, alumne, "blocalumn");
+        obreDialogBloquejaWeb(info.webPage, alumne, getGrup(alumne), "blocalumne");
     }
 
     const onBloquejaGrup = (info) => {
-        obreDialogBloquejaWeb(info, alumne, "blocgrup");
+        obreDialogBloquejaWeb(info.webPage, alumne, getGrup(alumne), "blocgrup");
     }
 
     const onTanca = (info) => {
@@ -151,18 +151,31 @@ function preparaSelectDurada(hSelectDurada, nowHM, opcioSeleccionada = "primera"
     hSelectDurada.innerHTML = "";
     const nextHora =  getIntervalHorari(nowHM, 1);
     const next2Hora =  getIntervalHorari(nowHM, 2);
-    if(nextHora) hSelectDurada.appendChild(new Option("Aquesta sessió (fins les " + nextHora + ")", nextHora));
-    if(next2Hora) hSelectDurada.appendChild(new Option("Dues sessions (fins les " + next2Hora + ")", next2Hora));
-    hSelectDurada.appendChild(new Option("Avui", "today"), false, opcioSeleccionada === "today");
+    if(nextHora)
+        hSelectDurada.appendChild(new Option(
+        "Aquesta sessió (fins les " + nextHora + ")",
+        nextHora,
+        false,
+        opcioSeleccionada === nextHora));
+
+    if(next2Hora)
+        hSelectDurada.appendChild(
+            new Option(
+                "Dues sessions (fins les " + next2Hora + ")",
+                next2Hora,
+                false,
+                opcioSeleccionada === next2Hora));
+
+    hSelectDurada.appendChild(new Option("Avui", "today", false, opcioSeleccionada === "today"));
     hSelectDurada.appendChild(new Option("Sempre", "always", false, opcioSeleccionada === "always"));
     hSelectDurada.appendChild(new Option("Excepte al pati", "nopati", false, opcioSeleccionada === "nopati"));
     for (const nom in teacherHorari) {
         hSelectDurada.appendChild(new Option(">carrega horari " + nom, "*"+nom));
     }
 }
-export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") {
-    const ugrup = getGrup(alumne);
-    const ualumne = alumne.toUpperCase();
+export function obreDialogBloquejaWeb(webPage, alumne, grup, tab, menustate= undefined) {
+    grup = grup ||  "";
+    alumne = alumne || "";
     const blocalumnLink = document.getElementById("pills-blocwebalumn-tab");
     const blocgrupLink = document.getElementById("pills-blocwebgrup-tab");
     const severitySelect = document.getElementById("pbk_modalblockweb_severity");
@@ -182,49 +195,155 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
     let normaWhoId = alumne;
     let normaMode = "blacklist";
 
-    preparaSelectDurada(hSelectDurada, nowHM, "always");
+    blocalumnLink.innerHTML = `Bloqueja alumne ${alumne.toUpperCase()}`;
+    blocgrupLink.innerHTML = `Bloqueja grup ${grup.toUpperCase()}`;
 
-    blocalumnLink.innerHTML = `Bloqueja alumne ${ualumne}`;
-    blocgrupLink.innerHTML = `Bloqueja grup ${ugrup}`;
-
-    severitySelect.value = severity;
-    hostInput.value = info.webPage.host;
-    pathnameInput.value = info.webPage.pathname;
-    searchInput.value = info.webPage.search;
-    titleInput.value = info.webPage.title;
-
-    if (info.webPage.pathname === "/" || info.webPage.pathname === "") {
-        pathnameSwitch.checked = false;
-        pathnameInput.setAttribute("disabled", "disabled");
-    } else {
-        pathnameSwitch.checked = true;
-        pathnameInput.removeAttribute("disabled");
+    if(!menustate) { // Default menu state
+        menustate = {};
+        menustate.severity = "block";
+        menustate.host = true;
+        menustate.pathname = (webPage.pathname !== "/" && webPage.pathname !== "");
+        menustate.search = false;
+        menustate.title = false;
+        menustate.durada = "always";
+        menustate.lasttab = undefined;
+        menustate.editPrevious = undefined;
+    }
+    else {
+        if(!menustate.durada){
+            bootbox.alert({
+                message: "Es modificarà la durada de la norma per defecte a <strong>sempre</strong> ja que no es " +
+                    "pot recuperar la durada de la norma. Revisa el camp.",
+                size: 'small',
+                centerVertical: true,
+            })
+            menustate.durada = "always";
+        }
     }
 
-    hostSwitch.checked = true;
-    searchSwitch.checked = false;
-    searchInput.setAttribute("disabled", "disabled");
-    titleSwitch.checked = false;
-    titleInput.setAttribute("disabled", "disabled");
+    preparaSelectDurada(hSelectDurada, nowHM, menustate.durada);
+
+    severitySelect.value = menustate.severity;
+    hostInput.value = webPage.host;
+    pathnameInput.value = webPage.pathname;
+    searchInput.value = webPage.search;
+    titleInput.value = webPage.title;
+
+    if(menustate.host) {
+        hostSwitch.checked = true;
+        hostInput.removeAttribute("disabled");
+    }else {
+        hostSwitch.checked = false;
+        hostInput.setAttribute("disabled", "disabled");
+    }
+
+    if (menustate.pathname) {
+        pathnameSwitch.checked = true;
+        pathnameInput.removeAttribute("disabled");
+    } else {
+        pathnameSwitch.checked = false;
+        pathnameInput.setAttribute("disabled", "disabled");
+    }
+
+    if(menustate.search) {
+        searchSwitch.checked = true;
+        searchInput.removeAttribute("disabled");
+    } else {
+        searchSwitch.checked = false;
+        searchInput.setAttribute("disabled", "disabled");
+    }
+
+    if(menustate.title) {
+        titleSwitch.checked = true;
+        titleInput.removeAttribute("disabled");
+    } else {
+        titleSwitch.checked = false;
+        titleInput.setAttribute("disabled", "disabled");
+    }
+
 
     blocalumnLink.onclick = (event) => {
         normaWhoSelection = "alumne";
         normaWhoId = alumne;
         normaMode = "blacklist";
+        const prevtab = menustate.lasttab;
+        menustate.lasttab = "blocalumne";
+
+        if(prevtab === "blocalumne" || !alumne){ // Segon click o l'alumne no està escollit
+            blockModalWeb.hide();
+            const selectOptions = [];
+            for (const a in getAlumnes(grup)) {
+                selectOptions.push({text: a, value: a});
+            }
+            bootbox.prompt({
+                title: 'Escull alumne del grup ' + grup + ':',
+                inputType: 'select',
+                value: alumne? alumne: selectOptions[0].value,
+                inputOptions: selectOptions,
+                callback: function (result) {
+                    if(result){
+                        alumne = result;
+                        blocalumnLink.innerHTML = `Bloqueja alumne ${alumne.toUpperCase()}`;
+                        normaWhoId = alumne;
+                    }
+
+                    blockModalWeb.show();
+                }
+            });
+        }
     };
 
     blocgrupLink.onclick = (event) => {
         normaWhoSelection = "grup";
-        normaWhoId = ugrup;
+        normaWhoId = grup;
         normaMode = "blacklist";
+        const prevtab = menustate.lasttab;
+        menustate.lasttab = "blocgrup";
+
+        if(prevtab === "blocgrup" || ! grup){ // Segon click o el grup no està escollit
+            blockModalWeb.hide();
+            const selectOptions = [];
+            for (const g of getGrups()) {
+                selectOptions.push({text: g, value: g});
+            }
+            bootbox.prompt({
+                title: 'Escull grup:',
+                inputType: 'select',
+                value: grup,
+                inputOptions: selectOptions,
+                callback: function (result) {
+                    if(result){
+                        grup = result;
+                        blocgrupLink.innerHTML = `Bloqueja grup ${grup.toUpperCase()}`;
+                        normaWhoId = grup;
+
+                        alumne = undefined;
+                        blocalumnLink.innerHTML = `Bloqueja un alumne`;
+                        normaWhoId = alumne;
+                    }
+                    blockModalWeb.show();
+                }
+            });
+        }
     };
 
+    if (tab === "blocalumne") {
+        blocalumnLink.click();
+        normaWhoSelection = "alumne";
+        normaWhoId = alumne;
+    } else if (tab === "blocgrup") {
+        blocgrupLink.click();
+        normaWhoSelection = "grup";
+        normaWhoId = grup;
+    }
 
     hostSwitch.onchange = (event) => {
         if (event.target.checked)
             hostInput.removeAttribute("disabled");
         else
             hostInput.setAttribute("disabled", "disabled");
+
+        menustate.host = event.target.checked;
     };
 
     pathnameSwitch.onchange = (event) => {
@@ -232,6 +351,8 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
             pathnameInput.removeAttribute("disabled");
         else
             pathnameInput.setAttribute("disabled", "disabled");
+
+        menustate.pathname = event.target.checked;
     };
 
     searchSwitch.onchange = (event) => {
@@ -239,6 +360,8 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
             searchInput.removeAttribute("disabled");
         else
             searchInput.setAttribute("disabled", "disabled");
+
+        menustate.search = event.target.checked;
     };
 
     titleSwitch.onchange = (event) => {
@@ -246,16 +369,24 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
             titleInput.removeAttribute("disabled");
         else
             titleInput.setAttribute("disabled", "disabled");
+
+        menustate.title = event.target.checked;
     };
 
-    if (action === "blocalumn") {
-        blocalumnLink.click();
-    } else if (action === "blocgrup") {
-        blocgrupLink.click();
+    severitySelect.onchange = (event) => {
+        menustate.severity = event.target.value;
     }
 
-
     normaButton.onclick = (event) => {
+        if(!normaWhoId){
+            bootbox.alert({
+                message:"Error falta seleccionar l'alumne o el grup",
+                size: 'small',
+                centerVertical: true,
+            })
+            return;
+        }
+
         let enabled_on = construeixEnabledOn(hSelectDurada.value, nowHM);
 
         const list = [{
@@ -270,7 +401,11 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
         }]
 
         if(!list[0].host && !list[0].pathname && !list[0].title){
-            bootbox.alert("Has de seleccionar almenys un camp per bloquejar")
+            bootbox.alert({
+                message:"Els camps estan buits",
+                size: 'small',
+                centerVertical: true,
+            });
             return;
         }
 
@@ -296,7 +431,21 @@ export function obreDialogBloquejaWeb(info, alumne, action, severity = "block") 
                 "És recomenable definir també un filtre per host en aquest cas. Si saps el que fas, endavant!";
         }
 
+        if(hostInput.value === "newtab" && hostSwitch.checked){
+            text_confirmacio = "Estàs segur que vols bloquejar la pàgina de nova pestanya a <i>" + normaWhoId + "</i>? " +
+                "Aquesta acció és <b> MOLT DESACONSELLABLE</b>, ja que és una funció bàsica del navegador. Si realment " +
+                "saps el que fas, endavant!, en tinc els meus dubtes...";
+        }
+
         obre_confirmacio(text_confirmacio, ()=>{
+            if(menustate.editPrevious){
+                socket.emit("removeNormaWeb", {
+                    who: menustate.editPrevious.who,
+                    whoid: menustate.editPrevious.whoid,
+                    normaId: menustate.editPrevious.normaid
+                });
+            }
+
             socket.emit("addNormaWeb", {
                 who: normaWhoSelection,
                 whoid: normaWhoId,
@@ -331,7 +480,8 @@ export function obreDialogBloquejaApps(info, alumne, action, severity = "block")
     blocalumnLink.innerHTML = `Bloqueja alumne ${ualumne}`;
     blocgrupLink.innerHTML = `Bloqueja alumne ${ugrup}`;
 
-    if (action === "blocalumn") {
+
+    if (action === "blocalumne") {
         blocalumnLink.click();
     } else if (action === "blocgrup") {
         blocgrupLink.click();
@@ -425,9 +575,6 @@ export function obreDialogNormesWeb(whoid, who = "alumne") {
         titol += (severity === "block" ? "bloqueja" : "avisa");
         itemTitle.innerHTML = capitalizeFirstLetter(titol);
 
-        if(window.location.search.includes("super"))
-            itemTitle.innerHTML += " <small>(" + norma + ")</small>";
-
         const itemSubtitle = document.createElement("small");
         const trash = document.createElement("button");
         trash.setAttribute("type", "button");
@@ -469,8 +616,44 @@ export function obreDialogNormesWeb(whoid, who = "alumne") {
             obreDialogNormesWeb(whoid, who);
         };
         pencil.onclick = (event) => {
-            //TODO edit norma
-            bootbox.alert("Aquesta funció encara no està implementada")
+
+            if(normesWebInfo[whos][whoid][norma].mode !== "blacklist"){
+                bootbox.alert({
+                    message:`Aquesta norma no es pot editar (encara) perquè és una llista blanca`,
+                    size: 'small',
+                    centerVertical: true,
+                });
+                return;
+            }
+            normesModal.hide();
+
+            const webpage = {host: normesWebInfo[whos][whoid][norma].lines[0].host || "",
+                pathname: normesWebInfo[whos][whoid][norma].lines[0].pathname || "",
+                search: normesWebInfo[whos][whoid][norma].lines[0].search || "",
+                title: normesWebInfo[whos][whoid][norma].lines[0].title || "",
+            }
+
+            // Elimina * que rodejen el títol
+            webpage.title = webpage.title.replace(/^\*+/, '').replace(/\*+$/, '');
+
+            obreDialogBloquejaWeb(
+                webpage,
+                who === "alumne"? whoid: undefined,
+                who === "alumne"? getGrup(whoid): whoid,
+                "bloc" + who,
+                {
+                    host: Boolean(webpage.host),
+                    pathname: Boolean(webpage.pathname),
+                    search: Boolean(webpage.search),
+                    title: Boolean(webpage.title),
+                    severity: normesWebInfo[whos][whoid][norma].severity,
+                    durada: reconstrueixDuradaOpcio(normesWebInfo[whos][whoid][norma].enabled_on),
+                    editPrevious: {
+                        who: who,
+                        whoid: whoid,
+                        normaid: norma
+                    },
+                })
         };
 
 
@@ -506,6 +689,14 @@ export function obreDialogNormesWeb(whoid, who = "alumne") {
         const itemText = document.createElement("p");
         itemText.setAttribute("class", "mb-1");
         itemText.innerHTML = "";
+
+        if(window.location.search.includes("super")){
+            const div = document.createElement("div");
+            div.setAttribute("class", "norma-line");
+            div.innerHTML += "<b>Id:</b> " + norma + " ";
+            itemText.appendChild(div);
+        }
+
         if (normesWebInfo[whos][whoid][norma].lines.length > 0){
             for (const line of normesWebInfo[whos][whoid][norma].lines){
                 const div = document.createElement("div");
@@ -830,7 +1021,11 @@ export function obreDialogAfegeixLlistaBlanca(grup){
 
         const enabled_on = construeixEnabledOn(hSelectDurada.value, nowHM);
         if(list.length === 0) {
-            bootbox.alert("No hi ha cap web a la llista blanca");
+            bootbox.alert({
+                message:"No hi ha cap web a la llista blanca",
+                size: 'small',
+                centerVertical: true,
+            });
             return;
         }
         obre_confirmacio("Segur que vols crear una llista blanca? La llista blanca bloqueja tot el tràfic que " +
