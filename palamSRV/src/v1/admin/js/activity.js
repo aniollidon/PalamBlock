@@ -421,7 +421,7 @@ export function drawAlumnesActivity(data) {
                         for (const tab in windowInfo[windowId]) {
                             const tabInfo = windowInfo[windowId][tab];
                             if (!tabInfo.opened) continue;
-                            const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:"];
+                            const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:", "about:"];
                             const noicon = (tabInfo.webPage.protocol && noprotocols.indexOf(tabInfo.webPage.protocol) !== -1)
                             chromeTabsObjects[alumne][browser].addTab({
                                 title: tabInfo.webPage.title,

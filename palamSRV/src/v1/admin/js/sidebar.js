@@ -108,7 +108,7 @@ export function drawHistorialWeb(alumne, historial) {
         const dTitile = document.createElement("strong");
         dTitile.setAttribute("class", "mb-1 nomesunalinia");
         const favicon = document.createElement("img");
-        const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:"];
+        const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:", "about:"];
         const noicon = (webPage.protocol && noprotocols.indexOf(webPage.protocol) !== -1)
         favicon.src = webPage.favicon && !noicon ? webPage.favicon : "img/undefined_favicon.png";
 
