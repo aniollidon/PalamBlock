@@ -40,9 +40,6 @@ export function toogleSideBar(alumne, tipus = "web") {
 
 export function drawHistorialWeb(alumne, historial) {
     const historialSideBarContent = document.getElementById("historialSidebarContent");
-    const opcionMenuContextual = creaWebMenuJSON(alumne, undefined);
-
-
     let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
 
     if (!hiddenAuxInfo) {
@@ -104,7 +101,6 @@ export function drawHistorialWeb(alumne, historial) {
         const divHeader = document.createElement("div");
         divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
 
-
         const dTitile = document.createElement("strong");
         dTitile.setAttribute("class", "mb-1 nomesunalinia");
         const favicon = document.createElement("img");
@@ -150,6 +146,8 @@ export function drawHistorialWeb(alumne, historial) {
                     protocol: webPage.protocol,
                 }
             }
+            const opcionMenuContextual = creaWebMenuJSON(alumne, undefined, webPage.pbAction === "block");
+
             openMenu(ev, opcionMenuContextual, info);
         }
         a.appendChild(divHeader);

@@ -65,7 +65,7 @@ export function creaAppMenuJSON(alumne, app) {
     ]
 }
 
-export function creaWebMenuJSON(alumne, browser) {
+export function creaWebMenuJSON(alumne, browser, alreadyBlocked = false) {
     // Opcions del menu contextual
     const obreUrl = (info) => {
         const url = info.webPage.protocol + "//" + info.webPage.host + info.webPage.pathname + info.webPage.search
@@ -80,6 +80,11 @@ export function creaWebMenuJSON(alumne, browser) {
         obreDialogBloquejaWeb(info.webPage, alumne, getGrup(alumne), "blocgrup");
     }
 
+    const mostrarBloquejos = (info) => {
+        // TODO troba les normes que han causat el bloqueig i filtra-les
+        bootbox.alert("Aquesta funcionalitat no està implementada encara.");
+    }
+
     const onTanca = (info) => {
         socket.emit("closeTab", {
             alumne: alumne,
@@ -89,9 +94,7 @@ export function creaWebMenuJSON(alumne, browser) {
     }
 
     let menu = [
-        {text: "Obre aquí", do: obreUrl},
-        {text: "Bloqueja", do: onBloqueja},
-        {text: "Bloqueja al grup", do: onBloquejaGrup}
+        {text: "Obre aquí", do: obreUrl}
     ]
 
     if(browser){
@@ -100,6 +103,22 @@ export function creaWebMenuJSON(alumne, browser) {
             do: onTanca
         })
     }
+
+    if(!alreadyBlocked){
+        menu.push({
+            text: "Bloqueja alumne",
+            do: onBloqueja
+        });
+        menu.push({
+            text: "Bloqueja grup",
+            do: onBloquejaGrup
+        });
+    }
+    else
+        menu.push({
+            text: "Mostra bloquejos",
+            do: mostrarBloquejos
+        });
 
     return menu;
 }
