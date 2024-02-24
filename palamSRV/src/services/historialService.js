@@ -5,6 +5,7 @@ function saveWeb(browserDetails, tabDetails, timestamp) {
     if(tabDetails.webPage.protocol.includes("chrome")) return new Promise((resolve, reject) => {resolve();});
     if(tabDetails.webPage.protocol.includes("edge")) return new Promise((resolve, reject) => {resolve();});
     if(tabDetails.webPage.protocol.includes("secure")) return new Promise((resolve, reject) => {resolve();});
+    if(tabDetails.webPage.protocol.includes("about")) return new Promise((resolve, reject) => {resolve();});
 
     // Si fa menys de 5 minuts, i és el mateix web actualitzem
     return db.HistorialWeb.findOneAndUpdate({
