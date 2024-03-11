@@ -1,3 +1,5 @@
+# PalamBlock Extention
+[Obre a l'store](https://chromewebstore.google.com/detail/palamblock/djdihbjaljagohkmfbjhacghcdplkhlh)
 # PalamSRV
 `cd PalamSRV`
 
