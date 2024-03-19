@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Test Window</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Google font -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:400,700" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* The browser window */
+        .container {
+            border: 3px solid #f1f1f1;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        /* Container for columns and the top "toolbar" */
+        .row {
+            padding: 10px;
+            background: #f1f1f1;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        /* Create three unequal columns that floats next to each other */
+        .column {
+            float: left;
+        }
+
+        .left {
+            width: 15%;
+        }
+
+        .right {
+            width: 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .middle {
+            width: 75%;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        /* Three dots */
+        .dot {
+            margin-top: 4px;
+            height: 12px;
+            width: 12px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Style the input field */
+        input[type=text] {
+            width: 100%;
+            border-radius: 3px;
+            border: none;
+            background-color: white;
+            margin-top: -8px;
+            height: 25px;
+            color: #666;
+            padding: 5px;
+        }
+
+        /* Three bars (hamburger menu) */
+        .bar {
+            width: 17px;
+            height: 3px;
+            background-color: #aaa;
+            margin: 3px 0;
+            display: block;
+        }
+
+        /* Page content */
+        .content {
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .logo{
+            height: 20px;
+            margin-left: 10px;
+        }
+
+        .pbButton {
+            cursor: pointer;
+        }
+
+        .pbButton:hover {
+            opacity: 0.7;
+        }
+
+
+        /**/
+
+        .action {
+        text-align: center;
+        padding: 40px 0;
+        background: #EBF0F5;
+      }
+        h1 {
+          color: #88B04B;
+          font-family: "Nunito Sans", "Helvetica Neue", sans-serif;
+          font-weight: 900;
+          font-size: 40px;
+          margin-bottom: 10px;
+        }
+        p {
+          color: #404F5E;
+          font-family: "Nunito Sans", "Helvetica Neue", sans-serif;
+          font-size:20px;
+          margin: 0;
+        }
+      i {
+        color: #9ABC66;
+        font-size: 100px;
+        line-height: 200px;
+        margin-left:-15px;
+      }
+      .card {
+        background: white;
+        padding: 60px;
+        border-radius: 4px;
+        box-shadow: 0 2px 3px #C8D0D8;
+        display: inline-block;
+        margin: 0 auto;
+      }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="column left">
+            <span class="dot" style="background:#ED594A;"></span>
+            <span class="dot" style="background:#FDD800;"></span>
+            <span class="dot" style="background:#5AC05A;"></span>
+        </div>
+        <div class="column middle">
+            <div class="action-container">
+                <input id="search" type="text" value="https://exemple.cat">
+                <input id="title" type="text" value="Títol d'exemple" style="display: none">
+            </div>
+        </div>
+        <div class="column right">
+
+            <img src="img/pbicon.png" id="pbButton" class="logo pbButton" title="Clica per canviar URL/títol">
+            <div style="float:right">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <!--<h3>Títol de la pàgina</h3>
+        <p>...</p>-->
+        <div class="action" id="check" >
+            <div class="card">
+                <div class="blocked-logo" style="border-radius:200px;/* height:200px; */width:200px;background: #ffcaba;margin:0 auto;">
+                    <img src="img/emoji.png">
+                </div>
+
+                <div class="allowed-logo" style="border-radius:200px; height:200px; width:200px; background: #F8FAF5; margin:0 auto;">
+                    <i class="checkmark">✓</i>
+                </div>
+                <h1>Permesa</h1>
+                <p><span id="pburl">Aquesta pàgina</span> <span id="pbmssage"> no està permesa </span> per a <span id="alumne">l'alumne</span></p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script  type="module" src="js/browser-test.js" ></script>
+</body>
+</html>

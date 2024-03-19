@@ -18,6 +18,7 @@ const postValidacioAPI = (req, res) => { // Deprecated
     const favicon = req.body.favicon;
     const active = req.body.active;
     const audible = req.body.audible;
+    const silentQuery = req.body.silentQuery;
 
     const timestamp = new Date();
 
@@ -38,10 +39,12 @@ const postValidacioAPI = (req, res) => { // Deprecated
         //logger.info("Do: " + status);
         res.status(200).send({ do:status} );
         tabDetails.pbStatus = status;
-        infoService.registerTab(browserDetails, tabDetails, timestamp);
-        historialService.saveWeb(browserDetails, tabDetails, timestamp).catch((err) => {
-            logger.error(err);
-        });
+        if(!silentQuery) {
+            infoService.registerTab(browserDetails, tabDetails, timestamp);
+            historialService.saveWeb(browserDetails, tabDetails, timestamp).catch((err) => {
+                logger.error(err);
+            });
+        }
 
     }).catch((err) => {
         logger.error(err);
