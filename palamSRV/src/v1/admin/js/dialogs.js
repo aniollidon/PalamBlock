@@ -206,6 +206,7 @@ export function obreDialogBloquejaWeb(webPage, alumne, grup, tab, menustate= und
     const pathnameSwitch = document.getElementById("pbk_modalblockweb_pathname_switch");
     const searchSwitch = document.getElementById("pbk_modalblockweb_search_switch");
     const titleSwitch = document.getElementById("pbk_modalblockweb_title_switch");
+    const titleOptionW = document.getElementById("pbk_modalblockweb_title_optionW");
     const normaButton = document.getElementById("pbk_modalblockweb_creanorma");
     const hSelectDurada = document.getElementById("pbk_modalblockweb-durada");
     const nowHM = new Date().toLocaleTimeString('ca-ES', {hour: '2-digit', minute:'2-digit'});
@@ -275,9 +276,11 @@ export function obreDialogBloquejaWeb(webPage, alumne, grup, tab, menustate= und
     if(menustate.title) {
         titleSwitch.checked = true;
         titleInput.removeAttribute("disabled");
+        titleOptionW.style.display = "";
     } else {
         titleSwitch.checked = false;
         titleInput.setAttribute("disabled", "disabled");
+        titleOptionW.style.display = "none";
     }
 
 
@@ -384,13 +387,45 @@ export function obreDialogBloquejaWeb(webPage, alumne, grup, tab, menustate= und
     };
 
     titleSwitch.onchange = (event) => {
-        if (event.target.checked)
+        if (event.target.checked){
             titleInput.removeAttribute("disabled");
-        else
+            titleOptionW.style.display = "";
+        } else {
             titleInput.setAttribute("disabled", "disabled");
+            titleOptionW.style.display = "none";
+        }
 
         menustate.title = event.target.checked;
-    };
+    }
+
+    titleOptionW.onclick = (event) => {
+        const title = titleInput.value;
+
+        if(title === "") {
+            bootbox.alert({
+                message: "El títol ha de contenir almenys una paraula per a la cerca de paraules senceres.",
+                size: 'small',
+                centerVertical: true,
+            })
+            return;
+        }
+        else if (title.startsWith("\\b(") && title.endsWith(")\\b")) {
+            titleInput.value = title.substring(3, title.length - 3);
+            titleOptionW.classList.remove("word-filtering");
+            return;
+        }
+        else if (title.includes(" ")) {
+            bootbox.alert({
+                message: "El títol no pot contenir espais en blanc per a la cerca de paraules senceres",
+                size: 'small',
+                centerVertical: true
+            });
+            return;
+        }
+
+        titleInput.value = "\\b(" + title + ")\\b";
+        titleOptionW.classList.add("word-filtering");
+    }
 
     severitySelect.onchange = (event) => {
         menustate.severity = event.target.value;

@@ -108,6 +108,38 @@ a.active {
     margin-bottom: 13px;
 }
 
+.form-check{
+    min-height: initial !important;
+}
+
+.group-edit-buttons{
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: center;
+}
+
+.edit-wordonly-search{
+    margin-left: 5px;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: smaller;
+    height: 13px;
+    margin-right: 5px;
+    padding: 0 2px;
+    background: #bdbdbd;
+    color: white;
+    vertical-align: middle;
+}
+
+.word-filtering{
+    background: #5b5b5b;
+}
+
+.edit-wordonly-search:hover{
+    background: #4d4d4d;
+}
+
 .nobottom{
     margin-bottom: 0 !important;
 }
