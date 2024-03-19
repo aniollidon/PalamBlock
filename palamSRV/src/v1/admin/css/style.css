@@ -126,7 +126,8 @@ a.active {
     font-size: smaller;
     height: 13px;
     margin-right: 5px;
-    padding: 0 2px;
+    padding: 0 5px 0 5px;
+    line-height: 2px;
     background: #bdbdbd;
     color: white;
     vertical-align: middle;
@@ -134,10 +135,6 @@ a.active {
 
 .word-filtering{
     background: #5b5b5b;
-}
-
-.edit-wordonly-search:hover{
-    background: #4d4d4d;
 }
 
 .nobottom{
