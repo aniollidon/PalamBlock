@@ -12,6 +12,18 @@
 </head>
 <body>
 
+<!-- Modal debug (iframe a browser-test) -->
+<div aria-hidden="true" aria-labelledby="debugModalLabel" class="modal fade text-left modal-xl " id="debugModal" role="dialog"
+     tabindex="-1" style="min-height: 500px; min-width: 700px ">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="height: 465px;width: 700px;">
+            <div class="modal-header">
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+                <iframe id="debugIframe" src="browser-test.html" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+    </div>
+</div>
 <!-- Modal llista blanca -->
 <div aria-hidden="true" aria-labelledby="llistaBlancaModal" class="modal fade text-left" id="llistaBlancaModal" role="dialog"
      tabindex="-1">

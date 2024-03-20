@@ -6,31 +6,36 @@ document.getElementById(`alumne`).innerText = idalumn;
 
 const search = document.getElementById(`search`);
 const title = document.getElementById(`title`);
-const blockedSign = document.getElementById(`blocked-sign`);
-//const warned = document.getElementById(`warned`);
-//const closed = document.getElementById(`closed`);
-const allowedSign = document.getElementById(`allowed-sign`);
+const check = document.getElementById(`check`);
 const pbButton = document.getElementById(`pbButton`);
+const pbUrl = document.getElementById(`pburl`);
 let pbStatus = "search";
 search.addEventListener(`focus`, () => search.select());
 title.addEventListener(`focus`, () => title.select());
 
 function onAction(data) {
     if (data.do === "block") {
-        allowedSign.style.display = "none";
-        blockedSign.style.display = "";
+        check.classList.add("action-blocked");
+        check.classList.remove("action-allowed");
+        check.classList.remove("action-unknown");
     } else if (data.do === "warn") {
         //TODO
-    } else {
-        allowedSign.style.display = "";
-        blockedSign.style.display = "none";
+    } else if (data.do === "allow") {
+        check.classList.add("action-allowed");
+        check.classList.remove("action-blocked");
+        check.classList.remove("action-unknown");
+    }
+    else{
+        check.classList.remove("action-allowed");
+        check.classList.remove("action-blocked");
+        check.classList.add("action-unknown");
     }
 }
 search.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
+        onAction({do: ""});
         const url = safeURL(search.value);
-        document.getElementById('pburl').innerText = search.value;
-        document.getElementById('pburl2').innerText = search.value;
+        pbUrl.innerText = search.value;
         fetch('/api/v1/validacio/tab', {
             method: 'POST',
             headers: {
@@ -63,7 +68,9 @@ search.addEventListener('keypress', (e) => {
 });
 
 title.addEventListener('keypress', (e) => {
+    onAction({do: ""});
     if (e.key === 'Enter') {
+        pbUrl.innerText = "La pàgina amb títol <<"  + title.value + ">>";
         fetch('/api/v1/validacio/tab', {
             method: 'POST',
             headers: {
@@ -98,12 +105,19 @@ title.addEventListener('keypress', (e) => {
 
 pbButton.addEventListener('click', () => {
     pbStatus = pbStatus === "search" ? "title" : "search";
+    pbUrl.innerText = "Aquesta pàgina";
 
     if (pbStatus === "search") {
         search.style.display = "";
         title.style.display = "none";
+        search.focus();
+        title.value = "Títol d'exemple";
     } else {
         search.style.display = "none";
         title.style.display = "";
+        title.focus();
+        search.value = "https://exemple.cat";
     }
+
+    onAction({do: "allow"})
 });

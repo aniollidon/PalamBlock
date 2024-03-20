@@ -29,5 +29,10 @@ function save_options() {
     });
   }
 
+  document.getElementById('clau').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        save_options();
+    }
+  });
   document.getElementById('save').addEventListener('click',
       save_options);
