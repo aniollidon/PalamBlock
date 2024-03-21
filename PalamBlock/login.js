@@ -14,7 +14,7 @@ function save_options() {
     }).then((message)=>{
         if(message.status === "OK"){
             alert("Alumne registrat correctament");
-            chrome.storage.sync.set({ alumne: alumne}, function() {
+            chrome.storage.local.set({ alumne: alumne}, function() {
                 window.close();
             });
         } else {
@@ -24,13 +24,29 @@ function save_options() {
   }
 
   function restore_options() {
-    chrome.storage.sync.get(['alumne'], function(result) {
+    chrome.storage.local.get(['alumne'], function(result) {
         if(result.alumne &&  result.alumne !== '')
             document.getElementById('alumne').value = result.alumne;
 
     });
   }
-  
+
   document.addEventListener('DOMContentLoaded', restore_options);
   document.getElementById('save').addEventListener('click',
       save_options);
+
+  document.getElementById('clau').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        save_options();
+    }});
+
+chrome.management.getSelf(myInfo => {
+    if (myInfo.installType !== "admin") {
+        document.getElementById('uninstall').addEventListener('click', function () {
+            chrome.runtime.sendMessage({type: 'uninstall'});
+        });
+    }
+    else {
+        document.getElementById('uninstall').style.display = "none";
+    }
+});

@@ -108,7 +108,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
             if(tab_info.protocol === "secure:") {
                 // Avast només es pot detectar en obrir una pestanya nova
-                await chrome.storage.sync.set({browser: "Avast"}); //TODO mirar
+                await chrome.storage.local.set({browser: "Avast"}); //TODO mirar
                 tab_info.browser = "Avast";
             }
 
@@ -174,6 +174,9 @@ chrome.runtime.onMessage.addListener(
                 //console.error(error);
                 sendResponse({status: "FAILED"});
             });
+        }
+        else if (request.type === 'uninstall') {
+            chrome.management.uninstallSelf();
         }
         else{
             console.error("Unknown request", request);

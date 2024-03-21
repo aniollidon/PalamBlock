@@ -9,17 +9,17 @@ function urlToHost(url) {
 }
 
 async function getBrowser() {
-    const stored = await chrome.storage.sync.get(['browser']);
+    const stored = await chrome.storage.local.get(['browser']);
     if(!stored || !stored.browser || stored.browser === "unknown") {
         try {
             if (navigator.brave.isBrave())
-                chrome.storage.sync.set({browser: "Brave"});
+                chrome.storage.local.set({browser: "Brave"});
             return "Brave"
         } catch (e) {
         }
 
         const uap = new uaParserJs();
-        chrome.storage.sync.set({browser: uap.getBrowser().name});
+        chrome.storage.local.set({browser: uap.getBrowser().name});
         return uap.getBrowser().name;
     }
     else {
@@ -29,7 +29,7 @@ async function getBrowser() {
 
 export async function customTabsInfo(chromeTabs) {
     return new Promise((resolve, reject) => {
-        chrome.storage.sync.get(['alumne'], async (result) => {
+        chrome.storage.local.get(['alumne'], async (result) => {
             if (!result.alumne) {
                 reject("alumne");
                 return;
@@ -76,7 +76,7 @@ export async function customTabsInfo(chromeTabs) {
 
 export async function customTabInfo(chromeTab) {
     return new Promise((resolve, reject) => {
-        chrome.storage.sync.get(['alumne'], async (result) => {
+        chrome.storage.local.get(['alumne'], async (result) => {
 
             if (!result.alumne) {
                 reject("alumne");
@@ -107,7 +107,7 @@ export async function customTabInfo(chromeTab) {
 
 export async function customShortInfo() {
     return new Promise((resolve, reject) => {
-        chrome.storage.sync.get(['alumne'], async (result) => {
+        chrome.storage.local.get(['alumne'], async (result) => {
             if (!result.alumne) {
                 reject("alumne");
                 return;
