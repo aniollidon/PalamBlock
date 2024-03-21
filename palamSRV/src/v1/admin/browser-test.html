@@ -112,14 +112,29 @@
 
         .action {
         text-align: center;
-        padding: 40px 0;
+        padding: 10px 0;
         background: #EBF0F5;
       }
+
+        .action-allowed .allowed, .action-blocked .blocked {
+        }
+
+        .action-allowed .blocked, .action-blocked .allowed{
+            display: none;
+        }
+
+        .action-unknown .blocked, .action-unknown .allowed{
+            display: none;
+        }
+
+        .action-blocked h1, .action-blocked p{
+            color: #FF5A5F;
+        }
         h1 {
           color: #88B04B;
           font-family: "Nunito Sans", "Helvetica Neue", sans-serif;
           font-weight: 900;
-          font-size: 40px;
+          font-size: 35px;
           margin-bottom: 10px;
         }
         p {
@@ -130,13 +145,13 @@
         }
       i {
         color: #9ABC66;
-        font-size: 100px;
-        line-height: 200px;
-        margin-left:-15px;
+        font-size: 85px;
+        line-height: 150px;
+        margin-left:-11px;
       }
       .card {
         background: white;
-        padding: 60px;
+        padding:15px 60px;
         border-radius: 4px;
         box-shadow: 0 2px 3px #C8D0D8;
         display: inline-block;
@@ -173,17 +188,17 @@
     <div class="content">
         <!--<h3>Títol de la pàgina</h3>
         <p>...</p>-->
-        <div class="action" id="check" >
+        <div class="action action-allowed" id="check" >
             <div class="card">
-                <div class="blocked-logo" style="border-radius:200px;/* height:200px; */width:200px;background: #ffcaba;margin:0 auto;">
-                    <img src="img/emoji.png">
+                <div class="blocked" style="border-radius:150px;/* height:150px; */width:150px;background: #ffcaba;margin:0 auto;">
+                    <img style="height: 150px; width: 150px" src="img/emoji.png">
                 </div>
 
-                <div class="allowed-logo" style="border-radius:200px; height:200px; width:200px; background: #F8FAF5; margin:0 auto;">
+                <div class="allowed" style="border-radius:150px; height:150px; width:150px; background: #F8FAF5; margin:0 auto;">
                     <i class="checkmark">✓</i>
                 </div>
-                <h1>Permesa</h1>
-                <p><span id="pburl">Aquesta pàgina</span> <span id="pbmssage"> no està permesa </span> per a <span id="alumne">l'alumne</span></p>
+                <h1> <span class="blocked" > No permesa</span> <span class="allowed"> Permesa</span></h1>
+                <p><span id="pburl">Aquesta pàgina</span> <span class="blocked"> no està permesa </span> <span class="allowed"> està permesa </span> per a <span id="alumne">l'alumne</span></p>
             </div>
         </div>
 

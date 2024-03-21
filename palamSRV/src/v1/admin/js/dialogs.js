@@ -19,6 +19,8 @@ const hnormesModal = document.getElementById('normesModal')
 const normesModal = new bootstrap.Modal(hnormesModal)
 const hllistaBlancaModal = document.getElementById('llistaBlancaModal')
 const llistaBlancaModal = new bootstrap.Modal(hllistaBlancaModal)
+const hDebugModal = document.getElementById('debugModal')
+const debugModal = new bootstrap.Modal(hDebugModal)
 let normesWebInfo = {}
 let normesAppsInfo = {}
 let llistaBlancaEnUs = {}
@@ -1099,4 +1101,9 @@ export function obreDialogAfegeixLlistaBlanca(grup){
     }
 
     llistaBlancaModal.show();
+}
+
+export function obreDialogDebug(alumne){
+    document.getElementById("debugIframe").src = "browser-test.html?alumn=" + alumne;
+    debugModal.show();
 }
