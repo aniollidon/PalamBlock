@@ -19,8 +19,9 @@ const postValidacioAPI = (req, res) => { // Deprecated
     const active = req.body.active;
     const audible = req.body.audible;
     const silentQuery = req.body.silentQuery;
+    const onTimestamp = req.body.timestampQuery;
 
-    const timestamp = new Date();
+    const timestamp = onTimestamp? new Date(onTimestamp) : new Date();
 
     if(!alumne || !browser || !tabId) {
         res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar alumne, browser i tabId" })
@@ -32,7 +33,7 @@ const postValidacioAPI = (req, res) => { // Deprecated
     const tabDetails = new TabDetails(tabId, webPage, windowId, incognito, active, audible);
 
     const validacioAlumne = new validacioService.Validacio(alumne);
-    const validacio = validacioAlumne.checkWeb(webPage);
+    const validacio = validacioAlumne.checkWeb(webPage, timestamp);
 
     validacio.then((status) => {
         //logger.info("host: " + host + " protocol: " + protocol + " search: " + search + " pathname: " + pathname + " title: " + title + " alumne: " + alumne + " browser: " + browser + " tabId: " + tabId + "incognito: " + incognito + " timestamp: " + timestamp);

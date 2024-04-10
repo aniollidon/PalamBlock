@@ -44,7 +44,7 @@ class Validacio {
     constructor(alumneid) {
         this.alumneid = alumneid;
     }
-    async checkWeb(webPage) {
+    async checkWeb(webPage, timestamp = undefined) {
 
         let tracelog = "";
         const alumne = await db.Alumne.findOne({alumneId: this.alumneid})
@@ -82,7 +82,7 @@ class Validacio {
             normesWeb.push(norma);
         }
 
-        const dataActual = new Date();
+        const dataActual = timestamp ? new Date(timestamp) : new Date();
         const datetime_ara = dataActual.getTime();
         const dia_avui = dataActual.toLocaleDateString('ca-ES',  { weekday: 'long' });
         let action = "allow";

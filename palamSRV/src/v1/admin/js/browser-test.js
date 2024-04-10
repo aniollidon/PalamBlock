@@ -9,6 +9,8 @@ const title = document.getElementById(`title`);
 const check = document.getElementById(`check`);
 const pbButton = document.getElementById(`pbButton`);
 const pbUrl = document.getElementById(`pburl`);
+const dotdotdot = document.getElementById(`dotdotdot`);
+let specificTime = undefined;
 let pbStatus = "search";
 search.addEventListener(`focus`, () => search.select());
 title.addEventListener(`focus`, () => title.select());
@@ -54,7 +56,8 @@ search.addEventListener('keypress', (e) => {
                 favicon: '',
                 active: true,
                 audible: false,
-                silentQuery: true
+                silentQuery: true,
+                timestampQuery: specificTime
             })
         }).then(response => response.json())
             .then(data => {
@@ -89,7 +92,8 @@ title.addEventListener('keypress', (e) => {
                 favicon: '',
                 active: true,
                 audible: false,
-                silentQuery: true
+                silentQuery: true,
+                timestampQuery: specificTime
             })
         }).then(response => response.json())
             .then(data => {
@@ -120,4 +124,21 @@ pbButton.addEventListener('click', () => {
     }
 
     onAction({do: "allow"})
+});
+
+dotdotdot.addEventListener('click', () => {
+    // Pregunta a quina hora i data volem debugar
+    const defaultdate = new Date();
+    const ans = prompt("Quina hora i data vols debugar? (dd/mm/yyyy hh:mm:ss)", defaultdate.toLocaleString());
+    if(!ans) return;
+    document.getElementById("info_datetime").innerText =  " el dia i hora: " + ans;
+
+    //Nova data des del format dd/mm/yyyy hh:mm:ss
+    const date = ans.split(" ")[0].split("/");
+    const time = ans.split(" ")[1].split(":");
+    //new Date(year, monthIndex, day, hours, minutes, seconds)
+
+    specificTime = new Date(date[2], date[1]-1, date[0], time[0], time[1], time[2]);
+
+    onAction({do: ""});
 });

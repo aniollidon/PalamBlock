@@ -157,6 +157,14 @@
         display: inline-block;
         margin: 0 auto;
       }
+
+      #dotdotdot:hover {
+          opacity: 0.7;
+      }
+
+      #dotdotdot {
+          cursor: pointer;
+      }
     </style>
 </head>
 <body>
@@ -177,7 +185,7 @@
         <div class="column right">
 
             <img src="img/pbicon.png" id="pbButton" class="logo pbButton" title="Clica per canviar URL/títol">
-            <div style="float:right">
+            <div style="float:right" id="dotdotdot">
                 <span class="bar"></span>
                 <span class="bar"></span>
                 <span class="bar"></span>
@@ -198,13 +206,15 @@
                     <i class="checkmark">✓</i>
                 </div>
                 <h1> <span class="blocked" > No permesa</span> <span class="allowed"> Permesa</span></h1>
-                <p><span id="pburl">Aquesta pàgina</span> <span class="blocked"> no està permesa </span> <span class="allowed"> està permesa </span> per a <span id="alumne">l'alumne</span></p>
+                <p><span id="pburl">Aquesta pàgina</span> <span class="blocked"> no està permesa </span> <span class="allowed"> està permesa </span> per a <span id="alumne">l'alumne</span>
+                    <span id="info_datetime"></span></p>
             </div>
         </div>
 
     </div>
 </div>
 
+<!-- Boostrap JS -->
 <script  type="module" src="js/browser-test.js" ></script>
 </body>
 </html>
