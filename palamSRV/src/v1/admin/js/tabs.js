@@ -445,6 +445,12 @@ const openMenu = (e, options, info) => {
         menuOption.addEventListener("click", ()=>options[i].do(info));
         ul.appendChild(menuOption);
     }
+
+    // Si està a 200 px del final, desplega cap amunt
+    if(window.innerHeight - origin.top < 120) {
+        origin.flipY = true;
+    }
+
     setPosition(origin);
     return false;
 }
@@ -462,9 +468,13 @@ const toggleMenu = command => {
     menu.style.display = command === "show" ? "block" : "none";
 };
 
-const setPosition = ({ top, left }) => {
+const setPosition = ({ top, left, flipY, flipX}) => {
     menu.style.left = `${left}px`;
     menu.style.top = `${top}px`;
+
+    if(flipY) menu.style.translate = " 0 -100%";
+    else menu.style.translate = "0";
+
     toggleMenu("show");
 };
 
