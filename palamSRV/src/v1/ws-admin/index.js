@@ -83,6 +83,16 @@ function initializeAdminWebSocket(server) {
             socket.emit('historialAppsAlumne', {alumne:msg.alumne, historial:historial});
         });
 
+        socket.on('getEachBrowserLastUsage', async (msg) => {
+            const lastUsage = await historialController.getEachBrowserLastUsage(msg.alumne);
+            socket.emit('eachBrowserLastUsage', {alumne:msg.alumne, lastUsage:lastUsage});
+        });
+
+        socket.on('getHistorialHostsSortedByUsage', async (msg) => {
+            const sortedHistorial = await historialController.getHistorialHostsSortedByUsage(msg.alumne, msg.pastDays||7);
+            socket.emit('historialHostsSortedByUsage', {alumne:msg.alumne, sortedHistorial:sortedHistorial, days:msg.pastDays||7});
+        });
+
         socket.on('setGrupStatus', async (msg) => {
             await alumneController.setGrupStatus(msg.grup, msg.status);
         });

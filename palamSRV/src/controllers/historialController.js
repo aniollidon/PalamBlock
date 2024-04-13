@@ -12,8 +12,18 @@ async function deleteHistorialFromAlumne(alumne){
     return historialService.deleteHistorialFromAlumne(alumne);
 }
 
+async function getEachBrowserLastUsage(alumne){
+    return historialService.getEachBrowserLastUsage(alumne);
+}
+
+async function getHistorialHostsSortedByUsage(alumne, pastDays){
+    return historialService.getHistorialHostsSortedByUsage(alumne, pastDays);
+}
+
 module.exports = {
     getHistorialWeb,
     getHistorialApps,
-    deleteHistorialFromAlumne
+    deleteHistorialFromAlumne,
+    getEachBrowserLastUsage,
+    getHistorialHostsSortedByUsage
 }

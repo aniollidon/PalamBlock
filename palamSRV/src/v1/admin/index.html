@@ -24,6 +24,7 @@
         </div>
     </div>
 </div>
+
 <!-- Modal llista blanca -->
 <div aria-hidden="true" aria-labelledby="llistaBlancaModal" class="modal fade text-left" id="llistaBlancaModal" role="dialog"
      tabindex="-1">
@@ -302,11 +303,37 @@
     <!-- Sidebar Historial -->
     <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" id="historialSidebar"
          style="width: 380px; display:none !important;">
-        <div class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
-            <span class="fs-5 fw-semibold" id="historialSidebarTitle">Historial ALUMNE</span>
-            <button aria-label="Close" class="btn-close p-3 historial-close" data-bs-dismiss="modal" type="button" id="historialSidebarClose"></button>
+        <div class="link-dark text-decoration-none border-bottom pt-3">
+            <div class="d-flex align-items-center flex-shrink-0 px-3">
+                <span class="fs-5 fw-semibold" id="historialSidebarTitle">Historial ALUMNE</span>
+                <button aria-label="Close" class="btn-close p-3 historial-close" data-bs-dismiss="modal" type="button" id="historialSidebarClose"></button>
+            </div>
+            <div>
+                <ul class="profile-header-tab nav nav-tabs">
+                    <li class="nav-item"><a class="nav-link active show" data-toggle="tab" id="historialSidebar-allTab">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history" viewBox="0 0 16 16">
+                            <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/>
+                            <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/>
+                            <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/>
+                        </svg>
+                    </a></li>
+
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" id="historialSidebar-statsTab"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+                    </svg></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" id="historialSidebar-sortedTab"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-down" viewBox="0 0 16 16">
+                        <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
+                    </svg></a></li>
+                </ul>
+            </div>
         </div>
         <div class="list-group list-group-flush border-bottom scrollarea" id="historialSidebarContent">
+        </div>
+
+        <div class="list-group list-group-flush border-bottom scrollarea" id="historialGraphSidebarContent">
+        </div>
+
+        <div class="list-group list-group-flush border-bottom scrollarea" id="historialSortedSidebarContent">
         </div>
     </div>
 

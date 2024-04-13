@@ -334,6 +334,19 @@ main {
 
 }
 
+.button-calendar-days{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    float: left;
+    background: ghostwhite;
+}
+
+.button-calendar-days:hover{
+    background: #f0f0f0;
+}
+
 /* Windows 11 TaskBar */
 /*! CSS Used from: https://www.cssscript.com/demo/windows-11-ui/css/style.css */
 

@@ -107,9 +107,55 @@ async  function deleteHistorialFromAlumne(alumne) {
     logger.info(`Eliminat ${ret.deletedCount} registres web i ${ret2.deletedCount} registres apps de l'alumne ${alumne}`);
 }
 
+async function getEachBrowserLastUsage(alumne) {
+    // Obtenim els últims usos de cada navegador
+    const browsers = await db.HistorialWeb.distinct('browser', {alumneid: alumne});
+    const lastUsage = {};
+    for (const browser of browsers) {
+        const last = await db.HistorialWeb.findOne({alumneid: alumne, browser: browser}).sort({timestamp: -1});
+        lastUsage[browser] = last.timestamp;
+    }
+
+    return lastUsage;
+}
+
+async function getHistorialHostsSortedByUsage(alumne, pastDays) {
+
+    const sortedHistorial = await db.HistorialWeb.aggregate([
+        {
+            $match: {
+                alumneid: alumne,
+                timestamp: {
+                    $gte: new Date(Date.now() - pastDays * 24 * 60 * 60 * 1000)
+                }
+            }
+        },
+        {
+            $group: {
+                _id: {host: "$host"},
+                count: {$sum: 1}
+            }
+        },
+        {
+            $sort: {count: -1}
+        }
+    ]).then((result) => {
+        return result;
+    });
+
+    for (const host of sortedHistorial) {
+        host.host = host._id.host;
+        delete host._id;
+    }
+
+    return sortedHistorial;
+}
+
 module.exports = {
     saveWeb,
     getHistorialWeb,
+    getEachBrowserLastUsage,
+    getHistorialHostsSortedByUsage,
     getHistorialApps,
     deleteHistorialFromAlumne,
     saveApp

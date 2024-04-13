@@ -14,6 +14,10 @@ export function toogleSideBar(alumne, tipus = "web") {
                 chromeTabsObjects[alumne][b].layoutTabs();
     }
 
+    // Reset tabs to all
+    const historialSidebarAllTab = document.getElementById("historialSidebar-allTab");
+    if(historialSidebarAllTab) historialSidebarAllTab.click();
+
     const prevTipus = historialSidebar.getAttribute("data-historial");
     const prevAlumne = historialSidebar.getAttribute("data-alumne");
 
@@ -21,6 +25,7 @@ export function toogleSideBar(alumne, tipus = "web") {
     historialSidebar.setAttribute("data-alumne", alumne);
 
     if (prevTipus !== tipus || prevAlumne !== alumne || historialSidebar.style.display.includes("none")) {
+
         if (tipus === "web")
             socket.emit("getHistorialWeb", {alumne: alumne});
         else
@@ -38,9 +43,60 @@ export function toogleSideBar(alumne, tipus = "web") {
 
 }
 
+export function initHistorialSidebar(alumne) {
+    const historialSidebarAllTab = document.getElementById("historialSidebar-allTab");
+    const historialSidebarStatsTab = document.getElementById("historialSidebar-statsTab");
+    const historialSidebarSortedTab = document.getElementById("historialSidebar-sortedTab");
+    const historialSidebarContent = document.getElementById("historialSidebarContent");
+    const historialGraphSidebarContent = document.getElementById("historialGraphSidebarContent");
+    const historialSortedSidebarContent = document.getElementById("historialSortedSidebarContent");
+
+    historialSidebarAllTab.onclick = () => {
+        historialSidebarContent.innerHTML = "Carregant...";
+        historialSidebarAllTab.classList.add("active");
+        historialSidebarStatsTab.classList.remove("active");
+        historialSidebarSortedTab.classList.remove("active");
+
+        historialGraphSidebarContent.classList.add("d-none");
+        historialSidebarContent.classList.remove("d-none");
+        historialSortedSidebarContent.classList.add("d-none");
+
+        socket.emit("getHistorialWeb", {alumne: alumne});
+    }
+
+    historialSidebarStatsTab.onclick = () => {
+        historialGraphSidebarContent.innerHTML = "Carregant...";
+        historialSidebarAllTab.classList.remove("active");
+        historialSidebarStatsTab.classList.add("active");
+        historialSidebarSortedTab.classList.remove("active");
+
+        historialGraphSidebarContent.classList.remove("d-none");
+        historialSidebarContent.classList.add("d-none");
+        historialSortedSidebarContent.classList.add("d-none");
+
+        socket.emit("getEachBrowserLastUsage", {alumne: alumne, pastDays: 7});
+    }
+
+    historialSidebarSortedTab.onclick = () => {
+        historialSortedSidebarContent.innerHTML = "Carregant...";
+        historialSidebarAllTab.classList.remove("active");
+        historialSidebarStatsTab.classList.remove("active");
+        historialSidebarSortedTab.classList.add("active");
+
+        historialGraphSidebarContent.classList.add("d-none");
+        historialSidebarContent.classList.add("d-none");
+        historialSortedSidebarContent.classList.remove("d-none");
+
+        socket.emit("getHistorialHostsSortedByUsage", {alumne: alumne});
+
+    }
+}
+
 export function drawHistorialWeb(alumne, historial) {
     const historialSideBarContent = document.getElementById("historialSidebarContent");
     let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
+
+    initHistorialSidebar(alumne);
 
     if (!hiddenAuxInfo) {
         hiddenAuxInfo = document.createElement("div");
@@ -186,6 +242,69 @@ export function drawHistorialWeb(alumne, historial) {
 
 }
 
+export function drawHistorialHostsSortedByUsage(alumne, sortedHistorial, days) {
+    const historialSortedSidebarContent = document.getElementById("historialSortedSidebarContent");
+    historialSortedSidebarContent.innerHTML = "";
+
+    initHistorialSidebar(alumne);
+
+    const divHeader = document.createElement("div");
+    divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
+    const titleh7 = document.createElement("h7");
+    titleh7.setAttribute("class", "bg-light border-top border-bottom date-historial-heading px-2");
+    titleh7.innerHTML = `Hosts per ús durant els últims ${days} dies`;
+    divHeader.appendChild(titleh7);
+    const buttonchangeHistorialDays = document.createElement("button");
+    buttonchangeHistorialDays.setAttribute("class", "border-0 button-calendar-days");
+    buttonchangeHistorialDays.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-week" viewBox="0 0 16 16">
+      <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
+      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+    </svg>`;
+    buttonchangeHistorialDays.onclick = () =>  {
+        const days = prompt("Introdueix el nombre de dies", "7");
+        socket.emit("getHistorialHostsSortedByUsage", {alumne: alumne, pastDays: days});
+        historialSortedSidebarContent.innerHTML = "Carregant...";
+    };
+    titleh7.appendChild(buttonchangeHistorialDays);
+
+    historialSortedSidebarContent.appendChild(divHeader);
+
+    for (const i in sortedHistorial) {
+        const hostName = sortedHistorial[i].host;
+
+        if(hostName === "") continue;
+
+        const us = sortedHistorial[i].count;
+        const a = document.createElement("a");
+        a.setAttribute("href", "#");
+        a.setAttribute("class", "list-group-item list-group-item-action lh-tight py-1");
+        a.setAttribute("title", `Host: ${hostName} - Usos: ${us}`);
+
+        const divHeader = document.createElement("div");
+        divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
+
+        const dTitile = document.createElement("strong");
+        dTitile.setAttribute("class", "mb-1 nomesunalinia");
+        const favicon = document.createElement("img");
+        //get favicon url from google
+        const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostName}`;
+        favicon.setAttribute("src", faviconUrl);
+        favicon.setAttribute("class", "historial-favicon");
+        dTitile.appendChild(favicon);
+
+        const text = document.createTextNode(hostName);
+        dTitile.appendChild(text);
+        divHeader.appendChild(dTitile);
+
+        const dHora = document.createElement("small");
+        dHora.innerHTML = `Usos: ${us}`;
+        divHeader.appendChild(dHora);
+
+        a.appendChild(divHeader);
+        historialSortedSidebarContent.appendChild(a);
+    }
+}
+
 export function drawHistorialApps(alumne, historial) {
     const historialSideBarContent = document.getElementById("historialSidebarContent");
 
@@ -298,4 +417,52 @@ export function drawHistorialApps(alumne, historial) {
         for (let b in chromeTabsObjects[alumne])
             chromeTabsObjects[alumne][b].layoutTabs();
 
+}
+
+export function drawHistorialStats(alumne, lastUsage) {
+    const historialSideBarContent = document.getElementById("historialGraphSidebarContent");
+    historialSideBarContent.innerHTML = "";
+
+    initHistorialSidebar(alumne);
+
+
+    const divHeader = document.createElement("div");
+    divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
+    divHeader.innerHTML = `<h7 class="bg-light border-top border-bottom date-historial-heading px-2">Última vegada que s'ha utilitzat </h7>`;
+    historialSideBarContent.appendChild(divHeader);
+
+    for (const browser in lastUsage) {
+        const lastUsageDate = (new Date(lastUsage[browser])).toLocaleDateString('ca-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+        const a = document.createElement("a");
+        a.setAttribute("href", "#");
+        a.setAttribute("class", "list-group-item list-group-item-action lh-tight py-1");
+        a.setAttribute("title", `Últim ús de ${browser}: ${lastUsageDate}`);
+
+        const divHeader = document.createElement("div");
+        divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
+
+        const dTitile = document.createElement("strong");
+        dTitile.setAttribute("class", "mb-1 nomesunalinia");
+        const favicon = document.createElement("img");
+        favicon.setAttribute("src", `img/${browser}.png`);
+        favicon.setAttribute("class", "historial-favicon");
+        dTitile.appendChild(favicon);
+
+        const text = document.createTextNode(browser);
+        dTitile.appendChild(text);
+        divHeader.appendChild(dTitile);
+
+        const dHora = document.createElement("small");
+        dHora.innerHTML = lastUsageDate;
+        divHeader.appendChild(dHora);
+
+        a.appendChild(divHeader);
+        historialSideBarContent.appendChild(a);
+    }
 }

@@ -1,4 +1,4 @@
-import {drawHistorialWeb, drawHistorialApps} from "./sidebar.js";
+import {drawHistorialWeb, drawHistorialApps, drawHistorialStats, drawHistorialHostsSortedByUsage} from "./sidebar.js";
 import {drawAlumnesActivity, preparaAlumnesGrups} from "./activity.js";
 import {setnormesWebInfo, setnormesAppsInfo} from "./dialogs.js";
 import {warnNormesWeb} from "./warnings.js";
@@ -27,6 +27,15 @@ socket.on('historialWebAlumne', function (data) {
 
 socket.on('historialAppsAlumne', function (data) {
     drawHistorialApps(data.alumne, data.historial);
+});
+
+socket.on('eachBrowserLastUsage', function (data) {
+    drawHistorialStats(data.alumne, data.lastUsage);
+    console.log(data);
+});
+
+socket.on('historialHostsSortedByUsage', function (data) {
+    drawHistorialHostsSortedByUsage(data.alumne, data.sortedHistorial, data.days);
 });
 
 socket.on('connect', function () {
