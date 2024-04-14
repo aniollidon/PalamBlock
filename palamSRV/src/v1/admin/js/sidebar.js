@@ -177,6 +177,9 @@ export function drawHistorialWeb(alumne, historial, query) {
     else if(!query && hiddenAuxInfo.getAttribute("data-query") !== ""){
         historialSideBarContent.innerHTML = "";
     }
+    else if(hiddenAuxInfo.getAttribute("data-historial-length") === "0"){
+        historialSideBarContent.innerHTML = ""; // Esborra per a començar net
+    }
 
     let prevday = hiddenAuxInfo.getAttribute("data-prevday");
     let previd = hiddenAuxInfo.getAttribute("data-previd");
