@@ -532,7 +532,7 @@ export function drawHistorialStats(alumne, lastUsage) {
         const dTitile = document.createElement("strong");
         dTitile.setAttribute("class", "mb-1 nomesunalinia");
         const favicon = document.createElement("img");
-        favicon.setAttribute("src", `img/${browser}.png`);
+        favicon.setAttribute("src", `img/${browser.toLowerCase()}.png`);
         favicon.setAttribute("class", "historial-favicon");
         dTitile.appendChild(favicon);
 
