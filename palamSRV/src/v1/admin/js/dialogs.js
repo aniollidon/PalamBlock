@@ -8,7 +8,7 @@ import {
     normaTempsActiva,
     minutstoDDHHMM, reconstrueixDuradaOpcio
 } from "./utils.js";
-
+import {moveHistorialSidebarToSearch} from "./sidebar.js";
 import {commonPlaces, googleServices, teacherHorari} from "./common.js";
 
 const hblockModalWeb = document.getElementById('bloquejaModalWeb')
@@ -67,7 +67,7 @@ export function creaAppMenuJSON(alumne, app) {
     ]
 }
 
-export function creaWebMenuJSON(alumne, browser, alreadyBlocked = false) {
+export function creaWebMenuJSON(alumne, browser, alreadyBlocked = false, searhOnHistorial = false) {
     // Opcions del menu contextual
     const obreUrl = (info) => {
         const url = info.webPage.protocol + "//" + info.webPage.host + info.webPage.pathname + info.webPage.search
@@ -93,6 +93,10 @@ export function creaWebMenuJSON(alumne, browser, alreadyBlocked = false) {
             browser: browser,
             tabId: info.tabId
         })
+    }
+
+    const searchOnHistorial = (info) => {
+        moveHistorialSidebarToSearch("host:" + info.webPage.host);
     }
 
     let menu = [
@@ -122,6 +126,12 @@ export function creaWebMenuJSON(alumne, browser, alreadyBlocked = false) {
             do: mostrarBloquejos
         });
 
+    if(searhOnHistorial){
+        menu.push({
+            text: "Cerca a l'historial",
+            do: searchOnHistorial
+        });
+    }
     return menu;
 }
 

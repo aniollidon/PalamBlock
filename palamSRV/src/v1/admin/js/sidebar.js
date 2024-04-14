@@ -14,10 +14,6 @@ export function toogleSideBar(alumne, tipus = "web") {
                 chromeTabsObjects[alumne][b].layoutTabs();
     }
 
-    // Reset tabs to all
-    const historialSidebarAllTab = document.getElementById("historialSidebar-allTab");
-    if(historialSidebarAllTab) historialSidebarAllTab.click();
-
     const prevTipus = historialSidebar.getAttribute("data-historial");
     const prevAlumne = historialSidebar.getAttribute("data-alumne");
 
@@ -26,10 +22,10 @@ export function toogleSideBar(alumne, tipus = "web") {
 
     if (prevTipus !== tipus || prevAlumne !== alumne || historialSidebar.style.display.includes("none")) {
 
-        if (tipus === "web")
-            socket.emit("getHistorialWeb", {alumne: alumne});
-        else
-            socket.emit("getHistorialApps", {alumne: alumne});
+        initHistorialSidebar(alumne);
+        // Reset tabs to  i ask for the new data
+        const historialSidebarAllTab = document.getElementById("historialSidebar-allTab");
+        historialSidebarAllTab.click();
 
         const historialSideBarTitle = document.getElementById("historialSidebarTitle");
         const historialSideBarContent = document.getElementById("historialSidebarContent");
@@ -39,27 +35,51 @@ export function toogleSideBar(alumne, tipus = "web") {
     } else {
         historialSidebarClose.click();
     }
-
-
 }
 
+export function moveHistorialSidebarToSearch(query){
+    const historialSidebarSearchTab = document.getElementById("historialSidebar-searchTab");
+    const historialSidebarSearchInput = document.getElementById("historialSearchInput");
+    historialSidebarSearchTab.click();
+    historialSidebarSearchInput.value = query;
+    historialSidebarSearchInput.onchange();
+}
+
+function resethiddenHistorialAuxInfo() {
+    const hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
+    if(hiddenAuxInfo) {
+        hiddenAuxInfo.setAttribute("data-historial-length", 0);
+        hiddenAuxInfo.setAttribute("data-query", "");
+        hiddenAuxInfo.setAttribute("data-prevday", undefined);
+        hiddenAuxInfo.setAttribute("data-previd", undefined);
+        hiddenAuxInfo.setAttribute("data-prevhost", undefined);
+    }
+}
 export function initHistorialSidebar(alumne) {
     const historialSidebarAllTab = document.getElementById("historialSidebar-allTab");
     const historialSidebarStatsTab = document.getElementById("historialSidebar-statsTab");
     const historialSidebarSortedTab = document.getElementById("historialSidebar-sortedTab");
+    const historialSidebarSearchTab = document.getElementById("historialSidebar-searchTab");
     const historialSidebarContent = document.getElementById("historialSidebarContent");
     const historialGraphSidebarContent = document.getElementById("historialGraphSidebarContent");
     const historialSortedSidebarContent = document.getElementById("historialSortedSidebarContent");
+    const historialSidebarSearchContent = document.getElementById("historialSearchSidebarContent");
+    const historialSearchResults = document.getElementById("historialSearchResults");
+    const historialSearchInput = document.getElementById("historialSearchInput");
 
     historialSidebarAllTab.onclick = () => {
+        resethiddenHistorialAuxInfo();
+
         historialSidebarContent.innerHTML = "Carregant...";
         historialSidebarAllTab.classList.add("active");
         historialSidebarStatsTab.classList.remove("active");
         historialSidebarSortedTab.classList.remove("active");
+        historialSidebarSearchTab.classList.remove("active");
 
         historialGraphSidebarContent.classList.add("d-none");
         historialSidebarContent.classList.remove("d-none");
         historialSortedSidebarContent.classList.add("d-none");
+        historialSidebarSearchContent.classList.add("d-none");
 
         socket.emit("getHistorialWeb", {alumne: alumne});
     }
@@ -69,10 +89,12 @@ export function initHistorialSidebar(alumne) {
         historialSidebarAllTab.classList.remove("active");
         historialSidebarStatsTab.classList.add("active");
         historialSidebarSortedTab.classList.remove("active");
+        historialSidebarSearchTab.classList.remove("active");
 
         historialGraphSidebarContent.classList.remove("d-none");
         historialSidebarContent.classList.add("d-none");
         historialSortedSidebarContent.classList.add("d-none");
+        historialSidebarSearchContent.classList.add("d-none");
 
         socket.emit("getEachBrowserLastUsage", {alumne: alumne, pastDays: 7});
     }
@@ -82,21 +104,54 @@ export function initHistorialSidebar(alumne) {
         historialSidebarAllTab.classList.remove("active");
         historialSidebarStatsTab.classList.remove("active");
         historialSidebarSortedTab.classList.add("active");
+        historialSidebarSearchTab.classList.remove("active");
 
         historialGraphSidebarContent.classList.add("d-none");
         historialSidebarContent.classList.add("d-none");
         historialSortedSidebarContent.classList.remove("d-none");
+        historialSidebarSearchContent.classList.add("d-none");
 
         socket.emit("getHistorialHostsSortedByUsage", {alumne: alumne});
+    }
 
+    historialSidebarSearchTab.onclick = () => {
+        resethiddenHistorialAuxInfo();
+
+        historialSearchResults.innerHTML = "";
+        historialSidebarAllTab.classList.remove("active");
+        historialSidebarStatsTab.classList.remove("active");
+        historialSidebarSortedTab.classList.remove("active");
+        historialSidebarSearchTab.classList.add("active");
+
+        historialGraphSidebarContent.classList.add("d-none");
+        historialSidebarContent.classList.add("d-none");
+        historialSortedSidebarContent.classList.add("d-none");
+        historialSidebarSearchContent.classList.remove("d-none");
+
+        historialSearchInput.focus();
+        historialSearchInput.value = "";
+        historialSearchInput.onchange = () => {
+            resethiddenHistorialAuxInfo();
+
+            const search = historialSearchInput.value;
+            if (search.length > 2) {
+                historialSearchResults.innerHTML = "Carregant...";
+                socket.emit("getSearchHistorialWeb", {alumne: alumne, search: search});
+            }
+        }
+
+        //socket.emit("getHistorialWeb", {alumne: alumne});
     }
 }
 
-export function drawHistorialWeb(alumne, historial) {
-    const historialSideBarContent = document.getElementById("historialSidebarContent");
-    let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
+export function drawHistorialWeb(alumne, historial, query) {
 
-    initHistorialSidebar(alumne);
+    const historialSidebar = document.getElementById("historialSidebar");
+    const historialSideBarContent = query?
+        document.getElementById("historialSearchResults"):
+        document.getElementById("historialSidebarContent");
+
+    let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
 
     if (!hiddenAuxInfo) {
         hiddenAuxInfo = document.createElement("div");
@@ -105,10 +160,22 @@ export function drawHistorialWeb(alumne, historial) {
         historialSideBarContent.innerHTML = "";
         hiddenAuxInfo.setAttribute("data-historial-length", 0);
         hiddenAuxInfo.setAttribute("data-alumne", alumne);
+        hiddenAuxInfo.setAttribute("data-query",  "");
         hiddenAuxInfo.setAttribute("data-prevday", undefined);
         hiddenAuxInfo.setAttribute("data-previd", undefined);
         hiddenAuxInfo.setAttribute("data-prevhost", undefined);
-        historialSideBarContent.appendChild(hiddenAuxInfo);
+        historialSidebar.appendChild(hiddenAuxInfo);
+    }
+
+    if(query && hiddenAuxInfo.getAttribute("data-query") !== query){
+        historialSideBarContent.innerHTML = "";
+        if(historial.length === 0 && hiddenAuxInfo.getAttribute("data-historial-length") === "0"){
+            historialSideBarContent.innerHTML = "No s'han trobat resultats";
+            return;
+        }
+    }
+    else if(!query && hiddenAuxInfo.getAttribute("data-query") !== ""){
+        historialSideBarContent.innerHTML = "";
     }
 
     let prevday = hiddenAuxInfo.getAttribute("data-prevday");
@@ -222,7 +289,10 @@ export function drawHistorialWeb(alumne, historial) {
         a.setAttribute("aria-current", "true");
         a.innerHTML = `<strong class="mb-1 nomesunalinia">Mostra'n més</strong>`;
         a.onclick = () => {
-            socket.emit("getHistorialWeb", {alumne: alumne, offset: historialLength});
+            if(query)
+                socket.emit("getSearchHistorialWeb", {alumne: alumne, search: query, offset: historialLength});
+            else
+                socket.emit("getHistorialWeb", {alumne: alumne, offset: historialLength});
             a.remove();
         };
 
@@ -231,6 +301,7 @@ export function drawHistorialWeb(alumne, historial) {
 
     hiddenAuxInfo.setAttribute("data-historial-length", historialLength);
     hiddenAuxInfo.setAttribute("data-alumne", alumne);
+    hiddenAuxInfo.setAttribute("data-query", query? query : "");
     hiddenAuxInfo.setAttribute("data-prevday", prevday);
     hiddenAuxInfo.setAttribute("data-prevhost", prevhost);
     hiddenAuxInfo.setAttribute("data-previd", previd);
@@ -245,8 +316,6 @@ export function drawHistorialWeb(alumne, historial) {
 export function drawHistorialHostsSortedByUsage(alumne, sortedHistorial, days) {
     const historialSortedSidebarContent = document.getElementById("historialSortedSidebarContent");
     historialSortedSidebarContent.innerHTML = "";
-
-    initHistorialSidebar(alumne);
 
     const divHeader = document.createElement("div");
     divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
@@ -302,6 +371,22 @@ export function drawHistorialHostsSortedByUsage(alumne, sortedHistorial, days) {
 
         a.appendChild(divHeader);
         historialSortedSidebarContent.appendChild(a);
+
+        a.onclick = (ev) => {
+            const info = {
+                alumne: alumne,
+                webPage: {
+                    host: hostName,
+                    pathname: "",
+                    search: "",
+                    title: "",
+                    protocol: "",
+                }
+            }
+            const opcionMenuContextual = creaWebMenuJSON(alumne, undefined, false, true);
+
+            openMenu(ev, opcionMenuContextual, info);
+        }
     }
 }
 
@@ -422,9 +507,6 @@ export function drawHistorialApps(alumne, historial) {
 export function drawHistorialStats(alumne, lastUsage) {
     const historialSideBarContent = document.getElementById("historialGraphSidebarContent");
     historialSideBarContent.innerHTML = "";
-
-    initHistorialSidebar(alumne);
-
 
     const divHeader = document.createElement("div");
     divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");

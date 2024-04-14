@@ -317,6 +317,9 @@
                             <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/>
                         </svg>
                     </a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" id="historialSidebar-searchTab"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                    </svg></a></li>
 
                     <li class="nav-item"><a class="nav-link" data-toggle="tab" id="historialSidebar-statsTab"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
@@ -327,13 +330,25 @@
                 </ul>
             </div>
         </div>
-        <div class="list-group list-group-flush border-bottom scrollarea" id="historialSidebarContent">
+        <div class="list-group list-group-flush border-bottom scrollarea d-none historial-content" id="historialSidebarContent">
         </div>
 
-        <div class="list-group list-group-flush border-bottom scrollarea" id="historialGraphSidebarContent">
+        <div class="list-group list-group-flush border-bottom scrollarea d-none historial-content" id="historialGraphSidebarContent">
         </div>
 
-        <div class="list-group list-group-flush border-bottom scrollarea" id="historialSortedSidebarContent">
+        <div class="list-group list-group-flush border-bottom scrollarea d-none historial-content " id="historialSortedSidebarContent">
+        </div>
+
+        <div class="list-group list-group-flush border-bottom scrollarea d-none historial-content" id="historialSearchSidebarContent" >
+            <div class="input-box" style="position: relative">
+                <input type="text" class="form-control" style="margin-bottom: 0" id="historialSearchInput">
+                <div style="position: absolute;top: 8px;right: 7px;color: darkgray;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                </svg></div>
+            </div>
+
+            <div class="list-group list-group-flush border-bottom scrollarea historial-content" id="historialSearchResults">
+                </div>
         </div>
     </div>
 

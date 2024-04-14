@@ -22,7 +22,7 @@ socket.on('normesApps', function (data) {
 });
 
 socket.on('historialWebAlumne', function (data) {
-    drawHistorialWeb(data.alumne, data.historial);
+    drawHistorialWeb(data.alumne, data.historial, data.query);
 });
 
 socket.on('historialAppsAlumne', function (data) {

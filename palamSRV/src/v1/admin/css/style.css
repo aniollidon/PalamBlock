@@ -347,6 +347,10 @@ main {
     background: #f0f0f0;
 }
 
+.historial-content{
+    height: 100%;
+}
+
 /* Windows 11 TaskBar */
 /*! CSS Used from: https://www.cssscript.com/demo/windows-11-ui/css/style.css */
 

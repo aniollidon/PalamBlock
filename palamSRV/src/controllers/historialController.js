@@ -20,10 +20,15 @@ async function getHistorialHostsSortedByUsage(alumne, pastDays){
     return historialService.getHistorialHostsSortedByUsage(alumne, pastDays);
 }
 
+async function searchHistorialWeb(alumne, search, offset= undefined){
+    return historialService.searchHistorialWeb(alumne, search, offset);
+}
+
 module.exports = {
     getHistorialWeb,
     getHistorialApps,
     deleteHistorialFromAlumne,
     getEachBrowserLastUsage,
-    getHistorialHostsSortedByUsage
+    getHistorialHostsSortedByUsage,
+    searchHistorialWeb
 }

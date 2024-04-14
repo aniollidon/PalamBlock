@@ -151,11 +151,69 @@ async function getHistorialHostsSortedByUsage(alumne, pastDays) {
     return sortedHistorial;
 }
 
+async function searchHistorialWeb(alumne, query, offset = undefined) {
+    let mquery = {};
+
+    if(query.startsWith("host:")){
+        // busca només a host
+        mquery = {
+            alumneid: alumne,
+            host: {$regex: query.substring(5), $options: "i"}
+        };
+    }
+    else if(query.startsWith("protocol:")){
+        // busca només a protocol
+        mquery = {
+            alumneid: alumne,
+            protocol: {$regex: query.substring(9), $options: "i"}
+        };
+    }
+    else if(query.startsWith("title:")){
+        // busca només a title
+        mquery = {
+            alumneid: alumne,
+            title: {$regex: query.substring(6), $options: "i"}
+        };
+    }
+    else if(query.startsWith("pathname:")){
+        // busca només a pathname
+        mquery = {
+            alumneid: alumne,
+            pathname: {$regex: query.substring(9), $options: "i"}
+        };
+    }
+    else if(query.startsWith("search:")){
+        // busca només a search
+        mquery = {
+            alumneid: alumne,
+            search: {$regex: query.substring(7), $options: "i"}
+        };
+    }
+    else {
+        mquery = {
+            alumneid: alumne,
+            $or: [
+                {title: {$regex: query, $options: "i"}},
+                {host: {$regex: query, $options: "i"}},
+                {pathname: {$regex: query, $options: "i"}},
+                {search: {$regex: query, $options: "i"}}
+            ]
+        };
+    }
+
+   //Search query on title, host, pathname or search
+    if (offset)
+        return db.HistorialWeb.find(mquery).sort({timestamp: -1}).skip(offset).limit(50);
+    else
+        return db.HistorialWeb.find(mquery).sort({timestamp: -1}).limit(50);
+}
+
 module.exports = {
     saveWeb,
     getHistorialWeb,
     getEachBrowserLastUsage,
     getHistorialHostsSortedByUsage,
+    searchHistorialWeb,
     getHistorialApps,
     deleteHistorialFromAlumne,
     saveApp

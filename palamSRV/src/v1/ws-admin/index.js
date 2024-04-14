@@ -78,6 +78,11 @@ function initializeAdminWebSocket(server) {
             socket.emit('historialWebAlumne', {alumne:msg.alumne, historial:historial});
         });
 
+        socket.on('getSearchHistorialWeb', async (msg) => {
+            const historial = await historialController.searchHistorialWeb(msg.alumne, msg.search, msg.offset);
+            socket.emit('historialWebAlumne', {alumne:msg.alumne, historial:historial, query:msg.search});
+        });
+
         socket.on('getHistorialApps', async (msg) => {
             const historial = await historialController.getHistorialApps(msg.alumne, msg.offset);
             socket.emit('historialAppsAlumne', {alumne:msg.alumne, historial:historial});
