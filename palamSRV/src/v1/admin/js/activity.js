@@ -454,12 +454,14 @@ export function drawAlumnesActivity(data) {
                     }
 
                     // Cerca si hi ha alguna finestra tancada
-                    for (const windowId in storedAlumneInfo[alumne][browser]) {
-                        if (!windowInfo[windowId]) {
-                            delete storedAlumneInfo[alumne][browser][windowId];
-                            const browserWin = document.getElementById(alumne + "-" + browser + "-" + windowId + "-browser-win");
-                            if (browserWin)
-                                browserWin.remove();
+                    if(storedAlumneInfo[alumne] && storedAlumneInfo[alumne][browser]){
+                        for (const windowId in storedAlumneInfo[alumne][browser]) {
+                            if (!windowInfo[windowId]) {
+                                delete storedAlumneInfo[alumne][browser][windowId];
+                                const browserWin = document.getElementById(alumne + "-" + browser + "-" + windowId + "-browser-win");
+                                if (browserWin)
+                                    browserWin.remove();
+                            }
                         }
                     }
                 }

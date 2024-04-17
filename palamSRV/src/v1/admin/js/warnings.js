@@ -41,6 +41,10 @@ export function warnNormesWeb(data){
                            favicon.setAttribute("width", "20");
                            favicon.setAttribute("height", "20");
                            favicon.setAttribute("style", "margin-right: 5px");
+                           // if favicon is not found, use default
+                            favicon.onerror = () => {
+                                 favicon.src = "https://www.google.com/s2/favicons?domain=google.com&sz=64";
+                            }
                            imsdiv.appendChild(favicon);
                        }
                     }

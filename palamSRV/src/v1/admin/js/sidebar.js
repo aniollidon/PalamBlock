@@ -362,6 +362,11 @@ export function drawHistorialHostsSortedByUsage(alumne, sortedHistorial, days) {
         const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostName}`;
         favicon.setAttribute("src", faviconUrl);
         favicon.setAttribute("class", "historial-favicon");
+        //if favicon not found, set default favicon
+        favicon.onerror = () => {
+            favicon.src = "img/undefined_favicon.png";
+            return true;
+        }
         dTitile.appendChild(favicon);
 
         const text = document.createTextNode(hostName);

@@ -1,5 +1,5 @@
-const SERVER = 'http://185.61.126.170:4000';
-//const SERVER = 'http://localhost:4000';
+//const SERVER = 'http://185.61.126.170:4000';
+const SERVER = 'http://localhost:4000';
 const API_URL = SERVER + '/api/v1/';
 const API_REGISTER = API_URL + 'alumne/auth';
 

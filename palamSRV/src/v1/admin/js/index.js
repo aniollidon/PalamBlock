@@ -4,38 +4,94 @@ import {setnormesWebInfo, setnormesAppsInfo} from "./dialogs.js";
 import {warnNormesWeb} from "./warnings.js";
 import {socket} from "./socket.js";
 
+function errorSendLog(e) {
+    fetch('/api/v1/error/front', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({error:e.stack}),
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+}
+
 socket.on('alumnesActivity', function (data) {
-    drawAlumnesActivity(data);
+    try {
+        drawAlumnesActivity(data);
+    } catch (e) {
+        console.error(e);
+        errorSendLog(e);
+    }
 });
 
 socket.on('grupAlumnesList', function (data) {
-    preparaAlumnesGrups(data);
+    try {
+        preparaAlumnesGrups(data);
+    } catch (e) {
+        console.error(e);
+        errorSendLog(e);
+    }
 });
 
 socket.on('normesWeb', function (data) {
-    setnormesWebInfo(data);
-    warnNormesWeb(data);
+    try {
+        setnormesWebInfo(data);
+        warnNormesWeb(data);
+    } catch (e) {
+        console.error(e);
+        errorSendLog(e);
+    }
 });
 
 socket.on('normesApps', function (data) {
-    setnormesAppsInfo(data);
+    try {
+        setnormesAppsInfo(data);
+    } catch (e) {
+        console.error(e);
+        errorSendLog(e);
+    }
 });
 
 socket.on('historialWebAlumne', function (data) {
-    drawHistorialWeb(data.alumne, data.historial, data.query);
+    try {
+        drawHistorialWeb(data.alumne, data.historial, data.query);
+    } catch (e) {
+        console.error(e);
+        errorSendLog(e);
+    }
 });
 
 socket.on('historialAppsAlumne', function (data) {
-    drawHistorialApps(data.alumne, data.historial);
+    try {
+        drawHistorialApps(data.alumne, data.historial);
+    } catch (e) {
+        console.error(e);
+        errorSendLog(e);
+    }
 });
 
 socket.on('eachBrowserLastUsage', function (data) {
-    drawHistorialStats(data.alumne, data.lastUsage);
-    console.log(data);
+    try {
+        drawHistorialStats(data.alumne, data.lastUsage);
+    } catch (e) {
+        console.error(e);
+        errorSendLog(e);
+    }
 });
 
 socket.on('historialHostsSortedByUsage', function (data) {
-    drawHistorialHostsSortedByUsage(data.alumne, data.sortedHistorial, data.days);
+    try {
+        drawHistorialHostsSortedByUsage(data.alumne, data.sortedHistorial, data.days);
+    } catch (e) {
+        console.error(e);
+        errorSendLog(e);
+    }
 });
 
 socket.on('connect', function () {
