@@ -88,7 +88,6 @@ const postMachineInfoAPI = (req, res) => {
     }
 
     infoService.registerMachine(alumne, currentIp, timestamp);
-    res.send({status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser)});
 }
 
 const postTabInfoWS = (sid, msg) => {
