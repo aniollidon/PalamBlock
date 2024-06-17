@@ -1,3 +1,6 @@
 [submodule "palamOS"]
 	path = palamOS
 	url = https://github.com/aniollidon/palamblock-palamOS
+[submodule "palamOS-linux"]
+	path = palamOS-linux
+	url = https://github.com/aniollidon/palamblock-palamos-linux
