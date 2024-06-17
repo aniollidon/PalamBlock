@@ -76,14 +76,13 @@ const postBrowserInfoAPI = (req, res) => {
 
 const postMachineInfoAPI = (req, res) => {
     const alumne = req.body.alumne;
-    const browser = req.body.browser;
     const timestamp = new Date();
     const currentIp = req.body.currentIp;
 
-    if (!alumne || !browser || !currentIp) {
+    if (!alumne || !currentIp) {
         res.status(500).send({
             status: "ERROR",
-            data: "Falten dades de la info. Cal especificar alumne, browser i currentIp"
+            data: "Falten dades de la info. Cal especificar alumne i currentIp"
         });
         return;
     }
