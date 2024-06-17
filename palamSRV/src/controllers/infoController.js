@@ -21,12 +21,15 @@ const postTabInfoAPI = (req, res) => { //DEPRECATED
     const audible = req.body.audible;
     const timestamp = new Date();
 
-    if(!alumne || !browser || !tabId) {
-        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar alumne, browser i tabId" })
+    if (!alumne || !browser || !tabId) {
+        res.status(500).send({
+            status: "ERROR",
+            data: "Falten dades de la info. Cal especificar alumne, browser i tabId"
+        })
         return;
     }
 
-    if(action !== "active" && action !== "close" && action !== "update") {
+    if (action !== "active" && action !== "close" && action !== "update") {
         res.status(500).send({status: "ERROR", data: "Action incorrecte. Ha de ser active, close o update"});
         return;
     }
@@ -36,12 +39,12 @@ const postTabInfoAPI = (req, res) => { //DEPRECATED
 
     if (action === "active" || action === "close" || action === "update") {
         infoService.registerTab(action, browserDetails, tabDetails, timestamp);
-        if(action === "update") {
+        if (action === "update") {
             historialService.saveWeb(browserDetails, tabDetails, timestamp);
         }
     }
 
-    res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser) });
+    res.send({status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser)});
 }
 
 const postBrowserInfoAPI = (req, res) => {
@@ -52,7 +55,10 @@ const postBrowserInfoAPI = (req, res) => {
     const activeTab = req.body.activeTab;
 
     if (!alumne || !browser || !tabsInfos || !activeTab) {
-        res.status(500).send({ status: "ERROR", data: "Falten dades de la info. Cal especificar alumne, browser, tabsInfos i activeTab" });
+        res.status(500).send({
+            status: "ERROR",
+            data: "Falten dades de la info. Cal especificar alumne, browser, tabsInfos i activeTab"
+        });
         return;
     }
 
@@ -65,10 +71,28 @@ const postBrowserInfoAPI = (req, res) => {
     }
     infoService.registerBrowser(browserDetails, structuredTabsInfos, activeTab, timestamp);
 
-    res.send({ status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser) });
+    res.send({status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser)});
 }
 
-const postTabInfoWS = (sid, msg) =>{
+const postMachineInfoAPI = (req, res) => {
+    const alumne = req.body.alumne;
+    const browser = req.body.browser;
+    const timestamp = new Date();
+    const currentIp = req.body.currentIp;
+
+    if (!alumne || !browser || !currentIp) {
+        res.status(500).send({
+            status: "ERROR",
+            data: "Falten dades de la info. Cal especificar alumne, browser i currentIp"
+        });
+        return;
+    }
+
+    infoService.registerMachine(alumne, currentIp, timestamp);
+    res.send({status: "OK", actions: infoService.getBrowserPendingActions(alumne, browser)});
+}
+
+const postTabInfoWS = (sid, msg) => {
     const action = msg.action;
     const timestamp = new Date();
 
@@ -76,13 +100,13 @@ const postTabInfoWS = (sid, msg) =>{
     const browserDetails = new BrowserDetails(msg.alumne, msg.browser, msg.extVersion, sid);
     const tabDetails = new TabDetails(msg.tabId, webPage, msg.windowId, msg.incognito, msg.active, msg.audible);
 
-    if(action !== "active" && action !== "close" && action !== "update" && action !== "complete") {
+    if (action !== "active" && action !== "close" && action !== "update" && action !== "complete") {
         return;
     }
 
     logger.trace("postTabInfoWS: " + action + " " + browserDetails.toString() + " " + tabDetails.toString() + " at:" + timestamp);
 
-    if(action === "complete") {
+    if (action === "complete") {
         const validacioAlumne = new validacioService.Validacio(msg.alumne);
         const validacio = validacioAlumne.checkWeb(webPage);
 
@@ -97,8 +121,7 @@ const postTabInfoWS = (sid, msg) =>{
         }).catch((err) => {
             logger.error(err);
         });
-    }
-    else {
+    } else {
         infoService.registerTab(action, browserDetails, tabDetails, timestamp);
 
         if (action === "update") {
@@ -119,14 +142,7 @@ const postBrowserInfoWS = async (sid, msg) => {
         const tab = tabsInfos[tabId];
         const webPage = new WebPage(tab.host, tab.protocol, tab.search, tab.pathname, tab.title, tab.favicon);
         const status = await validacioAlumne.checkWeb(webPage);
-        structuredTabsInfos[tabId] = new TabDetails(
-            tab.tabId,
-            webPage,
-            tab.windowId,
-            tab.incognito,
-            tab.active,
-            tab.audible,
-            status);
+        structuredTabsInfos[tabId] = new TabDetails(tab.tabId, webPage, tab.windowId, tab.incognito, tab.active, tab.audible, status);
 
         infoService.remoteSetTabStatus(browserDetails, structuredTabsInfos[tabId].tabId, status);
     }
@@ -146,12 +162,12 @@ function getAlumnesActivity() {
 }
 
 function registerOnUpdateCallback(callback) {
-    if(!callback) return;
+    if (!callback) return;
     infoService.registerOnUpdateCallback(callback);
 }
 
 function remoteCloseTab(alumne, browser, tab) {
-    if(!alumne || !browser || !tab) return;
+    if (!alumne || !browser || !tab) return;
     infoService.remoteCloseTab(alumne, browser, tab);
 }
 
@@ -160,7 +176,7 @@ function normesWebHasChanged() { //DEPRECATED
 }
 
 function registerActionListenerWS(sid, msg, callback) {
-    if(!callback) return;
+    if (!callback) return;
     const browserDetails = new BrowserDetails(msg.alumne, msg.browser, msg.extVersion, sid);
     infoService.registerActionListener(browserDetails, callback);
 }
@@ -172,6 +188,7 @@ function sendMessageToAlumne(alumne, msg) {
 module.exports = {
     postTabInfoAPI,
     postBrowserInfoAPI,
+    postMachineInfoAPI,
     postTabInfoWS,
     postBrowserInfoWS,
     getAlumnesActivity,

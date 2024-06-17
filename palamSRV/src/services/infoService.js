@@ -222,6 +222,7 @@ class AlumneStatus {
         this.browsers = {};
         this.apps = {};
         this.conected = true;
+        this.currentIp = "";
         this._onUpdateCallback = onUpdateCallback;
         this._lastNews = new Date();
 
@@ -242,6 +243,11 @@ class AlumneStatus {
     setAlive(timestamp) {
         this._lastNews = timestamp;
         this.conected = true;
+    }
+
+    setCurrentIp(ip, timestamp) {
+        this.currentIp = ip;
+        this._lastNews = timestamp;
     }
 
     registerApp(appinfo, status, timestamp) {
@@ -485,6 +491,14 @@ async function normesWebHasChanged() {
     }
 }
 
+function registerMachine(alumne, ip, timestamp) {
+    if (!allAlumnesStatus.alumnesStat[alumne]) {
+        allAlumnesStatus.alumnesStat[alumne] = new AlumneStatus(alumne, allAlumnesStatus._onUpdateCallback);
+    }
+
+    allAlumnesStatus.alumnesStat[alumne].setAlive(timestamp);
+    allAlumnesStatus.alumnesStat[alumne].setCurrentIp(ip, timestamp);
+}
 function registerApps(apps, alumne, status, timestamp) {
     for (const appinfo of apps) {
 
@@ -544,5 +558,5 @@ module.exports = {
     normesWebHasChanged,
     registerApps,
     remoteSetTabStatus,
-    sendMessageToAlumne
+    registerMachine
 }

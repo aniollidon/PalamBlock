@@ -16,6 +16,8 @@ router.post("/admin/login", adminController.autentificaAdminAPI); // TODO manten
 router.post("/validacio/tab", validacioController.postValidacioAPI);
 router.post("/info/tab", infoController.postTabInfoAPI);
 router.post("/info/browser", infoController.postBrowserInfoAPI);
+router.post("/info/machine", infoController.postMachineInfoAPI);
+
 
 router.post("/error/front", errorController.postErrorLoggingAPI); // TODO mantenir endpoint (debugging)
 
