@@ -25,7 +25,7 @@ function initializeOSWebSocket(server) {
             }
 
             infoController.registerMachine(socket.id, data.version, data.os, data.ip, data.ssid,
-                data.username, executionCallback, isConnectionAlive);
+                data.alumne, executionCallback, isConnectionAlive);
         });
 
         socket.on('disconnect', () => {

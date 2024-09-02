@@ -187,9 +187,9 @@ function sendMessageToAlumne(alumne, msg) {
     infoService.sendMessageToAlumne(alumne, msg);
 }
 
-function registerMachine(sid, version, os, ip, ssid, username, executionCallback, aliveCallback) {
+function registerMachine(sid, version, os, ip, ssid, alumne, executionCallback, aliveCallback) {
     const timestamp = new Date();
-    infoService.registerMachine(username, sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
+    infoService.registerMachine(alumne, sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
 }
 
 function unregisterMachine(sid){
