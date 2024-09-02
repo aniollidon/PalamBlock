@@ -159,6 +159,10 @@ function getAlumnesActivity() {
     return infoService.getAlumnesActivity();
 }
 
+function getAlumnesMachine() {
+    return infoService.getAlumnesMachine();
+}
+
 function registerOnUpdateCallback(callback) {
     if (!callback) return;
     infoService.registerOnUpdateCallback(callback);
@@ -211,6 +215,7 @@ module.exports = {
     sendMessageToAlumne,
     registerMachine,
     unregisterMachine,
-    updateMachine
+    updateMachine,
+    getAlumnesMachine
 
 }

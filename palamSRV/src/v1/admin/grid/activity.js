@@ -1,4 +1,5 @@
 let grupAlumnesList = {}
+let alumnesMachines = {}
 
 function drawGridGrup(grupName){
 
@@ -74,8 +75,9 @@ function drawGridGrup(grupName){
         const gridItemContentScreen = document.createElement("div");
         gridItemContentScreen.classList.add("grid-item-content-screen");
         const iframe = document.createElement("iframe");
+        const alumneIP = alumnesMachines[alumne].ip;
         iframe.setAttribute("src",
-            `http://192.168.1.117:6080/vnc_iframe.html?password=fpb123&reconnect&name=${alumne}`); // TODO
+            `${alumneIP}:6080/vnc_iframe.html?password=fpb123&reconnect&name=${alumne}`); // TODO
         iframe.setAttribute("width", "400px");
         iframe.setAttribute("height", "225px");
         iframe.setAttribute("frameborder", "0");
@@ -95,7 +97,6 @@ function drawGridGrup(grupName){
 
 
         grid.appendChild(gridItem);
-        break;
     }
 }
 
@@ -131,4 +132,9 @@ export function preparaSelectorGrups(data) {
     grupSelector.onchange = (ev) => {
         drawGridGrup(ev.target.value);
     }
+}
+
+
+export function setAlumnesMachine(data) {
+    alumnesMachines = data;
 }

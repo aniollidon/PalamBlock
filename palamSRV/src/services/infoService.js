@@ -222,7 +222,7 @@ class AlumneStatus {
         this.browsers = {};
         this.apps = {};
         this.conected = true;
-        this.currentIp = "";
+        this.currentIp = ""; //TODO change to machines
         this._onUpdateCallback = onUpdateCallback;
         this._lastNews = new Date();
 
@@ -546,6 +546,21 @@ function sendMessageToAlumne(alumne, message) {
     }
 }
 
+
+function getAlumnesMachine() {
+    const alumnes = {};
+    for (const alumne in allAlumnesStatus.alumnesStat) {
+        alumnes[alumne] = { // todo
+            ip: allAlumnesStatus.alumnesStat[alumne].currentIp,
+            conected: "",
+            os: "",
+            version: ""
+        };
+
+    }
+    return alumnes;
+}
+
 module.exports = {
     registerTab,
     registerBrowser,
@@ -559,5 +574,6 @@ module.exports = {
     registerApps,
     remoteSetTabStatus,
     registerMachine,
-    sendMessageToAlumne
+    sendMessageToAlumne,
+    getAlumnesMachine
 }

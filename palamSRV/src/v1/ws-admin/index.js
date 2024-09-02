@@ -27,6 +27,7 @@ function initializeAdminWebSocket(server) {
     io.on('connection', async (socket) => {
         socket.emit('grupAlumnesList', await alumneController.getGrupAlumnesList());
         socket.emit('alumnesActivity', await infoController.getAlumnesActivity());
+        socket.emit('getAlumnesMachine', infoController.getAlumnesMachine());
         socket.emit('normesWeb', await normaController.getAllNormes2Web());
         socket.emit('normesApps', await normaController.getAllNormesApps());
 

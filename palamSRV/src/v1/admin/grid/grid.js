@@ -33,3 +33,8 @@ socket.on('grupAlumnesList', function (data) {
         console.error(e);
     }
 });
+
+
+socket.on('getAlumnesMachine', function (data) {
+    setAlumnesMachine(data);
+});
