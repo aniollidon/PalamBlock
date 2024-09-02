@@ -79,7 +79,7 @@ function drawGridGrup(grupName){
         iframe.setAttribute("src",
             `http://${alumneIP}:6080/vnc_iframe.html?password=fpb123&reconnect&name=${alumne}`); // TODO
         iframe.setAttribute("width", "400px");
-        iframe.segotAttribute("height", "225px");
+        iframe.setAttribute("height", "225px");
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("scrolling", "no");
         iframe.style.backgroundImage = "url('../img/offline.jpg')";
