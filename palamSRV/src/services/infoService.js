@@ -585,7 +585,7 @@ function unregisterMachine(sid, timestamp){
     }
 }
 
-function updateMachine(sid, ip, ssid, username, timestamp) {
+function updateMachine(sid, ip, ssid, alumne, timestamp) {
     if(allAlumnesStatus.alumnesStat[alumne]){
         allAlumnesStatus.alumnesStat[alumne].updateMachine(sid, ip, ssid, timestamp);
     }
