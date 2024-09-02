@@ -20,15 +20,15 @@ function initializeOSWebSocket(server) {
             const executionCallback = async (data) => {
                 socket.emit('execute', {command:data.command}); //OJU PELIGRU!!
             }
-            infoController.registerMachine(socket.id, data.version, data.os, data.username, executionCallback);
+            infoController.registerMachine(socket.id, data.version, data.os, data.ip, data.username, executionCallback);
         });
 
         socket.on('disconnect', () => {
             infoController.unregisterMachine(socket.id);
         });
 
-        socket.on('newIP', (data) => {
-            infoController.updateMachine(socket.id, data.ip, data.username);
+        socket.on('updateOS', (data) => {
+            infoController.updateMachine(socket.id, data.version, data.os, data.ip, data.username);
         });
     });
 

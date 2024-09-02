@@ -183,6 +183,19 @@ function sendMessageToAlumne(alumne, msg) {
     infoService.sendMessageToAlumne(alumne, msg);
 }
 
+function registerMachine(sid, version, os, ip, username, executionCallback){
+    const timestamp = new Date();
+    infoService.registerMachine(username, ip, timestamp);
+}
+
+function unregisterMachine(sid){
+
+}
+
+function updateMachine(sid, ip, username){
+
+}
+
 module.exports = {
     postTabInfoAPI,
     postBrowserInfoAPI,
@@ -196,4 +209,8 @@ module.exports = {
     disconnectBrowserWS,
     registerActionListenerBrowserWS,
     sendMessageToAlumne,
+    registerMachine,
+    unregisterMachine,
+    updateMachine
+
 }
