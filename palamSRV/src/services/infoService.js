@@ -558,5 +558,6 @@ module.exports = {
     normesWebHasChanged,
     registerApps,
     remoteSetTabStatus,
-    registerMachine
+    registerMachine,
+    sendMessageToAlumne
 }

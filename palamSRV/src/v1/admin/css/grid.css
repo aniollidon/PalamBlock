@@ -1,0 +1,31 @@
+.grid-container{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* Ajusta el nombre de columnes */
+    gap: 20px; /* Espai entre els elements de la graella */
+    justify-content: center; /* Centra els elements dins del contenidor */
+}
+
+.grid-item{
+    padding: 20px;
+    text-align: center;
+    box-sizing: border-box;
+    width: fit-content;
+}
+
+.grid-item-buttons .btn{
+    margin-right: 5px;
+    padding-bottom: 8px;
+
+}
+
+.grid-item-content-header{
+    display: flex;
+    justify-content: space-between;
+}
+
+.overlay{
+    width: 400px;
+    height: 225px;
+    position: absolute;
+}
+

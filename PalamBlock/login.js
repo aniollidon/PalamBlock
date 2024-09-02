@@ -47,6 +47,7 @@ chrome.management.getSelf(myInfo => {
         });
     }
     else {
-        document.getElementById('uninstall').style.display = "none";
+        document.getElementById('uninstall-message').style.display = "none";
+        document.getElementById('no-uninstall-message').style.display = "";
     }
 });

@@ -525,100 +525,108 @@ export function preparaAlumnesGrups(data) {
         const option = document.createElement("option");
         option.setAttribute("value", grup);
         option.innerHTML = grup;
-        grupSelector.onchange = (ev) => {
-            for (let g in grupAlumnesList) {
-                for (let a in grupAlumnesList[g].alumnes) {
-                    visibilityAlumnes[a] = (g === grupSelector.value);
-                    const browserContainer = document.getElementById(a + "-container")
-                    if (browserContainer)
-                        browserContainer.style.display = visibilityAlumnes[a] ? "" : "none";
-
-                    // Refresca els chrome tabs
-                    if (chromeTabsObjects[a])
-                        for (let b in chromeTabsObjects[a])
-                            chromeTabsObjects[a][b].layoutTabs();
-                }
-            }
-
-            // Prepara el botó d'estat global
-            const grupStatus = document.getElementById("globalGroupGtatus");
-            const grupStatusRuleOn = document.getElementById("globalGroupStatusRuleOn");
-            const grupStatusRuleFree = document.getElementById("globalGroupStatusRuleFree");
-            const grupStatusBlockAll = document.getElementById("globalGroupStatusBlockAll");
-
-            function setGrupStatus(status, send = false) {
-                grupStatus.classList.remove("btn-warning");
-                grupStatus.classList.remove("btn-success");
-                grupStatus.classList.remove("btn-danger");
-                let text_confirmacio = undefined;
-
-                if (status === "RuleOn"){
-                    grupStatus.classList.add("btn-success");
-                    grupStatus.innerHTML = "Filtre actiu";
-                }
-                else if (status === "RuleFree") {
-                    grupStatus.classList.add("btn-warning");
-                    grupStatus.innerHTML = "Desactivat";
-                    text_confirmacio = "Segur que vols desactivar PalamBlock a tots els alumnes del grup? " +
-                        "Això permetrà als alumnes accedir a qualsevol web, sense restriccions. Aquest canvi pot afectar" +
-                        " altres professors i assignatures. No es recomana fer-ho. Si s'escau, reverteix aquest canvi un cop hagis acabat.";
-                }
-                else if (status === "Blocked"){
-                    grupStatus.classList.add("btn-danger");
-                    grupStatus.innerHTML = "Tot bloquejat";
-                    text_confirmacio = "Segur que vols activar el mode bloqueig total de PalamBlock per a tots els " +
-                        "alumnes del grup? Això impedirà als alumnes accedir a qualsevol web, sense excepcions. Aquest" +
-                        " canvi pot afectar altres professors i assignatures. Reverteix aquest canvi un cop hagis acabat.";
-                }
-
-                if (send) {
-                    obre_confirmacio(text_confirmacio, () => {
-                        socket.emit("setGrupStatus", {grup: grupSelector.value, status: status});
-                    });
-                }
-            }
-
-            grupStatus.classList.remove("btn-dark");
-            grupStatus.removeAttribute("disabled");
-            setGrupStatus(grupAlumnesList[grupSelector.value].status);
-
-            grupStatusRuleOn.onclick = (ev) => {
-                setGrupStatus("RuleOn", true);
-            }
-
-            grupStatusRuleFree.onclick = (ev) => {
-                setGrupStatus("RuleFree", true);
-            }
-
-            grupStatusBlockAll.onclick = (ev) => {
-                setGrupStatus("Blocked", true);
-            }
-
-            // Prepara el botó de Normes Web de grup
-            const grupNormesWebButton = document.getElementById("globalGroupNormesWebButton");
-            grupNormesWebButton.removeAttribute("disabled");
-            grupNormesWebButton.onclick = (ev) => obreDialogNormesWeb(grupSelector.value, "grup");
-
-            // Prepara el botó de Normes Apps de grup
-            const grupNormesAppsButton = document.getElementById("globalGroupNormesAppsButton");
-            grupNormesAppsButton.removeAttribute("disabled");
-            grupNormesAppsButton.onclick = (ev) => obreDialogNormesApps(grupSelector.value, "grup");
-
-            // Prepara el botó afegeixllistablanca
-            const grupAfegeixLlistaBlancaButton = document.getElementById("globalGroupAfegeixLlistaBlancaButton");
-            grupAfegeixLlistaBlancaButton.removeAttribute("disabled");
-            grupAfegeixLlistaBlancaButton.onclick = (ev) => obreDialogAfegeixLlistaBlanca(grupSelector.value);
-
-            // Prepara el botó nova norma
-            const grupNovaNormaButton = document.getElementById("globalGroupAfegeixNormaButton");
-            grupNovaNormaButton.removeAttribute("disabled");
-
-            grupNovaNormaButton.onclick = (ev) => obreDialogBloquejaWeb({
-                    host:"", pathname:"", search:"", title:"" },
-                undefined, grupSelector.value,  "blocgrup");
-        }
         grupSelector.appendChild(option);
     }
+
+    grupSelector.onchange = (ev) => {
+        for (let g in grupAlumnesList) {
+            for (let a in grupAlumnesList[g].alumnes) {
+                visibilityAlumnes[a] = (g === grupSelector.value);
+                const browserContainer = document.getElementById(a + "-container")
+                if (browserContainer)
+                    browserContainer.style.display = visibilityAlumnes[a] ? "" : "none";
+
+                // Refresca els chrome tabs
+                if (chromeTabsObjects[a])
+                    for (let b in chromeTabsObjects[a])
+                        chromeTabsObjects[a][b].layoutTabs();
+            }
+        }
+
+        // Prepara el botó d'estat global
+        const grupStatus = document.getElementById("globalGroupGtatus");
+        const grupStatusRuleOn = document.getElementById("globalGroupStatusRuleOn");
+        const grupStatusRuleFree = document.getElementById("globalGroupStatusRuleFree");
+        const grupStatusBlockAll = document.getElementById("globalGroupStatusBlockAll");
+
+        function setGrupStatus(status, send = false) {
+            grupStatus.classList.remove("btn-warning");
+            grupStatus.classList.remove("btn-success");
+            grupStatus.classList.remove("btn-danger");
+            let text_confirmacio = undefined;
+
+            if (status === "RuleOn"){
+                grupStatus.classList.add("btn-success");
+                grupStatus.innerHTML = "Filtre actiu";
+            }
+            else if (status === "RuleFree") {
+                grupStatus.classList.add("btn-warning");
+                grupStatus.innerHTML = "Desactivat";
+                text_confirmacio = "Segur que vols desactivar PalamBlock a tots els alumnes del grup? " +
+                    "Això permetrà als alumnes accedir a qualsevol web, sense restriccions. Aquest canvi pot afectar" +
+                    " altres professors i assignatures. No es recomana fer-ho. Si s'escau, reverteix aquest canvi un cop hagis acabat.";
+            }
+            else if (status === "Blocked"){
+                grupStatus.classList.add("btn-danger");
+                grupStatus.innerHTML = "Tot bloquejat";
+                text_confirmacio = "Segur que vols activar el mode bloqueig total de PalamBlock per a tots els " +
+                    "alumnes del grup? Això impedirà als alumnes accedir a qualsevol web, sense excepcions. Aquest" +
+                    " canvi pot afectar altres professors i assignatures. Reverteix aquest canvi un cop hagis acabat.";
+            }
+
+            if (send) {
+                obre_confirmacio(text_confirmacio, () => {
+                    socket.emit("setGrupStatus", {grup: grupSelector.value, status: status});
+                });
+            }
+        }
+
+        grupStatus.classList.remove("btn-dark");
+        grupStatus.removeAttribute("disabled");
+        setGrupStatus(grupAlumnesList[grupSelector.value].status);
+
+        grupStatusRuleOn.onclick = (ev) => {
+            setGrupStatus("RuleOn", true);
+        }
+
+        grupStatusRuleFree.onclick = (ev) => {
+            setGrupStatus("RuleFree", true);
+        }
+
+        grupStatusBlockAll.onclick = (ev) => {
+            setGrupStatus("Blocked", true);
+        }
+
+        // Prepara el botó per moure a la pagina de grid
+        const grupGridButton = document.getElementById("globalGroupGridButton");
+        grupGridButton.removeAttribute("disabled");
+        grupGridButton.onclick = (ev) => {
+            window.location.href = "grid?grup=" + grupSelector.value;
+        }
+        // Prepara el botó de Normes Web de grup
+        const grupNormesWebButton = document.getElementById("globalGroupNormesWebButton");
+        grupNormesWebButton.removeAttribute("disabled");
+        grupNormesWebButton.onclick = (ev) => obreDialogNormesWeb(grupSelector.value, "grup");
+
+        // Prepara el botó de Normes Apps de grup
+        const grupNormesAppsButton = document.getElementById("globalGroupNormesAppsButton");
+        grupNormesAppsButton.removeAttribute("disabled");
+        grupNormesAppsButton.onclick = (ev) => obreDialogNormesApps(grupSelector.value, "grup");
+
+        // Prepara el botó afegeixllistablanca
+        const grupAfegeixLlistaBlancaButton = document.getElementById("globalGroupAfegeixLlistaBlancaButton");
+        grupAfegeixLlistaBlancaButton.removeAttribute("disabled");
+        grupAfegeixLlistaBlancaButton.onclick = (ev) => obreDialogAfegeixLlistaBlanca(grupSelector.value);
+
+        // Prepara el botó nova norma
+        const grupNovaNormaButton = document.getElementById("globalGroupAfegeixNormaButton");
+        grupNovaNormaButton.removeAttribute("disabled");
+
+        grupNovaNormaButton.onclick = (ev) => obreDialogBloquejaWeb({
+                host:"", pathname:"", search:"", title:"" },
+            undefined, grupSelector.value,  "blocgrup");
+    }
+
 }
 
 export function getGrup(alumneId) {

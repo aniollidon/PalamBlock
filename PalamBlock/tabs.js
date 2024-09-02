@@ -222,6 +222,8 @@ export async function warnTab(tabId) {
 export async function printMesasgeToTab(tabId, message) {
     tabId = parseInt(tabId);
     return new Promise((resolve, reject) => {
+        // TODO Open new tab with message
+
         chrome.scripting.executeScript({
             target: { tabId: tabId },
             func: (message) => {

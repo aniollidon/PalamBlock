@@ -101,6 +101,6 @@ socket.on('connect', function () {
 // Gestiona errors d'autenticació
 socket.on('connect_error', (error) => {
     console.log('Error d\'autenticació:', error.message);
-    window.location.href = "login.html";
+    window.location.href = "/admin/login.html";
 });
 

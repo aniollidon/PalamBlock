@@ -10,6 +10,7 @@ const http = require('http');
 const cors = require("cors")
 const initializeAdminWebSocket = require('./v1/ws-admin');
 const initializeExtentionWebSocket = require('./v1/ws-extention');
+const initializeOSWebSocket = require('./v1/ws-os');
 const logger = require("./logger").logger;
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/privacy', express.static(path.join(__dirname, '/v1/privacy')))
 // WebSocket
 initializeAdminWebSocket(server);
 initializeExtentionWebSocket(server);
+initializeOSWebSocket(server);
 
 server.listen(PORT, () => {
   logger.info(`Server is listening on port ${PORT}`);

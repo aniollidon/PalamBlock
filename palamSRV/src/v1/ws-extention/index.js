@@ -17,13 +17,13 @@ function initializeExtentionWebSocket(server) {
         console.log('Un client s\'ha connectat ' + socket.id );
 
         socket.on('registerBrowser', (data) => {
-            infoController.registerActionListenerWS(socket.id, data, (action, tabId, message= undefined) => {
+            infoController.registerActionListenerBrowserWS(socket.id, data, (action, tabId, message= undefined) => {
                 socket.emit('do', {action: action, tabId: tabId, message: message});
             });
         });
 
         socket.on('disconnect', () => {
-            infoController.disconnectWS(socket.id);
+            infoController.disconnectBrowserWS(socket.id);
         });
 
         socket.on('browserInfo', (data) => {

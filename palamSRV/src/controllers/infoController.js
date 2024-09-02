@@ -148,10 +148,10 @@ const postBrowserInfoWS = async (sid, msg) => {
     infoService.registerBrowser(browserDetails, structuredTabsInfos, msg.activeTab, timestamp);
 }
 
-const disconnectWS = (sid) => {
+const disconnectBrowserWS = (sid) => {
     const timestamp = new Date();
 
-    logger.trace("disconnectWS: " + sid + " at:" + timestamp);
+    logger.trace("disconnectBrowserWS: " + sid + " at:" + timestamp);
     infoService.unregisterBrowser(sid, timestamp);
 }
 
@@ -173,7 +173,7 @@ function normesWebHasChanged() { //DEPRECATED
     infoService.normesWebHasChanged();
 }
 
-function registerActionListenerWS(sid, msg, callback) {
+function registerActionListenerBrowserWS(sid, msg, callback) {
     if (!callback) return;
     const browserDetails = new BrowserDetails(msg.alumne, msg.browser, msg.extVersion, sid);
     infoService.registerActionListener(browserDetails, callback);
@@ -193,7 +193,7 @@ module.exports = {
     registerOnUpdateCallback,
     remoteCloseTab,
     normesWebHasChanged,
-    disconnectWS,
-    registerActionListenerWS,
-    sendMessageToAlumne
+    disconnectBrowserWS,
+    registerActionListenerBrowserWS,
+    sendMessageToAlumne,
 }
