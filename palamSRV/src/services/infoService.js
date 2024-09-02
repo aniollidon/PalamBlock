@@ -552,7 +552,7 @@ function getAlumnesMachine() {
     for (const alumne in allAlumnesStatus.alumnesStat) {
         alumnes[alumne] = { // todo
             ip: allAlumnesStatus.alumnesStat[alumne].currentIp,
-            conected: "",
+            connected: "",
             os: "",
             version: ""
         };

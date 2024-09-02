@@ -20,7 +20,8 @@ function initializeOSWebSocket(server) {
             const executionCallback = async (data) => {
                 socket.emit('execute', {command:data.command}); //OJU PELIGRU!!
             }
-            infoController.registerMachine(socket.id, data.version, data.os, data.ip, data.username, executionCallback);
+            infoController.registerMachine(socket.id, data.version, data.os, data.ip, data.ssid,
+                data.username, executionCallback);
         });
 
         socket.on('disconnect', () => {
@@ -28,7 +29,7 @@ function initializeOSWebSocket(server) {
         });
 
         socket.on('updateOS', (data) => {
-            infoController.updateMachine(socket.id, data.version, data.os, data.ip, data.username);
+            infoController.updateMachine(socket.id, data.version, data.os, data.ip, data.ssid, data.username);
         });
     });
 
