@@ -1,4 +1,4 @@
-import {socket} from "../js/socket";
+import {socket} from "../js/socket.js";
 
 let grupAlumnesList = {}
 let alumnesMachines = {}
