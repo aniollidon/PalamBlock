@@ -100,9 +100,7 @@ function drawGridGrup(grupName){
     }
 }
 
-export function preparaSelectorGrups(data) {
-    grupAlumnesList = data;
-
+export function preparaSelectorGrups() {
     // Lllegeix el parametre grup de la query
     const urlParams = new URLSearchParams(window.location.search);
     const grupGET = urlParams.get('grup');
@@ -137,4 +135,8 @@ export function preparaSelectorGrups(data) {
 
 export function setAlumnesMachine(data) {
     alumnesMachines = data;
+}
+
+export function setGrupAlumnesList(data) {
+    grupAlumnesList = data;
 }
