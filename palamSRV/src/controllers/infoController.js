@@ -187,17 +187,24 @@ function sendMessageToAlumne(alumne, msg) {
     infoService.sendMessageToAlumne(alumne, msg);
 }
 
-function registerMachine(sid, version, os, ip, ssid, username, executionCallback){
+function registerMachine(sid, version, os, ip, ssid, username, executionCallback, aliveCallback) {
     const timestamp = new Date();
-    infoService.registerMachine(username, ip, timestamp);
+    infoService.registerMachine(username, sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
 }
 
 function unregisterMachine(sid){
-
+    const timestamp = new Date();
+    infoService.unregisterMachine(sid, timestamp);
 }
 
 function updateMachine(sid, ip, ssid, username){
+    const timestamp = new Date();
+    infoService.updateMachine(username, sid, ip, ssid, timestamp);
 
+}
+
+function sendCommandToAlumne(alumne, command){
+    infoService.sendCommandToAlumne(alumne, command);
 }
 
 module.exports = {
@@ -213,6 +220,7 @@ module.exports = {
     disconnectBrowserWS,
     registerActionListenerBrowserWS,
     sendMessageToAlumne,
+    sendCommandToAlumne,
     registerMachine,
     unregisterMachine,
     updateMachine,

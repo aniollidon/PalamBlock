@@ -20,8 +20,12 @@ function initializeOSWebSocket(server) {
             const executionCallback = async (data) => {
                 socket.emit('execute', {command:data.command}); //OJU PELIGRU!!
             }
+            const isConnectionAlive = ()=> {
+                return socket.connected;
+            }
+
             infoController.registerMachine(socket.id, data.version, data.os, data.ip, data.ssid,
-                data.username, executionCallback);
+                data.username, executionCallback, isConnectionAlive);
         });
 
         socket.on('disconnect', () => {

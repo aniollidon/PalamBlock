@@ -1,3 +1,5 @@
+import {socket} from "../js/socket";
+
 let grupAlumnesList = {}
 let alumnesMachines = {}
 
@@ -55,7 +57,7 @@ function drawGridGrup(grupName){
           <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5"/>
         </svg>`;
         buttonFreeze.onclick = () => {
-            // TODO
+            socket.emit('sendCommandToAlumne', {alumne: alumne, command: "pausa"});
         }
         itemButtons.appendChild(buttonFreeze);
 
@@ -67,7 +69,7 @@ function drawGridGrup(grupName){
                               <path d="M3 8.812a5 5 0 0 1 2.578-4.375l-.485-.874A6 6 0 1 0 11 3.616l-.501.865A5 5 0 1 1 3 8.812"/>
                             </svg>`;
         buttonOff.onclick = () => {
-            // TODO
+            socket.emit('sendCommandToAlumne', {alumne: alumne, command: "hibernar"});
         }
         itemButtons.appendChild(buttonOff);
         gridItemContentHeader.appendChild(itemButtons);

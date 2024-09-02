@@ -114,6 +114,10 @@ function initializeAdminWebSocket(server) {
         socket.on('sendMessageToAlumne', async (msg) => {
             await infoController.sendMessageToAlumne(msg.alumne, msg.message);
         });
+
+        socket.on('sendCommandToAlumne', async (msg) => {
+            await infoController.sendCommandToAlumne(msg.alumne, msg.command);
+        });
     });
 
 

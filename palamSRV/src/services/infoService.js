@@ -216,13 +216,63 @@ class AppStatus {
     }
 }
 
+class MachineStatus {
+    constructor(ip, wifi_ssid, os, version, executionCallback, aliveCallback, timestamp) {
+        this.ip = ip;
+        this.os = os;
+        this.version = version
+        this.wifi_ssid = wifi_ssid;
+        this.lastUpdate = timestamp;
+        this.connected = true;
+        this._execute = executionCallback;
+        this._isAlive = aliveCallback;
+
+        // Comprova si la màquina s'ha desconnectat
+        const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
+        setInterval(() => {
+            if (this.connected && this.lastUpdate && (new Date() - this.lastUpdate) > NOCONN_TIME) {
+                this.__checkAlive();
+            }
+        }, NOCONN_TIME);
+    }
+
+    __checkAlive() {
+        if(this._isAlive()){
+            this.lastUpdate = new Date();
+            return true;
+        }
+        else {
+            this.connected = false;
+            this.lastUpdate = new Date();
+            return false;
+        }
+    }
+
+    execute(command) {
+        if (this.connected && this.__checkAlive()){ // Comprova si està connectada ara mateix
+            try {
+                this._execute(command);
+                return true;
+            }
+            catch (err) {
+                logger.error("Error executing command " + command + " on machine " + this.ip, err);
+                return false;
+            }
+        }
+        else{
+            logger.error("Error executing command " + command + ". Machine " + this.ip + " is not connected");
+            return false;
+        }
+    }
+}
+
 class AlumneStatus {
     constructor(alumne, onUpdateCallback) {
         this.alumne = alumne;
         this.browsers = {};
         this.apps = {};
         this.conected = true;
-        this.currentIp = ""; //TODO change to machines
+        this.machines = {};
         this._onUpdateCallback = onUpdateCallback;
         this._lastNews = new Date();
 
@@ -245,14 +295,32 @@ class AlumneStatus {
         this.conected = true;
     }
 
-    setCurrentIp(ip, timestamp) {
-        this.currentIp = ip;
-        this._lastNews = timestamp;
-    }
-
     registerApp(appinfo, status, timestamp) {
         this.setAlive(timestamp);
         if (!this.apps[appinfo.pid]) this.apps[appinfo.pid] = new AppStatus(appinfo, status, timestamp); else this.apps[appinfo.pid].update(status, timestamp);
+    }
+
+    registerMachine( sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp) {
+        this.setAlive(timestamp);
+        this.machines[sid] = new MachineStatus(ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
+    }
+
+    unregisterMachine(sid, timestamp){
+        if(this.machines[sid]) {
+            this.machines[sid].connected = false;
+            this.machines[sid].lastUpdate = timestamp;
+        }
+    }
+
+    updateMachine(sid, ip, ssid, timestamp) {
+        this.setAlive(timestamp);
+        if (!this.machines[sid]) {
+            this.machines[sid] = new MachineStatus(ip, ssid, "unknown", "unknown", timestamp);
+        } else {
+            this.machines[sid].ip = ip;
+            this.machines[sid].wifi_ssid = ssid;
+            this.machines[sid].lastUpdate = timestamp;
+        }
     }
 
     closeNotUpdatedApps(timestamp) {
@@ -491,14 +559,6 @@ async function normesWebHasChanged() {
     }
 }
 
-function registerMachine(alumne, ip, timestamp) {
-    if (!allAlumnesStatus.alumnesStat[alumne]) {
-        allAlumnesStatus.alumnesStat[alumne] = new AlumneStatus(alumne, allAlumnesStatus._onUpdateCallback);
-    }
-
-    allAlumnesStatus.alumnesStat[alumne].setAlive(timestamp);
-    allAlumnesStatus.alumnesStat[alumne].setCurrentIp(ip, timestamp);
-}
 function registerApps(apps, alumne, status, timestamp) {
     for (const appinfo of apps) {
 
@@ -507,6 +567,30 @@ function registerApps(apps, alumne, status, timestamp) {
     allAlumnesStatus.closeNotUpdatedApps(alumne, timestamp);
     allAlumnesStatus._onUpdateCallback();
 }
+
+function registerMachine(alumne, sid, ip, ssid, os, version, executionCallback,aliveCallback, timestamp) {
+    if (!allAlumnesStatus.alumnesStat[alumne]) {
+        allAlumnesStatus.alumnesStat[alumne] = new AlumneStatus(alumne, allAlumnesStatus._onUpdateCallback);
+    }
+
+    allAlumnesStatus.alumnesStat[alumne].setAlive(timestamp);
+    allAlumnesStatus.alumnesStat[alumne].registerMachine(sid, ip, ssid, os, version, executionCallback, aliveCallback,
+        timestamp);
+}
+
+
+function unregisterMachine(sid, timestamp){
+    if(allAlumnesStatus.alumnesStat[alumne]){
+        allAlumnesStatus.alumnesStat[alumne].unregisterMachine(sid, timestamp);
+    }
+}
+
+function updateMachine(sid, ip, ssid, username, timestamp) {
+    if(allAlumnesStatus.alumnesStat[alumne]){
+        allAlumnesStatus.alumnesStat[alumne].updateMachine(sid, ip, ssid, timestamp);
+    }
+}
+
 
 function unregisterBrowser(sid, timestamp) {
     for (const alumne in allAlumnesStatus.alumnesStat) {
@@ -517,6 +601,7 @@ function unregisterBrowser(sid, timestamp) {
         }
     }
 }
+
 
 function registerActionListener(browserDetails, callback) {
     if (!callback) return;
@@ -546,17 +631,17 @@ function sendMessageToAlumne(alumne, message) {
     }
 }
 
+function sendCommandToAlumne(alumne, command) {
+    if (!allAlumnesStatus.alumnesStat[alumne]) return;
+    for (const machines in allAlumnesStatus.alumnesStat[alumne].machines) {
+        allAlumnesStatus.alumnesStat[alumne].machines[machines].execute(command);
+    }
+}
 
 function getAlumnesMachine() {
     const alumnes = {};
     for (const alumne in allAlumnesStatus.alumnesStat) {
-        alumnes[alumne] = { // todo
-            ip: allAlumnesStatus.alumnesStat[alumne].currentIp,
-            connected: "",
-            os: "",
-            version: ""
-        };
-
+        alumnes[alumne] = estructuraPublica(allAlumnesStatus.alumnesStat[alumne].machines);
     }
     return alumnes;
 }
@@ -574,6 +659,9 @@ module.exports = {
     registerApps,
     remoteSetTabStatus,
     registerMachine,
+    unregisterMachine,
+    updateMachine,
     sendMessageToAlumne,
+    sendCommandToAlumne,
     getAlumnesMachine
 }
