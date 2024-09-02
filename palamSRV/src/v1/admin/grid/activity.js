@@ -11,6 +11,7 @@ function drawGridGrup(grupName){
     grid.innerHTML = "";
     const grup = grupAlumnesList[grupName];
     for (let alumne in grup.alumnes) {
+        if(!alumnesMachines[alumne]) continue;
         const gridItem = document.createElement("div");
         gridItem.classList.add("grid-item");
 
