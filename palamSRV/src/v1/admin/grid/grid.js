@@ -1,5 +1,8 @@
 import {socket} from "../js/socket.js";
-import {preparaSelectorGrups} from "./activity.js";
+import {preparaSelectorGrups, setAlumnesMachine} from "./activity.js";
+
+let grups_disponibles = false;
+let maquines_disponibles = false;
 
 // Botons principals
 const globalGroupNormalViewButton = document.getElementById('globalGroupNormalViewButton');
@@ -27,14 +30,20 @@ socket.on('connect_error', (error) => {
 });
 
 socket.on('grupAlumnesList', function (data) {
-    try {
-        preparaSelectorGrups(data);
-    } catch (e) {
-        console.error(e);
-    }
-});
+    grups_disponibles = true;
+
+    if (grups_disponibles && maquines_disponibles) {
+        try {
+            preparaSelectorGrups(data);
+        } catch (e) {
+            console.error(e);
+        }
+    }}
+);
 
 
 socket.on('getAlumnesMachine', function (data) {
-    setAlumnesMachine(data);
+    maquines_disponibles = true;
+    if(grups_disponibles && maquines_disponibles)
+        setAlumnesMachine(data);
 });
