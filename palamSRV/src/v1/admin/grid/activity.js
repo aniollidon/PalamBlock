@@ -14,6 +14,8 @@ function drawGridGrup(grupName){
     const grup = grupAlumnesList[grupName];
     for (let alumne in grup.alumnes) {
         if(!alumnesMachines[alumne]) continue;
+        if(Object.keys(alumnesMachines[alumne]).length === 0) continue;
+
         const gridItem = document.createElement("div");
         gridItem.classList.add("grid-item");
 
@@ -78,7 +80,7 @@ function drawGridGrup(grupName){
         const gridItemContentScreen = document.createElement("div");
         gridItemContentScreen.classList.add("grid-item-content-screen");
         const iframe = document.createElement("iframe");
-        const alumneIP = alumnesMachines[alumne].ip;
+        const alumneIP = Object.values(alumnesMachines[alumne])[0].ip;
         iframe.setAttribute("src",
             `http://${alumneIP}:6080/vnc_iframe.html?password=fpb123&reconnect&name=${alumne}`); // TODO
         iframe.setAttribute("width", "400px");
