@@ -641,6 +641,7 @@ function sendCommandToAlumne(alumne, command) {
 function getAlumnesMachine() {
     const alumnes = {};
     for (const alumne in allAlumnesStatus.alumnesStat) {
+        console.log(allAlumnesStatus.alumnesStat[alumne])
         alumnes[alumne] = estructuraPublica(allAlumnesStatus.alumnesStat[alumne].machines);
     }
     return alumnes;
