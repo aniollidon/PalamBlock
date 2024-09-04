@@ -15,6 +15,7 @@ module.exports.logger = logger;
 class CustomLogger {
     constructor() {
         this.level = process.env.LOGGER_LEVEL || 'info';
+        console.log("Logger init! level: " + this.level);
     }
 
     trace(msg) {
