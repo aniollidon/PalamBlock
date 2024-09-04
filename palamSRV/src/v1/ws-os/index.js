@@ -18,8 +18,8 @@ function initializeOSWebSocket(server) {
         logger.info('S\'ha connectat un client ws-os ' + socket.id );
 
         socket.on('registerOS', (data) => {
-            const executionCallback = async (data) => {
-                socket.emit('execute', {command:data.command}); //OJU PELIGRU!!
+            const executionCallback = async (cmd) => {
+                socket.emit('execute', {command:cmd});
             }
             const isConnectionAlive = ()=> {
                 return socket.connected;

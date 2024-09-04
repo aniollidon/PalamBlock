@@ -22,7 +22,7 @@ socket.on('connect', function () {
 });
 
 socket.on('connect_error', (error) => {
-    console.log('Error', error.message);
+    console.error('Error', error.message);
     return false;
 });
 
