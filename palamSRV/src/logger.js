@@ -23,7 +23,7 @@ class CustomLogger {
     }
 
     info(msg) {
-        if(this.level === 'info') console.log(msg);
+        if(this.level === 'info' || this.level === 'debug' || this.level === 'trace') console.log(msg);
     }
 
     error(msg) {
