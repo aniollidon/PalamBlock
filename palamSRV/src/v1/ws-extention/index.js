@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 const infoController = require("../../controllers/infoController");
 const validacioController = require("../../controllers/validacioController");
 const adminController = require("../../controllers/adminController");
+const logger = require("../../logger").logger;
 
 
 function initializeExtentionWebSocket(server) {
@@ -14,7 +15,7 @@ function initializeExtentionWebSocket(server) {
         });
 
     io.on('connection', (socket) => {
-        console.log('Un client s\'ha connectat ' + socket.id );
+        logger.info('Un client s\'ha connectat ' + socket.id );
 
         socket.on('registerBrowser', (data) => {
             infoController.registerActionListenerBrowserWS(socket.id, data, (action, tabId, message= undefined) => {
