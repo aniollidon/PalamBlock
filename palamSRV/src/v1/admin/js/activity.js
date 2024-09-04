@@ -599,7 +599,6 @@ export function preparaAlumnesGrups(data) {
 
         // Prepara el botó per moure a la pagina de grid
         const grupGridButton = document.getElementById("globalGroupGridButton");
-        grupGridButton.removeAttribute("disabled");
         grupGridButton.onclick = (ev) => {
             window.location.href = "grid?grup=" + grupSelector.value;
         }
