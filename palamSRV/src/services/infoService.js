@@ -244,6 +244,7 @@ class MachineStatus {
         else {
             this.connected = false;
             this.lastUpdate = new Date();
+            logger.trace("Machine " + this.ip + " autodisconnected")
             return false;
         }
     }
@@ -336,13 +337,19 @@ class AlumneStatus {
         if(connected === 0 && mostRecentUnconnected){
             // Borra totes excepte
             for (const machine in this.machines) {
-                if(machine !== mostRecentUnconnected) delete this.machines[machine];
+                if(machine !== mostRecentUnconnected) {
+                    delete this.machines[machine];
+                    logger.trace("Machine " + machine + " deleted");
+                }
             }
         }
         else if(connected > 1){
             // Borra totes les desconnectades
             for (const machine in this.machines) {
-                if(!machine.connected) delete this.machines[machine];
+                if(!machine.connected){
+                    delete this.machines[machine];
+                    logger.trace("Machine " + machine + " deleted");
+                }
             }
         }
 
