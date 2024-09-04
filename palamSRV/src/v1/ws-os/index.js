@@ -30,6 +30,7 @@ function initializeOSWebSocket(server) {
         });
 
         socket.on('disconnect', () => {
+            logger.info('S\'ha desconnectat un client ws-os ' + socket.id );
             infoController.unregisterMachine(socket.id);
         });
 
