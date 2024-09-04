@@ -303,6 +303,8 @@ class AlumneStatus {
     registerMachine( sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp) {
         this.setAlive(timestamp);
         this.machines[sid] = new MachineStatus(ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
+
+        this._onlyOneOrAlive();
     }
 
     unregisterMachine(sid, timestamp){
@@ -310,6 +312,41 @@ class AlumneStatus {
             this.machines[sid].connected = false;
             this.machines[sid].lastUpdate = timestamp;
         }
+
+        this._onlyOneOrAlive();
+    }
+
+    _onlyOneOrAlive() {
+        // Esborra les màquines que no estan connectades, excepte si només en queda una
+        let connected = 0;
+        let mostRecentUnconnected = undefined;
+        let mostRecentUnconnectedDate = new Date(0);
+        for (const machine in this.machines) {
+            if (this.machines[machine].connected) {
+                connected++;
+            }
+            else{
+                if(this.machines[machine].lastUpdate > mostRecentUnconnectedDate){
+                    mostRecentUnconnected = machine;
+                    mostRecentUnconnectedDate = this.machines[machine].lastUpdate;
+                }
+            }
+        }
+
+        if(connected === 0 && mostRecentUnconnected){
+            // Borra totes excepte
+            for (const machine in this.machines) {
+                if(machine !== mostRecentUnconnected) delete this.machines[machine];
+            }
+        }
+        else if(connected > 1){
+            // Borra totes les desconnectades
+            for (const machine in this.machines) {
+                if(!machine.connected) delete this.machines[machine];
+            }
+        }
+
+
     }
 
     updateMachine(sid, ip, ssid, timestamp) {
