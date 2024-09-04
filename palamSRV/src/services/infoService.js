@@ -252,6 +252,7 @@ class MachineStatus {
     execute(command) {
         if (this.connected && this.__checkAlive()){ // Comprova si està connectada ara mateix
             try {
+                logger.trace("Executing command " + command + " on machine " + this.ip);
                 this._execute(command);
                 return true;
             }
@@ -303,6 +304,14 @@ class AlumneStatus {
 
     registerMachine( sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp) {
         this.setAlive(timestamp);
+
+        // Si hi ha una maquina amb la mateixa ip, la borra i la substitueix
+        for (const machine in this.machines) {
+            if (this.machines[machine].ip === ip) {
+                delete this.machines[machine];
+            }
+        }
+
         this.machines[sid] = new MachineStatus(ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
 
         this._onlyOneOrAlive();
@@ -528,7 +537,6 @@ function registerBrowser(browserDetails, tabsInfos, activeTab, timestamp) {
 }
 
 async function getAlumnesActivity() {
-    logger.trace("getAlumnesActivity");
     // Get alumnes status on db
     for (const alumne in allAlumnesStatus.alumnesStat) {
         try {
