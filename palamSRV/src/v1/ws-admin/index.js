@@ -25,6 +25,7 @@ function initializeAdminWebSocket(server) {
     });
 
     io.on('connection', async (socket) => {
+        logger.info('S\'ha connectat un client ws-admin ' + socket.id );
         socket.emit('grupAlumnesList', await alumneController.getGrupAlumnesList());
         socket.emit('alumnesActivity', await infoController.getAlumnesActivity());
         socket.emit('getAlumnesMachine', infoController.getAlumnesMachine());

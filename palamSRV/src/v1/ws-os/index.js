@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 const infoController = require("../../controllers/infoController");
 const validacioController = require("../../controllers/validacioController");
 const adminController = require("../../controllers/adminController");
+const {logger} = require("../../logger");
 
 
 function initializeOSWebSocket(server) {
@@ -14,7 +15,7 @@ function initializeOSWebSocket(server) {
         });
 
     io.on('connection', (socket) => {
-        console.log('Un client s\'ha connectat ' + socket.id );
+        logger.info('S\'ha connectat un client ws-os ' + socket.id );
 
         socket.on('registerOS', (data) => {
             const executionCallback = async (data) => {

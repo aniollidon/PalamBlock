@@ -15,7 +15,7 @@ function initializeExtentionWebSocket(server) {
         });
 
     io.on('connection', (socket) => {
-        logger.info('Un client s\'ha connectat ' + socket.id );
+        logger.info('S\'ha connectat un client ws-extention ' + socket.id );
 
         socket.on('registerBrowser', (data) => {
             infoController.registerActionListenerBrowserWS(socket.id, data, (action, tabId, message= undefined) => {
