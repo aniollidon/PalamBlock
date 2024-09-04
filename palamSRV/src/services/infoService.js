@@ -580,8 +580,11 @@ function registerMachine(alumne, sid, ip, ssid, os, version, executionCallback,a
 
 
 function unregisterMachine(sid, timestamp){
-    if(allAlumnesStatus.alumnesStat[alumne]){
-        allAlumnesStatus.alumnesStat[alumne].unregisterMachine(sid, timestamp);
+    // Busca l'alumne que té aquest sid
+    for (const alumne in allAlumnesStatus.alumnesStat) {
+        if(allAlumnesStatus.alumnesStat[alumne].machines[sid]){
+            allAlumnesStatus.alumnesStat[alumne].unregisterMachine(sid, timestamp);
+        }
     }
 }
 
