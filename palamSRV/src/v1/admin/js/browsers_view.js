@@ -1,6 +1,6 @@
-import {drawHistorialWeb, drawHistorialApps, drawHistorialStats, drawHistorialHostsSortedByUsage} from "./sidebar.js";
-import {drawAlumnesActivity, preparaAlumnesGrups} from "./activity.js";
-import {setnormesWebInfo, setnormesAppsInfo} from "./dialogs.js";
+import {drawHistorialWeb, drawHistorialStats, drawHistorialHostsSortedByUsage} from "./sidebar.js";
+import {drawAlumnesActivity, preparaAlumnesGrups} from "./browsers.js";
+import {setnormesWebInfo} from "./dialogs.js";
 import {warnNormesWeb} from "./warnings.js";
 import {socket} from "./socket.js";
 
@@ -49,27 +49,9 @@ socket.on('normesWeb', function (data) {
     }
 });
 
-socket.on('normesApps', function (data) {
-    try {
-        setnormesAppsInfo(data);
-    } catch (e) {
-        console.error(e);
-        errorSendLog(e);
-    }
-});
-
 socket.on('historialWebAlumne', function (data) {
     try {
         drawHistorialWeb(data.alumne, data.historial, data.query);
-    } catch (e) {
-        console.error(e);
-        errorSendLog(e);
-    }
-});
-
-socket.on('historialAppsAlumne', function (data) {
-    try {
-        drawHistorialApps(data.alumne, data.historial);
     } catch (e) {
         console.error(e);
         errorSendLog(e);
@@ -101,6 +83,8 @@ socket.on('connect', function () {
 // Gestiona errors d'autenticació
 socket.on('connect_error', (error) => {
     console.log('Error d\'autenticació:', error.message);
-    window.location.href = "/admin/login.html";
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('go', 'browsers');
+    window.location.href = "/admin/login?" + urlParams.toString();
 });
 

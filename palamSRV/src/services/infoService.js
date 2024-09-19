@@ -5,7 +5,7 @@ const logger = require('../logger').logger;
 const {BrowserDetails, TabDetails} = require("./structures");
 const {estructuraPublica} = require("./utils");
 
-class TabStatus extends TabDetails  {
+class TabStatus extends TabDetails {
     constructor(details, timestamp) {
         super();
         super.from(details);
@@ -44,7 +44,7 @@ class TabStatus extends TabDetails  {
 }
 
 class BrowserStatus extends BrowserDetails {
-    constructor(details, timestamp, onUpdateCallback) {
+    constructor(details, timestamp, onUpdateCallback = () => {}) {
         super();
         super.from(details);
 
@@ -53,11 +53,12 @@ class BrowserStatus extends BrowserDetails {
         this.updatedAt = timestamp;
         this._passiveupdatedAt = timestamp; // (v1.0) used to check if the browser is disconnected
         this._onUpdateCallback = onUpdateCallback;
-        this._onActionCallback = () => {};
+        this._onActionCallback = () => {
+        };
         this._checkInterval = undefined; // (v1.0) used to check if the browser is disconnected
         this.opened = true;
 
-        if(this.extVersion === "1.0") { // Legacy support version 1.0
+        if (this.extVersion === "1.0") { // Legacy support version 1.0
             // Comprova si el browser s'ha desconnectat
             const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
             this._checkInterval = setInterval(() => {
@@ -78,13 +79,13 @@ class BrowserStatus extends BrowserDetails {
     }
 
 
-    close(timestamp, silent=false) {
+    close(timestamp, silent = false) {
         for (const tab in this.tabs) {
             this.tabs[tab].close(timestamp);
         }
         this.opened = false;
         this.updatedAt = timestamp;
-        if(!silent) this._onUpdateCallback();
+        if (!silent) this._onUpdateCallback('browsers');
     }
 
     setAlive(timestamp) {
@@ -109,7 +110,7 @@ class BrowserStatus extends BrowserDetails {
         if (!this.tabs[tabId]) {
             this.tabs[tabId] = new TabStatus(tabDetails, timestamp);
             changes = true;
-        } else{
+        } else {
             changes = this.tabs[tabId].update(tabDetails, timestamp);
         }
 
@@ -185,7 +186,7 @@ class BrowserStatus extends BrowserDetails {
         return changes;
     }
 
-    remoteAction(action, tabId, message= undefined) {
+    remoteAction(action, tabId, message = undefined) {
         this._onActionCallback(action, tabId, message);
     }
 
@@ -217,7 +218,7 @@ class AppStatus {
 }
 
 class MachineStatus {
-    constructor(ip, wifi_ssid, os, version, executionCallback, aliveCallback, timestamp) {
+    constructor(ip, wifi_ssid, os, version, executionCallback, aliveCallback, timestamp, onUpdateCallback = () => {}) {
         this.ip = ip;
         this.os = os;
         this.version = version
@@ -226,6 +227,7 @@ class MachineStatus {
         this.connected = true;
         this._execute = executionCallback;
         this._isAlive = aliveCallback;
+        this._onUpdateCallback = onUpdateCallback;
 
         // Comprova si la màquina s'ha desconnectat
         const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
@@ -237,31 +239,29 @@ class MachineStatus {
     }
 
     __checkAlive() {
-        if(this._isAlive()){
+        if (this._isAlive()) {
             this.lastUpdate = new Date();
             return true;
-        }
-        else {
+        } else {
             this.connected = false;
             this.lastUpdate = new Date();
             logger.trace("Machine " + this.ip + " autodisconnected")
+            this._onUpdateCallback("machines");
             return false;
         }
     }
 
     execute(command) {
-        if (this.connected && this.__checkAlive()){ // Comprova si està connectada ara mateix
+        if (this.connected && this.__checkAlive()) { // Comprova si està connectada ara mateix
             try {
                 logger.trace("Executing command " + command + " on machine " + this.ip);
                 this._execute(command);
                 return true;
-            }
-            catch (err) {
+            } catch (err) {
                 logger.error("Error executing command " + command + " on machine " + this.ip, err);
                 return false;
             }
-        }
-        else{
+        } else {
             logger.error("Error executing command " + command + ". Machine " + this.ip + " is not connected");
             return false;
         }
@@ -269,7 +269,7 @@ class MachineStatus {
 }
 
 class AlumneStatus {
-    constructor(alumne, onUpdateCallback) {
+    constructor(alumne, onUpdateCallback = () => {}) {
         this.alumne = alumne;
         this.browsers = {};
         this.apps = {};
@@ -287,7 +287,7 @@ class AlumneStatus {
                     this.apps[app].close();
                 }
                 this.conected = false;
-                this._onUpdateCallback();
+                this._onUpdateCallback('browsers,apps,machines');
             }
         }, NOCONN_TIME);
     }
@@ -302,7 +302,7 @@ class AlumneStatus {
         if (!this.apps[appinfo.pid]) this.apps[appinfo.pid] = new AppStatus(appinfo, status, timestamp); else this.apps[appinfo.pid].update(status, timestamp);
     }
 
-    registerMachine( sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp) {
+    registerMachine(sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp) {
         this.setAlive(timestamp);
 
         // Si hi ha una maquina amb la mateixa ip, la borra i la substitueix
@@ -312,18 +312,20 @@ class AlumneStatus {
             }
         }
 
-        this.machines[sid] = new MachineStatus(ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
+        this.machines[sid] = new MachineStatus(ip, ssid, os, version, executionCallback, aliveCallback, timestamp, this._onUpdateCallback);
 
         this._onlyOneOrAlive();
+        this._onUpdateCallback("machines");
     }
 
-    unregisterMachine(sid, timestamp){
-        if(this.machines[sid]) {
+    unregisterMachine(sid, timestamp) {
+        if (this.machines[sid]) {
             this.machines[sid].connected = false;
             this.machines[sid].lastUpdate = timestamp;
         }
 
         this._onlyOneOrAlive();
+        this._onUpdateCallback("machines");
     }
 
     _onlyOneOrAlive() {
@@ -334,28 +336,26 @@ class AlumneStatus {
         for (const machine in this.machines) {
             if (this.machines[machine].connected) {
                 connected++;
-            }
-            else{
-                if(this.machines[machine].lastUpdate > mostRecentUnconnectedDate){
+            } else {
+                if (this.machines[machine].lastUpdate > mostRecentUnconnectedDate) {
                     mostRecentUnconnected = machine;
                     mostRecentUnconnectedDate = this.machines[machine].lastUpdate;
                 }
             }
         }
 
-        if(connected === 0 && mostRecentUnconnected){
+        if (connected === 0 && mostRecentUnconnected) {
             // Borra totes excepte
             for (const machine in this.machines) {
-                if(machine !== mostRecentUnconnected) {
+                if (machine !== mostRecentUnconnected) {
                     delete this.machines[machine];
                     logger.trace("Machine " + machine + " deleted");
                 }
             }
-        }
-        else if(connected > 1){
+        } else if (connected > 1) {
             // Borra totes les desconnectades
             for (const machine in this.machines) {
-                if(!machine.connected){
+                if (!machine.connected) {
                     delete this.machines[machine];
                     logger.trace("Machine " + machine + " deleted");
                 }
@@ -368,12 +368,14 @@ class AlumneStatus {
     updateMachine(sid, ip, ssid, timestamp) {
         this.setAlive(timestamp);
         if (!this.machines[sid]) {
-            this.machines[sid] = new MachineStatus(ip, ssid, "unknown", "unknown", timestamp);
-        } else {
-            this.machines[sid].ip = ip;
-            this.machines[sid].wifi_ssid = ssid;
-            this.machines[sid].lastUpdate = timestamp;
+            this.machines[sid] = new MachineStatus(ip, ssid, "unknown", "unknown", timestamp, this._onUpdateCallback);
         }
+
+        this.machines[sid].ip = ip;
+        this.machines[sid].wifi_ssid = ssid;
+        this.machines[sid].lastUpdate = timestamp;
+        this._onUpdateCallback("machines");
+
     }
 
     closeNotUpdatedApps(timestamp) {
@@ -414,7 +416,7 @@ class AlumneStatus {
         return this.browsers[browserDetails.browser].updateTabs(tabsInfos, activeTab, timestamp);
     }
 
-    registerOnUpdateCallback(callback) {
+    registerActivityOnUpdateCallback(callback) {
         this._onUpdateCallback = callback;
         for (const browser in this.browsers) {
             this.browsers[browser].registerOnUpdateCallback(callback);
@@ -431,25 +433,21 @@ class AlumneStatus {
 }
 
 class AllAlumnesStatus {
-    constructor(onUpdateCallback = () => {
-    }) {
+    constructor(_onUpdateCallback = () => {}) {
         this.alumnesStat = {};
         this.pendingBrowserActions = {};
         this._onSavePending = false;
-        this._onUpdateCallback = onUpdateCallback;
+        this._onUpdateCallback = _onUpdateCallback;
     }
 
     updateBrowserDetails(browserDetails) {
         if (!this.alumnesStat[browserDetails.owner]) {
             this.alumnesStat[browserDetails.owner] = new AlumneStatus(browserDetails.owner, this._onUpdateCallback);
-        }
-        else{
-            if(!this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser])
-                this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser] = new BrowserStatus(browserDetails, new Date(), this._onUpdateCallback);
-            else
-                this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].updateDetails(browserDetails);
+        } else {
+            if (!this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser]) this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser] = new BrowserStatus(browserDetails, new Date(), this._onUpdateCallback); else this.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].updateDetails(browserDetails);
         }
     }
+
     updateActionCallback(browserDetails, callback) {
         if (!this.alumnesStat[browserDetails.owner]) {
             this.alumnesStat[browserDetails.owner] = new AlumneStatus(browserDetails.owner, this._onUpdateCallback);
@@ -458,11 +456,11 @@ class AllAlumnesStatus {
         this.alumnesStat[browserDetails.owner].registerActionCallback(browserDetails, callback);
     }
 
-    registerOnUpdateCallback(onUpdateCallback) {
+    registerActivityOnUpdateCallback(onUpdateCallback) {
         this._onUpdateCallback = onUpdateCallback;
         for (const alumne in this.alumnesStat) {
             if (!this.alumnesStat[alumne]) continue; // Això no hauria de caldre
-            this.alumnesStat[alumne].registerOnUpdateCallback(onUpdateCallback);
+            this.alumnesStat[alumne].registerActivityOnUpdateCallback(onUpdateCallback);
         }
     }
 
@@ -499,7 +497,7 @@ class AllAlumnesStatus {
                 }
             }
         }
-        this._onUpdateCallback();
+        this._onUpdateCallback('browsers');
     }
 
     updateTabs(browserDetails, tabsInfos, activeTab, timestamp) {
@@ -508,7 +506,7 @@ class AllAlumnesStatus {
         }
 
         const changes = this.alumnesStat[browserDetails.owner].updateTabs(browserDetails, tabsInfos, activeTab, timestamp);
-        if (changes) this._onUpdateCallback();
+        if (changes) this._onUpdateCallback('browsers');
     }
 
     updateBrowser(browserDetails, tabDetails, timestamp) {
@@ -518,7 +516,7 @@ class AllAlumnesStatus {
         }
 
         const changes = this.alumnesStat[browserDetails.owner].updateBrowser(browserDetails, tabDetails, timestamp);
-        if (changes) this._onUpdateCallback();
+        if (changes) this._onUpdateCallback('browsers');
     }
 }
 
@@ -549,26 +547,23 @@ async function getAlumnesActivity() {
     return estructuraPublica(allAlumnesStatus.alumnesStat);
 }
 
-function registerOnUpdateCallback(callback) {
+function registerActivityOnUpdateCallback(callback) {
     if (!callback) return;
-    allAlumnesStatus.registerOnUpdateCallback(callback);
+    allAlumnesStatus.registerActivityOnUpdateCallback(callback);
 }
 
 function remoteCloseTab(alumne, browser, tabId) { // TODO: Métode legacy v1.0
 
     // Si la versió és 1.0 afegeix l'acció a la llista d'accions pendents
-    if(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion === "1.0") {
+    if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion === "1.0") {
         const action = {action: 'close', browser: browser, tabId: tabId};
         if (!allAlumnesStatus.pendingBrowserActions[alumne]) allAlumnesStatus.pendingBrowserActions[alumne] = {};
 
         if (!allAlumnesStatus.pendingBrowserActions[alumne][browser]) allAlumnesStatus.pendingBrowserActions[alumne][browser] = []
 
         allAlumnesStatus.pendingBrowserActions[alumne][browser].push(action)
-    }
-    else {
-        if(allAlumnesStatus.alumnesStat[alumne].browsers[browser])
-            allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction("close", tabId);
-        else {
+    } else {
+        if (allAlumnesStatus.alumnesStat[alumne].browsers[browser]) allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction("close", tabId); else {
             logger.error("Remote close for tab " + tabId + " but browser " + browser + " not found");
         }
 
@@ -594,15 +589,14 @@ async function normesWebHasChanged() {
                 const permition = await validacio.checkWeb(webPage);
 
                 if (permition !== "allow") {
-                    if(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion === "1.0") {
+                    if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion === "1.0") {
                         const action = {action: 'refresh', tabId: tab};
                         allAlumnesStatus._onSavePending = true;
                         if (!allAlumnesStatus.pendingBrowserActions[alumne]) allAlumnesStatus.pendingBrowserActions[alumne] = {};
                         if (!allAlumnesStatus.pendingBrowserActions[alumne][browser]) allAlumnesStatus.pendingBrowserActions[alumne][browser] = [];
                         allAlumnesStatus.pendingBrowserActions[alumne][browser].push(action)
                         allAlumnesStatus._onSavePending = false;
-                    }
-                    else {
+                    } else {
                         allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction(permition, tab);
                     }
                 }
@@ -617,31 +611,30 @@ function registerApps(apps, alumne, status, timestamp) {
         allAlumnesStatus.registerApp(appinfo, alumne, status[appinfo.name], timestamp);
     }
     allAlumnesStatus.closeNotUpdatedApps(alumne, timestamp);
-    allAlumnesStatus._onUpdateCallback();
+    allAlumnesStatus._onUpdateCallback('apps');
 }
 
-function registerMachine(alumne, sid, ip, ssid, os, version, executionCallback,aliveCallback, timestamp) {
+function registerMachine(alumne, sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp) {
     if (!allAlumnesStatus.alumnesStat[alumne]) {
         allAlumnesStatus.alumnesStat[alumne] = new AlumneStatus(alumne, allAlumnesStatus._onUpdateCallback);
     }
 
     allAlumnesStatus.alumnesStat[alumne].setAlive(timestamp);
-    allAlumnesStatus.alumnesStat[alumne].registerMachine(sid, ip, ssid, os, version, executionCallback, aliveCallback,
-        timestamp);
+    allAlumnesStatus.alumnesStat[alumne].registerMachine(sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
 }
 
 
-function unregisterMachine(sid, timestamp){
+function unregisterMachine(sid, timestamp) {
     // Busca l'alumne que té aquest sid
     for (const alumne in allAlumnesStatus.alumnesStat) {
-        if(allAlumnesStatus.alumnesStat[alumne].machines[sid]){
+        if (allAlumnesStatus.alumnesStat[alumne].machines[sid]) {
             allAlumnesStatus.alumnesStat[alumne].unregisterMachine(sid, timestamp);
         }
     }
 }
 
 function updateMachine(sid, ip, ssid, alumne, timestamp) {
-    if(allAlumnesStatus.alumnesStat[alumne]){
+    if (allAlumnesStatus.alumnesStat[alumne]) {
         allAlumnesStatus.alumnesStat[alumne].updateMachine(sid, ip, ssid, timestamp);
     }
 }
@@ -668,9 +661,7 @@ function registerActionListener(browserDetails, callback) {
 
 
 function remoteSetTabStatus(browserDetails, tabId, status) {
-    if(allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser])
-        allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].remoteAction(status, tabId);
-    else {
+    if (allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser]) allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].remoteAction(status, tabId); else {
         logger.error("Remote set status for tab " + tabId + " but browser " + browserDetails.browser + " not found");
     }
 }
@@ -678,11 +669,9 @@ function remoteSetTabStatus(browserDetails, tabId, status) {
 function sendMessageToAlumne(alumne, message) {
     if (!allAlumnesStatus.alumnesStat[alumne]) return;
     for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
-        if(parseInt(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion) >= 1)
-            for (const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
-                if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].active)
-                    allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction("message", tab, message);
-            }
+        if (parseInt(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion) >= 1) for (const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
+            if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].active) allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction("message", tab, message);
+        }
     }
 }
 
@@ -706,7 +695,7 @@ module.exports = {
     registerBrowser,
     unregisterBrowser,
     getAlumnesActivity,
-    registerOnUpdateCallback,
+    registerActivityOnUpdateCallback,
     registerActionListener,
     remoteCloseTab,
     getBrowserPendingActions,

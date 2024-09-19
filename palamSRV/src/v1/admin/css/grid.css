@@ -29,3 +29,8 @@
     position: absolute;
 }
 
+.offline .btn{
+    background-color: #d5d5d5;
+    color: white;
+    border: gray;
+}

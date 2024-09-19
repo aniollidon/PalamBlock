@@ -1,9 +1,21 @@
-import {socket} from "../js/socket.js";
+import {socket} from "./socket.js";
 
 let grupAlumnesList = {}
 let alumnesMachines = {}
 
+export function drawGridGrup_oncurrent(){
+    const grupSelector = document.getElementById("grupSelector");
+    const grup = grupSelector.value;
+    drawGridGrup(grup);
+}
+
 function drawGridGrup(grupName){
+
+    // Botó de veure tots els navegadors
+    const globalGroupBrowsersView = document.getElementById('globalGroupBrowsersView');
+    globalGroupBrowsersView.addEventListener('click', () => {
+        window.location.href = "../browsers?grup=" + grupName;
+    });
 
     // Ja es poden activar els botons de grup
     document.getElementById('globalGroupPowerOffButton').disabled = false;
@@ -103,13 +115,33 @@ function drawGridGrup(grupName){
         const gridItemContentScreen = document.createElement("div");
         gridItemContentScreen.classList.add("grid-item-content-screen");
         const iframe = document.createElement("iframe");
-        const alumneIP = Object.values(alumnesMachines[alumne])[0].ip;
-        iframe.setAttribute("src",
-            `http://${alumneIP}:6080/vnc_iframe.html?password=fpb123&reconnect&name=${alumne}`); // TODO
+        const maquina = Object.values(alumnesMachines[alumne])[0];
+
+        if(!maquina.connected) {
+            iframe.src = "";
+            gridItem.classList.add("offline");
+            // Desactiva els botons
+            buttonFull.disabled = true;
+            buttonScript.disabled = true;
+            buttonFreeze.disabled = true;
+            buttonOff.disabled = true
+        }
+        else {
+            iframe.setAttribute("src",
+                `http://${maquina.ip}:6080/vnc_iframe.html?password=fpb123&reconnect&name=${alumne}`);
+            gridItem.classList.add("online");
+            // Reactiva els botons
+            buttonFull.disabled = false;
+            buttonScript.disabled = false;
+            buttonFreeze.disabled = false;
+            buttonOff.disabled = false;
+        }
+
         iframe.setAttribute("width", "400px");
         iframe.setAttribute("height", "225px");
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("scrolling", "no");
+
         iframe.style.backgroundImage = "url('../img/offline.jpg')";
         iframe.style.backgroundPosition = "center";
         iframe.style.backgroundRepeat = "no-repeat";
@@ -122,14 +154,12 @@ function drawGridGrup(grupName){
         gridItemContentScreen.appendChild(overlay);
         gridItemContentScreen.appendChild(iframe);
         gridItem.appendChild(gridItemContentScreen);
-
-
         grid.appendChild(gridItem);
     }
 }
 
 export function preparaSelectorGrups() {
-    // Lllegeix el parametre grup de la query
+    // Llegeix el parametre grup de la query
     const urlParams = new URLSearchParams(window.location.search);
     const grupGET = urlParams.get('grup');
 

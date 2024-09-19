@@ -1,5 +1,5 @@
-import {chromeTabsObjects} from "./activity.js";
-import {creaAppMenuJSON, creaWebMenuJSON} from "./dialogs.js";
+import {chromeTabsObjects} from "./browsers.js";
+import {creaWebMenuJSON} from "./dialogs.js";
 import {socket} from "./socket.js";
 
 export function toogleSideBar(alumne, tipus = "web") {
@@ -29,7 +29,7 @@ export function toogleSideBar(alumne, tipus = "web") {
 
         const historialSideBarTitle = document.getElementById("historialSidebarTitle");
         const historialSideBarContent = document.getElementById("historialSidebarContent");
-        historialSideBarTitle.innerHTML = `Historial ${(tipus === "web" ? "web" : "d'Apps")} de l'alumne ${alumne}`;
+        historialSideBarTitle.innerHTML = `Historial ${(tipus === "web" ? "web" : "d'Apps")} de l'alumne ${alumne}`; // DEPRECATED APPS
         historialSideBarContent.innerHTML = "";
         historialSidebar.style.display = "";
     } else {
@@ -396,120 +396,6 @@ export function drawHistorialHostsSortedByUsage(alumne, sortedHistorial, days) {
             openMenu(ev, opcionMenuContextual, info);
         }
     }
-}
-
-export function drawHistorialApps(alumne, historial) {
-    const historialSideBarContent = document.getElementById("historialSidebarContent");
-
-    let hiddenAuxInfo = document.getElementById("hiddenHistorialAuxInfo");
-
-    if (!hiddenAuxInfo) {
-        hiddenAuxInfo = document.createElement("div");
-        hiddenAuxInfo.setAttribute("id", "hiddenHistorialAuxInfo");
-        hiddenAuxInfo.setAttribute("style", "display: none;");
-        historialSideBarContent.innerHTML = "";
-        hiddenAuxInfo.setAttribute("data-historial-length", 0);
-        hiddenAuxInfo.setAttribute("data-alumne", alumne);
-        hiddenAuxInfo.setAttribute("data-prevday", undefined);
-        historialSideBarContent.appendChild(hiddenAuxInfo);
-    }
-
-    let prevday = hiddenAuxInfo.getAttribute("data-prevday");
-    const historialLength = parseInt(hiddenAuxInfo.getAttribute("data-historial-length")) + historial.length;
-
-    for (const process of historial) {
-        const started = new Date(process.startedTimestamp);
-        const updated = new Date(process.updatedTimestamp);
-        const dia = started.toLocaleDateString('ca-ES', {
-            weekday: 'short',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-        const horaStart = started.toLocaleTimeString('ca-ES', {hour: '2-digit', minute: '2-digit'});
-        const horaUpdated = updated.toLocaleTimeString('ca-ES', {hour: '2-digit', minute: '2-digit'});
-        const newDay = prevday !== dia;
-
-        if (newDay) {
-            const divHeader = document.createElement("div");
-            divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
-            divHeader.innerHTML = `<h7 class="bg-light border-top border-bottom date-historial-heading">${dia}</h7>`;
-            historialSideBarContent.appendChild(divHeader);
-            prevday = dia;
-        }
-
-        const a = document.createElement("a");
-        a.setAttribute("href", "#");
-        a.setAttribute("class", "list-group-item list-group-item-action lh-tight py-1"); //active
-        if(!process.onTaskBar)
-            a.classList.add("hidden-app");
-        const tooltip = process.processPath;
-        a.setAttribute("title", tooltip);
-
-        const divHeader = document.createElement("div");
-        divHeader.setAttribute("class", "d-flex w-100 align-items-center justify-content-between");
-
-        const dTitile = document.createElement("strong");
-        dTitile.setAttribute("class", "mb-1 nomesunalinia");
-        const favicon = document.createElement("img");
-        favicon.setAttribute("src", process.iconB64 ? "data:image/png;base64," + process.iconB64 : "img/undefined_app.png");
-        favicon.setAttribute("class", "historial-favicon");
-        dTitile.appendChild(favicon);
-
-        const text = document.createTextNode(process.caption);
-        dTitile.appendChild(text);
-        divHeader.appendChild(dTitile);
-
-        const dHora = document.createElement("small");
-        dHora.id = `historial_hora_${process._id}`;
-        dHora.innerHTML = horaStart === horaUpdated ? horaStart : `${horaStart} - ${horaUpdated}`
-        divHeader.appendChild(dHora);
-
-        const divContent = document.createElement("div");
-        divContent.setAttribute("class", "col-10 mb-1 small");
-        divContent.innerHTML = `${process.processName}`;
-        const opcionMenuContextual = creaAppMenuJSON(alumne, process.processName);
-
-        a.onclick = (ev) => {
-            const info = {
-                alumne: alumne,
-                processName: process.processName,
-                processPath: process.processPath,
-                caption: process.caption,
-                iconB64: process.iconB64,
-                iconSVG: process.iconSVG,
-            }
-            openMenu(ev, opcionMenuContextual, info);
-        }
-        a.appendChild(divHeader);
-        a.appendChild(divContent);
-        historialSideBarContent.appendChild(a);
-    }
-
-    if (historial.length !== 0) {
-        // Mostra'n més
-        const a = document.createElement("a");
-        a.setAttribute("href", "#");
-        a.setAttribute("class", "list-group-item list-group-item-action list-group-item-dark lh-tight");
-        a.setAttribute("aria-current", "true");
-        a.innerHTML = `<strong class="mb-1 nomesunalinia">Mostra'n més</strong>`;
-        a.onclick = () => {
-            socket.emit("getHistorialApps", {alumne: alumne, offset: historialLength});
-            a.remove();
-        };
-
-        historialSideBarContent.appendChild(a);
-    }
-
-    hiddenAuxInfo.setAttribute("data-historial-length", historialLength);
-    hiddenAuxInfo.setAttribute("data-alumne", alumne);
-    hiddenAuxInfo.setAttribute("data-prevday", prevday);
-
-    // Refresca els chrome tabs
-    if (chromeTabsObjects[alumne])
-        for (let b in chromeTabsObjects[alumne])
-            chromeTabsObjects[alumne][b].layoutTabs();
-
 }
 
 export function drawHistorialStats(alumne, lastUsage) {

@@ -163,9 +163,9 @@ function getAlumnesMachine() {
     return infoService.getAlumnesMachine();
 }
 
-function registerOnUpdateCallback(callback) {
+function registerActivityOnUpdateCallback(callback) {
     if (!callback) return;
-    infoService.registerOnUpdateCallback(callback);
+    infoService.registerActivityOnUpdateCallback(callback);
 }
 
 function remoteCloseTab(alumne, browser, tab) {
@@ -214,7 +214,7 @@ module.exports = {
     postTabInfoWS,
     postBrowserInfoWS,
     getAlumnesActivity,
-    registerOnUpdateCallback,
+    registerActivityOnUpdateCallback,
     remoteCloseTab,
     normesWebHasChanged,
     disconnectBrowserWS,

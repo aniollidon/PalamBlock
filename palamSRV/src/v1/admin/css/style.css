@@ -67,6 +67,7 @@ body {
     margin-left: 10px;
 }
 
+
 .grup-opcions{
     display: flex;
 }
@@ -112,7 +113,7 @@ a.active {
     min-height: initial !important;
 }
 
-.group-edit-buttons{
+.grup-edit-buttons{
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;

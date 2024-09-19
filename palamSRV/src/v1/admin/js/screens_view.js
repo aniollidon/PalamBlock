@@ -1,15 +1,10 @@
-import {socket} from "../js/socket.js";
-import {preparaSelectorGrups, setAlumnesMachine, setGrupAlumnesList} from "./activity.js";
+import {socket} from "./socket.js";
+import {drawGridGrup_oncurrent, preparaSelectorGrups, setAlumnesMachine, setGrupAlumnesList} from "./screens.js";
 
 let grups_disponibles = false;
 let maquines_disponibles = false;
 
 // Botons principals
-const globalGroupNormalViewButton = document.getElementById('globalGroupNormalViewButton');
-globalGroupNormalViewButton.addEventListener('click', () => {
-    window.location.href = "/admin";
-});
-
 const globalGroupPowerOffButton = document.getElementById('globalGroupPowerOffButton');
 globalGroupPowerOffButton.addEventListener('click', () => {
     const currentGrup = document.getElementById('grupSelector').value;
@@ -26,7 +21,9 @@ socket.on('connect', function () {
 // Gestiona errors d'autenticació
 socket.on('connect_error', (error) => {
     console.log('Error d\'autenticació:', error.message);
-    window.location.href = "/admin/login.html";
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('go', 'screens');
+    window.location.href = "/admin/login?" + urlParams.toString();
 });
 
 socket.on('grupAlumnesList', function (data) {
@@ -38,10 +35,14 @@ socket.on('grupAlumnesList', function (data) {
     }
 );
 
-
-socket.on('getAlumnesMachine', function (data) {
+socket.on('alumnesMachine', function (data) {
     maquines_disponibles = true;
     setAlumnesMachine(data);
     if(grups_disponibles && maquines_disponibles)
         preparaSelectorGrups()
+});
+
+socket.on('updateAlumnesMachine', function (data) {
+    setAlumnesMachine(data);
+    drawGridGrup_oncurrent();
 });
