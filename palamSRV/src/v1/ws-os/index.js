@@ -41,7 +41,4 @@ function initializeOSWebSocket(server) {
 
 }
 
-infoController.registerMachine("prova_id", "prova_version", "prova_os", "prova_ip", "prova_ssid", "prova",
-    ()=>{}, ()=>{});
-infoController.unregisterMachine("prova_id");
 module.exports = initializeOSWebSocket;
