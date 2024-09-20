@@ -43,6 +43,5 @@ socket.on('alumnesMachine', function (data) {
 });
 
 socket.on('updateAlumnesMachine', function (data) {
-    setAlumnesMachine(data);
-    drawGridGrup_oncurrent();
+    drawGridGrup_update(data);
 });
