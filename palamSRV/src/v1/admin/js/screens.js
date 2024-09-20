@@ -23,7 +23,7 @@ export function drawGridGrup_update(updatedData) {
         console.log("from")
         console.log(alumnesMachines[alumne] );
         console.log("to")
-        console.log(maquina);
+        console.log(updatedData[alumne]);
 
 
     }
