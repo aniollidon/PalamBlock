@@ -5,7 +5,7 @@ let alumnesMachines = {}
 
 function compareMachines(m1, m2) {
     try{
-        if(Object.keys(m1) !== Object.keys(m2)) return false;
+        if(Object.keys(m1).toString() !== Object.keys(m2).toString()) return false;
         for (let key in m1) {
             if(m1[key].connected !== m2[key].connected) return false;
             if(m1[key].ip !== m2[key].ip) return false;
