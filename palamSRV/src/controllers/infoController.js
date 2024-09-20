@@ -171,6 +171,7 @@ function registerActivityOnUpdateCallback(callback) {
 
 function remoteCloseTab(alumne, browser, tab) {
     if (!alumne || !browser || !tab) return;
+    alumne = netejaText(alumne);
     infoService.remoteCloseTab(alumne, browser, tab);
 }
 
@@ -185,11 +186,18 @@ function registerActionListenerBrowserWS(sid, msg, callback) {
 }
 
 function sendMessageToAlumne(alumne, msg) {
+    alumne = netejaText(alumne);
     infoService.sendMessageToAlumne(alumne, msg);
 }
 
 function registerMachine(sid, version, os, ip, ssid, alumne, executionCallback, aliveCallback) {
     const timestamp = new Date();
+    alumne = netejaText(alumne);
+    ip = netejaText(ip);
+    ssid = netejaText(ssid);
+    os = netejaText(os);
+    version = netejaText(version);
+
     infoService.registerMachine(alumne, sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
 }
 
@@ -200,11 +208,15 @@ function unregisterMachine(sid){
 
 function updateMachine(sid, ip, ssid, username){
     const timestamp = new Date();
+    username = netejaText(username);
+    ip = netejaText(ip);
+    ssid = netejaText(ssid);
     infoService.updateMachine(username, sid, ip, ssid, timestamp);
-
 }
 
 function sendCommandToAlumne(alumne, command){
+    alumne = netejaText(alumne);
+    command = netejaText(command);
     infoService.sendCommandToAlumne(alumne, command);
 }
 
