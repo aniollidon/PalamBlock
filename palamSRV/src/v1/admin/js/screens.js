@@ -4,13 +4,18 @@ let grupAlumnesList = {}
 let alumnesMachines = {}
 
 function compareMachines(m1, m2) {
-    if(Object.keys(m1) !== Object.keys(m2)) return false;
-    for (let key in m1) {
-        if(m1[key].connected !== m2[key].connected) return false;
-        if(m1[key].ip !== m2[key].ip) return false;
-    }
+    try{
+        if(Object.keys(m1) !== Object.keys(m2)) return false;
+        for (let key in m1) {
+            if(m1[key].connected !== m2[key].connected) return false;
+            if(m1[key].ip !== m2[key].ip) return false;
+        }
 
-    return true;
+        return true
+    }
+    catch (e) {
+        return false;
+    }
 }
 
 export function drawGridGrup_update(updatedData) {
