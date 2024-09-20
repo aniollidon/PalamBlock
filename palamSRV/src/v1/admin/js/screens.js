@@ -19,6 +19,13 @@ export function drawGridGrup_update(updatedData) {
         const gridItem = drawGridItem(alumne, maquina);
         const grid = document.getElementById("grid-container");
         grid.replaceChild(gridItem, oldGridItem);
+        console.log("Updated grid item for alumne " + alumne);
+        console.log("from")
+        console.log(alumnesMachines[alumne] );
+        console.log("to")
+        console.log(maquina);
+
+
     }
 
     setAlumnesMachine(updatedData);
