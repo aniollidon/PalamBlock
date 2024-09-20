@@ -9,7 +9,7 @@ export function drawGridGrup_update(updatedData) {
     if(!grup) return;
 
     for (let alumne in updatedData) {
-        if(!grupAlumnesList[grup].alumnes[alumne]) continue;
+        if(!grupAlumnesList[grup] || !grupAlumnesList[grup].alumnes[alumne]) continue;
         if(Object.keys(updatedData[alumne]).length === 0) continue;
         if(alumnesMachines[alumne] === updatedData[alumne]) continue;
         const oldGridItem = document.getElementById("grid-item-" + alumne);
