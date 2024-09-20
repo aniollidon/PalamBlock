@@ -3,6 +3,16 @@ import {socket} from "./socket.js";
 let grupAlumnesList = {}
 let alumnesMachines = {}
 
+function compareMachines(m1, m2) {
+    if(Object.keys(m1) !== Object.keys(m2)) return false;
+    for (let key in m1) {
+        if(m1[key].connected !== m2[key].connected) return false;
+        if(m1[key].ip !== m2[key].ip) return false;
+    }
+
+    return true;
+}
+
 export function drawGridGrup_update(updatedData) {
     const grupSelector = document.getElementById("grupSelector");
     const grup = grupSelector.value;
@@ -11,7 +21,7 @@ export function drawGridGrup_update(updatedData) {
     for (let alumne in updatedData) {
         if(!grupAlumnesList[grup] || !grupAlumnesList[grup].alumnes[alumne]) continue;
         if(Object.keys(updatedData[alumne]).length === 0) continue;
-        if(alumnesMachines[alumne] === updatedData[alumne]) continue;
+        if(compareMachines(alumnesMachines[alumne], updatedData[alumne])) continue;
         const oldGridItem = document.getElementById("grid-item-" + alumne);
         if(!oldGridItem) continue;
         const maquina = Object.values(updatedData[alumne])[0];
