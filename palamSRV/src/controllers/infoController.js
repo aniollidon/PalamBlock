@@ -3,6 +3,7 @@ const historialService = require("../services/historialService");
 const {WebPage, BrowserDetails, TabDetails} = require("../services/structures");
 const {logger} = require("../logger");
 const validacioService = require("../services/validacioService");
+const {netejaText} = require("./utils");
 
 const postTabInfoAPI = (req, res) => { //DEPRECATED
     const action = req.body.action;
@@ -11,8 +12,8 @@ const postTabInfoAPI = (req, res) => { //DEPRECATED
     const search = req.body.search;
     const pathname = req.body.pathname;
     const title = req.body.title;
-    const alumne = req.body.alumne;
-    const browser = req.body.browser
+    const alumne = netejaText(req.body.alumne);
+    const browser = netejaText(req.body.browser);
     const windowId = req.body.windowId;
     const tabId = req.body.tabId;
     const incognito = req.body.incognito;
@@ -48,7 +49,7 @@ const postTabInfoAPI = (req, res) => { //DEPRECATED
 }
 
 const postBrowserInfoAPI = (req, res) => {
-    const alumne = req.body.alumne;
+    const alumne = netejaText(req.body.alumne);
     const browser = req.body.browser;
     const timestamp = new Date();
     const tabsInfos = req.body.tabsInfos;
@@ -75,7 +76,7 @@ const postBrowserInfoAPI = (req, res) => {
 }
 
 const postMachineInfoAPI = (req, res) => {
-    const alumne = req.body.alumne;
+    const alumne = netejaText(req.body.alumne);
     const timestamp = new Date();
     const currentIp = req.body.currentIp;
 
