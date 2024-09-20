@@ -3,7 +3,6 @@ import {socket} from "./socket.js";
 let grupAlumnesList = {}
 let alumnesMachines = {}
 
-setAlumnesMachine(data);
 export function drawGridGrup_update(updatedData) {
     const grupSelector = document.getElementById("grupSelector");
     const grup = grupSelector.value;
