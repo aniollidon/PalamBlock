@@ -193,10 +193,12 @@ function getAlumnesActivity() {
 
 function getAlumnesMachine() {
     try {
-        if (!infoService.getAlumnesMachine()) return [];
+        const machines = infoService.getAlumnesMachine()
+        if (!machines) return {}
+        else return machines;
     } catch (err) {
         logger.error(err);
-        return [];
+        return {};
     }
 }
 

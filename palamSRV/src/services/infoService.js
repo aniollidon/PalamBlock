@@ -687,6 +687,8 @@ function getAlumnesMachine() {
     for (const alumne in allAlumnesStatus.alumnesStat) {
         if(allAlumnesStatus.alumnesStat[alumne])
             alumnes[alumne] = estructuraPublica(allAlumnesStatus.alumnesStat[alumne].machines);
+        else
+            alumnes[alumne] = {};
     }
     return alumnes;
 }
