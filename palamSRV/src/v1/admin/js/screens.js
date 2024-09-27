@@ -203,9 +203,11 @@ function drawGridGrup(grupName){
     grid.innerHTML = "";
     const grup = grupAlumnesList[grupName];
     for (let alumne in grup.alumnes) {
-        if(!alumnesMachines[alumne]) continue;
-        if(Object.keys(alumnesMachines[alumne]).length === 0) continue;
-        const maquina = Object.values(alumnesMachines[alumne])[0];
+        let maquina = {connected: false, ip: ""};
+
+        if(alumnesMachines[alumne] && Object.keys(alumnesMachines[alumne]).length !== 0)
+            maquina = Object.values(alumnesMachines[alumne])[0];
+
         const gridItem = drawGridItem(alumne, maquina);
         grid.appendChild(gridItem);
     }
