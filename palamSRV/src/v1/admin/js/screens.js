@@ -149,6 +149,7 @@ function drawGridItem(alumne, maquina) {
         gridItem.classList.add("offline");
         // Desactiva els botons
         buttonFull.disabled = true;
+        buttonIncognito.disabled = true;
         buttonScript.disabled = true;
         buttonFreeze.disabled = true;
         buttonOff.disabled = true
@@ -159,6 +160,7 @@ function drawGridItem(alumne, maquina) {
         gridItem.classList.add("online");
         // Reactiva els botons
         buttonFull.disabled = false;
+        buttonIncognito.disabled = false;
         buttonScript.disabled = false;
         buttonFreeze.disabled = false;
         buttonOff.disabled = false;
