@@ -28,6 +28,7 @@ class CustomLogger {
 
     error(msg) {
         console.error(msg);
+        console.error("Error registrat a les " + new Date().toISOString());
     }
 
     warn(msg) {
