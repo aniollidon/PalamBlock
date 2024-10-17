@@ -605,7 +605,7 @@ async function normesWebHasChanged() {
     }
 }
 
-function registerApps(apps, alumne, status, timestamp) {
+function registerApps(apps, alumne, status, timestamp) { // DEPRECATED
     for (const appinfo of apps) {
 
         allAlumnesStatus.registerApp(appinfo, alumne, status[appinfo.name], timestamp);
@@ -621,6 +621,8 @@ function registerMachine(alumne, sid, ip, ssid, os, version, executionCallback, 
 
     allAlumnesStatus.alumnesStat[alumne].setAlive(timestamp);
     allAlumnesStatus.alumnesStat[alumne].registerMachine(sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
+
+    logger.debug("Machine " + sid + " from " + alumne + " registered");
 }
 
 
@@ -629,6 +631,7 @@ function unregisterMachine(sid, timestamp) {
     for (const alumne in allAlumnesStatus.alumnesStat) {
         if (allAlumnesStatus.alumnesStat[alumne].machines[sid]) {
             allAlumnesStatus.alumnesStat[alumne].unregisterMachine(sid, timestamp);
+            logger.debug("Machine " + sid + " from " + alumne + " unregistered");
         }
     }
 }
@@ -636,6 +639,7 @@ function unregisterMachine(sid, timestamp) {
 function updateMachine(sid, ip, ssid, alumne, timestamp) {
     if (allAlumnesStatus.alumnesStat[alumne]) {
         allAlumnesStatus.alumnesStat[alumne].updateMachine(sid, ip, ssid, timestamp);
+        logger.debug("Machine " + sid + " from " + alumne + " updated");
     }
 }
 
@@ -645,6 +649,7 @@ function unregisterBrowser(sid, timestamp) {
         for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
             if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].id === sid) {
                 allAlumnesStatus.alumnesStat[alumne].browsers[browser].close(timestamp);
+                logger.debug("Browser " + browser + " from " +alumne + " closed");
             }
         }
     }
@@ -661,7 +666,9 @@ function registerActionListener(browserDetails, callback) {
 
 
 function remoteSetTabStatus(browserDetails, tabId, status) {
-    if (allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser]) allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].remoteAction(status, tabId); else {
+    if (allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser])
+        allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].remoteAction(status, tabId);
+    else {
         logger.error("Remote set status for tab " + tabId + " but browser " + browserDetails.browser + " not found");
     }
 }
@@ -669,12 +676,13 @@ function remoteSetTabStatus(browserDetails, tabId, status) {
 function sendMessageToAlumne(alumne, message) {
     if (!allAlumnesStatus.alumnesStat[alumne]) return;
     for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
-        if (parseInt(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion) >= 1) for (const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
-            if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].active) allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction("message", tab, message);
+        if (parseInt(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion) >= 1)
+            for (const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
+            if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].active)
+                allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction("message", tab, message);
         }
     }
 }
-
 function sendCommandToAlumne(alumne, command) {
     if (!allAlumnesStatus.alumnesStat[alumne]) return;
     for (const machines in allAlumnesStatus.alumnesStat[alumne].machines) {

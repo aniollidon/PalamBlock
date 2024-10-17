@@ -119,8 +119,6 @@ const postTabInfoWS = (sid, msg) => {
             return;
         }
 
-        logger.trace("postTabInfoWS: " + action + " " + browserDetails.toString() + " " + tabDetails.toString() + " at:" + timestamp);
-
         if (action === "complete") {
             const validacioAlumne = new validacioService.Validacio(msg.alumne);
             const validacio = validacioAlumne.checkWeb(webPage);
@@ -165,7 +163,6 @@ const postBrowserInfoWS = async (sid, msg) => {
 
             infoService.remoteSetTabStatus(browserDetails, structuredTabsInfos[tabId].tabId, status);
         }
-        logger.trace("postBrowserInfoWS: " + browserDetails.toString() + " at:" + timestamp);
         infoService.registerBrowser(browserDetails, structuredTabsInfos, msg.activeTab, timestamp);
     } catch (err) {
         logger.error(err);
@@ -175,7 +172,6 @@ const postBrowserInfoWS = async (sid, msg) => {
 const disconnectBrowserWS = (sid) => {
     try {
         const timestamp = new Date();
-        logger.trace("disconnectBrowserWS: " + sid + " at:" + timestamp);
         infoService.unregisterBrowser(sid, timestamp);
     } catch (err) {
         logger.error(err);

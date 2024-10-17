@@ -19,7 +19,7 @@ class CustomLogger {
     }
 
     trace(...msg) {
-        if(this.level === 'trace') console.log("TRACE:",...msg);
+        if(this.level === 'trace') console.log("[TRACE] ",...msg);
     }
 
     info(...msg) {
@@ -36,7 +36,7 @@ class CustomLogger {
     }
 
     debug(msg) {
-        if(this.level === 'debug' || this.level === 'trace') console.log("DEBUG:" + msg);
+        if(this.level === 'debug' || this.level === 'trace') console.log("[DEBUG] " + msg);
     }
 }
 
