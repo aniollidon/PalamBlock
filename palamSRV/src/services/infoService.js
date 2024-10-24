@@ -690,6 +690,11 @@ function sendCommandToAlumne(alumne, command) {
     }
 }
 
+function powerOffAllGrup(grup){
+    // TODO: Implementar
+
+}
+
 function getAlumnesMachine() {
     const alumnes = {};
     for (const alumne in allAlumnesStatus.alumnesStat) {
@@ -718,5 +723,6 @@ module.exports = {
     updateMachine,
     sendMessageToAlumne,
     sendCommandToAlumne,
+    powerOffAllGrup,
     getAlumnesMachine
 }

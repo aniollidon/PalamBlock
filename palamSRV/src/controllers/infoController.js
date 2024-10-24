@@ -289,6 +289,14 @@ function sendCommandToAlumne(alumne, command){
     }
 }
 
+function powerOffAll(grup){
+    try {
+        infoService.powerOffAllGrup(grup);
+    } catch (err) {
+        logger.error(err);
+    }
+}
+
 module.exports = {
     postTabInfoAPI,
     postBrowserInfoAPI,
@@ -303,6 +311,7 @@ module.exports = {
     registerActionListenerBrowserWS,
     sendMessageToAlumne,
     sendCommandToAlumne,
+    powerOffAll,
     registerMachine,
     unregisterMachine,
     updateMachine,

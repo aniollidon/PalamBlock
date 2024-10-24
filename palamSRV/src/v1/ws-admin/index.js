@@ -117,6 +117,10 @@ function initializeAdminWebSocket(server) {
             await infoController.sendCommandToAlumne(msg.alumne, msg.command);
         });
 
+        socket.on('powerOffAll', async (msg) => {
+            await infoController.powerOffAll(msg.grup);
+        });
+
         socket.on('disconnect', () => {
             logger.info('S\'ha desconnectat un client ws-admin ' + socket.id );
             delete info_activityCallbacks[socket.id];
