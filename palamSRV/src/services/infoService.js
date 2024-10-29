@@ -276,6 +276,7 @@ class AlumneStatus {
         this.conected = true;
         this.machines = {};
         this._onUpdateCallback = onUpdateCallback;
+        this._garbageInterval = undefined;
         this._lastNews = new Date();
 
         // Comprova si l'alumne s'ha desconnectat
@@ -290,6 +291,17 @@ class AlumneStatus {
                 this._onUpdateCallback('browsers,apps,machines');
             }
         }, NOCONN_TIME);
+
+        // Neteja Browsers antics
+        this._garbageInterval = setInterval(() => {
+            for (const browser in this.browsers) {
+                if (!this.browsers[browser].opened && this.browsers[browser].updatedAt
+                    > new Date() - process.env.GARBAGE_COLLECTOR_TIME) {
+                    logger.trace("[GARBAGE COLLECTOR] Browser " + browser + " deleted from " + alumne);
+                    delete this.browsers[browser];
+                }
+            }
+        }, process.env.GARBAGE_COLLECTOR_TIME)
     }
 
     setAlive(timestamp) {
