@@ -279,6 +279,16 @@ function updateMachine(sid, ip, ssid, username){
     }
 }
 
+function sessionChangeMachine(sid, userSession){
+    try {
+        const timestamp = new Date();
+        userSession = netejaText(userSession);
+        infoService.sessionChangeMachine(userSession, sid, timestamp);
+    } catch (err) {
+        logger.error(err);
+    }
+}
+
 function sendCommandToAlumne(alumne, command){
     try {
         alumne = netejaText(alumne);
@@ -315,6 +325,7 @@ module.exports = {
     registerMachine,
     unregisterMachine,
     updateMachine,
+    sessionChangeMachine,
     getAlumnesMachine
 
 }

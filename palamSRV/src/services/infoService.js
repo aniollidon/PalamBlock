@@ -225,6 +225,7 @@ class MachineStatus {
         this.wifi_ssid = wifi_ssid;
         this.lastUpdate = timestamp;
         this.connected = true;
+        this.session = "undefined";
         this._execute = executionCallback;
         this._isAlive = aliveCallback;
         this._onUpdateCallback = onUpdateCallback;
@@ -265,6 +266,12 @@ class MachineStatus {
             logger.error("Error executing command " + command + ". Machine " + this.ip + " is not connected");
             return false;
         }
+    }
+
+    updateSession(userSession) {
+        this.session = userSession;
+        this.lastUpdate = new Date();
+        this._onUpdateCallback("machines");
     }
 }
 
@@ -387,8 +394,8 @@ class AlumneStatus {
         this.machines[sid].wifi_ssid = ssid;
         this.machines[sid].lastUpdate = timestamp;
         this._onUpdateCallback("machines");
-
     }
+
 
     closeNotUpdatedApps(timestamp) {
         this.setAlive(timestamp);
@@ -655,6 +662,15 @@ function updateMachine(sid, ip, ssid, alumne, timestamp) {
     }
 }
 
+function sessionChangeMachine(sid, userSession) {
+    for (const alumne in allAlumnesStatus.alumnesStat) {
+        if (allAlumnesStatus.alumnesStat[alumne].machines[sid]) {
+            allAlumnesStatus.alumnesStat[alumne].machines[sid].updateSession(userSession);
+            logger.debug("Machine " + sid + " from " + alumne + " changed session to " + userSession);
+        }
+    }
+}
+
 
 function unregisterBrowser(sid, timestamp) {
     for (const alumne in allAlumnesStatus.alumnesStat) {
@@ -733,6 +749,7 @@ module.exports = {
     registerMachine,
     unregisterMachine,
     updateMachine,
+    sessionChangeMachine,
     sendMessageToAlumne,
     sendCommandToAlumne,
     powerOffAllGrup,
