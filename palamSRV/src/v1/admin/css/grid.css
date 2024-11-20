@@ -42,3 +42,13 @@
     color: white;
     border: gray;
 }
+
+.extra-item-buttons > ul > li{
+    margin: 0 0 5px 5px;
+}
+
+.extra-item-buttons > ul{
+    min-width: auto;
+    padding-bottom: 3px;
+
+}
