@@ -184,7 +184,11 @@ function drawGridItem(alumne, maquina) {
       <path d="M10 .5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5.5.5 0 0 1-.5.5.5.5 0 0 0-.5.5V2a.5.5 0 0 0 .5.5h5A.5.5 0 0 0 11 2v-.5a.5.5 0 0 0-.5-.5.5.5 0 0 1-.5-.5"/>
     </svg>`;
     buttonCopyIP.onclick = () => {
-        navigator.clipboard.writeText(maquina.ip);
+        try {
+            navigator.clipboard.writeText(maquina.ip);
+        } catch (e) {
+            alert("No s'ha pogut accedir al portaretalls <br> Copia manualment la IP: <br>" + maquina.ip);
+        }
     }
     dropdownItem4.appendChild(buttonCopyIP);
     dropdownMenu.appendChild(dropdownItem4);
