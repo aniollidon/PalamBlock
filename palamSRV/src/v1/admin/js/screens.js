@@ -187,7 +187,7 @@ function drawGridItem(alumne, maquina) {
         try {
             navigator.clipboard.writeText(maquina.ip);
         } catch (e) {
-            alert("No s'ha pogut accedir al portaretalls <br> Copia manualment la IP: <br>" + maquina.ip);
+            alert("No s'ha pogut accedir al portaretalls \n Copia manualment la IP: \n" + maquina.ip);
         }
     }
     dropdownItem4.appendChild(buttonCopyIP);
