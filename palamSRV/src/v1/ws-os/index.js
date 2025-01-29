@@ -37,6 +37,11 @@ function initializeOSWebSocket(server) {
         socket.on('updateOS', (data) => {
             infoController.updateMachine(socket.id, data.version, data.os, data.ip, data.ssid, data.username);
         });
+
+        socket.on('session_change', (data) => {
+            infoController.sessionChangeMachine(socket.id, data.user);
+            logger.info('S\'ha rebut un canvi de sessió a ' + socket.id + ' amb usuari ' + data.user);
+        });
     });
 
 }

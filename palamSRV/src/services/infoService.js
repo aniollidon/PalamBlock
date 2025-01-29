@@ -225,6 +225,7 @@ class MachineStatus {
         this.wifi_ssid = wifi_ssid;
         this.lastUpdate = timestamp;
         this.connected = true;
+        this.session = "undefined";
         this._execute = executionCallback;
         this._isAlive = aliveCallback;
         this._onUpdateCallback = onUpdateCallback;
@@ -266,6 +267,12 @@ class MachineStatus {
             return false;
         }
     }
+
+    updateSession(userSession) {
+        this.session = userSession;
+        this.lastUpdate = new Date();
+        this._onUpdateCallback("machines");
+    }
 }
 
 class AlumneStatus {
@@ -276,6 +283,7 @@ class AlumneStatus {
         this.conected = true;
         this.machines = {};
         this._onUpdateCallback = onUpdateCallback;
+        this._garbageInterval = undefined;
         this._lastNews = new Date();
 
         // Comprova si l'alumne s'ha desconnectat
@@ -290,6 +298,17 @@ class AlumneStatus {
                 this._onUpdateCallback('browsers,apps,machines');
             }
         }, NOCONN_TIME);
+
+        // Neteja Browsers antics
+        this._garbageInterval = setInterval(() => {
+            for (const browser in this.browsers) {
+                if (!this.browsers[browser].opened && this.browsers[browser].updatedAt
+                    > new Date() - process.env.GARBAGE_COLLECTOR_TIME) {
+                    logger.trace("[GARBAGE COLLECTOR] Browser " + browser + " deleted from " + alumne);
+                    delete this.browsers[browser];
+                }
+            }
+        }, process.env.GARBAGE_COLLECTOR_TIME)
     }
 
     setAlive(timestamp) {
@@ -375,8 +394,8 @@ class AlumneStatus {
         this.machines[sid].wifi_ssid = ssid;
         this.machines[sid].lastUpdate = timestamp;
         this._onUpdateCallback("machines");
-
     }
+
 
     closeNotUpdatedApps(timestamp) {
         this.setAlive(timestamp);
@@ -605,7 +624,7 @@ async function normesWebHasChanged() {
     }
 }
 
-function registerApps(apps, alumne, status, timestamp) {
+function registerApps(apps, alumne, status, timestamp) { // DEPRECATED
     for (const appinfo of apps) {
 
         allAlumnesStatus.registerApp(appinfo, alumne, status[appinfo.name], timestamp);
@@ -621,6 +640,8 @@ function registerMachine(alumne, sid, ip, ssid, os, version, executionCallback, 
 
     allAlumnesStatus.alumnesStat[alumne].setAlive(timestamp);
     allAlumnesStatus.alumnesStat[alumne].registerMachine(sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
+
+    logger.debug("Machine " + sid + " from " + alumne + " registered");
 }
 
 
@@ -629,6 +650,7 @@ function unregisterMachine(sid, timestamp) {
     for (const alumne in allAlumnesStatus.alumnesStat) {
         if (allAlumnesStatus.alumnesStat[alumne].machines[sid]) {
             allAlumnesStatus.alumnesStat[alumne].unregisterMachine(sid, timestamp);
+            logger.debug("Machine " + sid + " from " + alumne + " unregistered");
         }
     }
 }
@@ -636,6 +658,16 @@ function unregisterMachine(sid, timestamp) {
 function updateMachine(sid, ip, ssid, alumne, timestamp) {
     if (allAlumnesStatus.alumnesStat[alumne]) {
         allAlumnesStatus.alumnesStat[alumne].updateMachine(sid, ip, ssid, timestamp);
+        logger.debug("Machine " + sid + " from " + alumne + " updated");
+    }
+}
+
+function sessionChangeMachine(sid, userSession) {
+    for (const alumne in allAlumnesStatus.alumnesStat) {
+        if (allAlumnesStatus.alumnesStat[alumne].machines[sid]) {
+            allAlumnesStatus.alumnesStat[alumne].machines[sid].updateSession(userSession);
+            logger.debug("Machine " + sid + " from " + alumne + " changed session to " + userSession);
+        }
     }
 }
 
@@ -645,6 +677,7 @@ function unregisterBrowser(sid, timestamp) {
         for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
             if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].id === sid) {
                 allAlumnesStatus.alumnesStat[alumne].browsers[browser].close(timestamp);
+                logger.debug("Browser " + browser + " from " +alumne + " closed");
             }
         }
     }
@@ -661,7 +694,9 @@ function registerActionListener(browserDetails, callback) {
 
 
 function remoteSetTabStatus(browserDetails, tabId, status) {
-    if (allAlumnesStatus.alumnesStat[browserDetails.owner] && allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser]) allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].remoteAction(status, tabId); else {
+    if (allAlumnesStatus.alumnesStat[browserDetails.owner] && allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser])
+        allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].remoteAction(status, tabId);
+    else {
         logger.error("Remote set status for tab " + tabId + " but browser " + browserDetails.browser + " not found");
     }
 }
@@ -669,12 +704,13 @@ function remoteSetTabStatus(browserDetails, tabId, status) {
 function sendMessageToAlumne(alumne, message) {
     if (!allAlumnesStatus.alumnesStat[alumne]) return;
     for (const browser in allAlumnesStatus.alumnesStat[alumne].browsers) {
-        if (parseInt(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion) >= 1) for (const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
-            if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].active) allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction("message", tab, message);
+        if (parseInt(allAlumnesStatus.alumnesStat[alumne].browsers[browser].extVersion) >= 1)
+            for (const tab in allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs) {
+            if (allAlumnesStatus.alumnesStat[alumne].browsers[browser].tabs[tab].active)
+                allAlumnesStatus.alumnesStat[alumne].browsers[browser].remoteAction("message", tab, message);
         }
     }
 }
-
 function sendCommandToAlumne(alumne, command) {
     if (!allAlumnesStatus.alumnesStat[alumne]) return;
     for (const machines in allAlumnesStatus.alumnesStat[alumne].machines) {
@@ -682,10 +718,18 @@ function sendCommandToAlumne(alumne, command) {
     }
 }
 
+function powerOffAllGrup(grup){
+    // TODO: Implementar
+
+}
+
 function getAlumnesMachine() {
     const alumnes = {};
     for (const alumne in allAlumnesStatus.alumnesStat) {
-        alumnes[alumne] = estructuraPublica(allAlumnesStatus.alumnesStat[alumne].machines);
+        if(allAlumnesStatus.alumnesStat[alumne])
+            alumnes[alumne] = estructuraPublica(allAlumnesStatus.alumnesStat[alumne].machines);
+        else
+            alumnes[alumne] = {};
     }
     return alumnes;
 }
@@ -700,12 +744,14 @@ module.exports = {
     remoteCloseTab,
     getBrowserPendingActions,
     normesWebHasChanged,
-    registerApps, //TODO deprecate
+    registerApps,
     remoteSetTabStatus,
     registerMachine,
     unregisterMachine,
     updateMachine,
+    sessionChangeMachine,
     sendMessageToAlumne,
     sendCommandToAlumne,
+    powerOffAllGrup,
     getAlumnesMachine
 }

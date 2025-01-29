@@ -5,6 +5,14 @@
     justify-content: center; /* Centra els elements dins del contenidor */
 }
 
+.grid-container .online{
+    order: 1;
+}
+
+.grid-container .offline{
+    order: 2;
+}
+
 .grid-item{
     padding: 20px;
     text-align: center;
@@ -33,4 +41,14 @@
     background-color: #d5d5d5;
     color: white;
     border: gray;
+}
+
+.extra-item-buttons > ul > li{
+    margin: 0 0 5px 5px;
+}
+
+.extra-item-buttons > ul{
+    min-width: auto;
+    padding-bottom: 3px;
+
 }

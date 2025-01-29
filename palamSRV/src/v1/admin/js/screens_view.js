@@ -1,5 +1,5 @@
 import {socket} from "./socket.js";
-import {drawGridGrup_oncurrent, preparaSelectorGrups, setAlumnesMachine, setGrupAlumnesList} from "./screens.js";
+import {drawGridGrup_update, preparaSelectorGrups, setAlumnesMachine, setGrupAlumnesList} from "./screens.js";
 
 let grups_disponibles = false;
 let maquines_disponibles = false;
@@ -43,6 +43,5 @@ socket.on('alumnesMachine', function (data) {
 });
 
 socket.on('updateAlumnesMachine', function (data) {
-    setAlumnesMachine(data);
-    drawGridGrup_oncurrent();
+    drawGridGrup_update(data);
 });
