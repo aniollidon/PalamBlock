@@ -298,7 +298,7 @@ export function drawAlumnesActivity(data) {
                         const browserWinInfoDiv = document.createElement("div");
                         browserWinInfoDiv.setAttribute("class", "browser-info");
                         const browserIcon = document.createElement("img");
-                        browserIcon.setAttribute("src", "img/" + browserInfo.browser.toLowerCase() + ".png");
+                        browserIcon.setAttribute("src", "/admin/img/" + browserInfo.browser.toLowerCase() + ".png");
                         browserIcon.setAttribute("class", "browser-icon");
                         const browserVersion = document.createElement("div");
                         browserVersion.setAttribute("class", "browser-version");
@@ -331,7 +331,7 @@ export function drawAlumnesActivity(data) {
                             chromeTabsObjects[alumne][browser].addTab({
                                 title: tabInfo.webPage.title,
                                 favicon: tabInfo.webPage.favicon ? tabInfo.webPage.favicon :
-                                    (noicon ? undefined : "img/undefined_favicon.png"),
+                                    (noicon ? undefined : "/admin/img/undefined_favicon.png"),
                                 info: tabInfo
                             }, {
                                 background: !tabInfo.active

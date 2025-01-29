@@ -1,0 +1,35 @@
+<!-- public/admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body{
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    #client-screen {
+      cursor: none;
+      display: block;
+      background-color: gray;
+      width: 100%;
+      height: 100%;
+      margin: auto;
+      overflow: hidden;
+    }
+  </style>
+  <title>VIEW</title>
+</head>
+
+<body>
+<video id="client-screen" autoplay muted playsinline></video>
+</body>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script src="./cast-view.js"></script>
+
+</html>

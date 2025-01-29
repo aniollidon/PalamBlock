@@ -15,8 +15,7 @@ async function getBrowser() {
             if (navigator.brave.isBrave())
                 chrome.storage.local.set({browser: "Brave"});
             return "Brave"
-        } catch (e) {
-        }
+        } catch (e) {}
 
         const uap = new uaParserJs();
         chrome.storage.local.set({browser: uap.getBrowser().name});
@@ -77,11 +76,11 @@ export async function customTabsInfo(chromeTabs) {
 export async function customTabInfo(chromeTab) {
     return new Promise((resolve, reject) => {
         chrome.storage.local.get(['alumne'], async (result) => {
-
             if (!result.alumne) {
                 reject("alumne");
                 return;
             }
+
             const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
             const basetab_info = {
                 host: url ? url.host : "",
@@ -174,7 +173,6 @@ export async function blockTab(tabId) {
                 resolve(tab);
             });
         });
-
         return true;
     });
 }
@@ -213,44 +211,6 @@ export async function warnTab(tabId) {
                 }).catch((error) => {
                     reject(error);
                 });
-        });
-        return true;
-    });
-}
-
-
-export async function printMesasgeToTab(tabId, message) {
-    tabId = parseInt(tabId);
-    return new Promise((resolve, reject) => {
-        // TODO Open new tab with message
-
-        chrome.scripting.executeScript({
-            target: { tabId: tabId },
-            func: (message) => {
-
-                if(document.getElementById("palablock"))
-                    document.getElementById("palablock").remove();
-
-                document.body.innerHTML = `
-                        <div id="palablock" style="background-color: rgb(77 77 86 / 65%);
-                        position: fixed; z-index: 9999; height: 100%;width: 100%;
-                        display: flex; justify-content: center; align-content: center;
-                        align-items: center; user-select: none; color: white;">
-                            <div style="background: #00000096; padding: 50px; text-align: center">
-                                <div style="font-size: 50px;"> Missatge de PalamBlock: ${message} </div>
-                                <div style="font-size: 20px;"> Clica per continuar</div>
-                            </div>
-                        </div> ` + document.body.innerHTML;
-
-                document.getElementById("palablock").addEventListener("click", function(){
-                    document.getElementById("palablock").remove();
-                });
-            },
-            args: [message]
-        }).then(() => {
-            resolve();
-        }).catch((error) => {
-            reject(error);
         });
         return true;
     });

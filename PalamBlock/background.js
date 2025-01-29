@@ -1,99 +1,127 @@
-//const SERVER = 'http://185.61.126.170:4000';
-const SERVER = 'http://localhost:4000';
-const API_URL = SERVER + '/api/v1/';
-const API_REGISTER = API_URL + 'alumne/auth';
+const API_REGISTER = '/api/v1/alumne/auth';
 
 // get manifest version
 const manifestData = chrome.runtime.getManifest();
 const version = manifestData.version;
 
+chrome.storage.local.set({extVersion: version});
+
 import io from 'https://cdn.jsdelivr.net/npm/socket.io-client@4.7.1/+esm';
-import {customTabsInfo, customTabInfo, customShortInfo, closeTab, warnTab, forceLoginTab, blockTab, printMesasgeToTab} from './tabs.js';
+import {customTabsInfo, customTabInfo, customShortInfo, closeTab, warnTab,
+    forceLoginTab, blockTab} from './tabs.js';
 
-var socket = io.connect(SERVER, {
-    transports: ["websocket"],
-    path: '/ws-extention',
-});
+class Conn {
+    constructor(server){
+        this.socket = io.connect(server, {
+            transports: ["websocket"],
+            path: '/ws-extention',
+        }).on('connect_error', (error) => {
+            console.error('Connection error:', error.message);
+        });
 
-socket.on('connect', function () {
-    console.log('Connected to server');
-    registerBrowser();
-    sendCurrentBrowserState();
-});
-
-socket.on('connect_error', (error) => {
-    console.error('Error', error.message);
-    return false;
-});
-
-
-socket.on('do', function (data) {
-    console.log('do', data);
-    if(data.action === "block"){
-        blockTab(data.tabId);
+        this.socket.on('connect', this._onConnect.bind(this));
+        this.socket.on('connect_error', this._onError.bind(this));
+        this.socket.on('do', this._onDo.bind(this));
     }
-    else if(data.action === "warn"){
-        warnTab(data.tabId);
+
+    _onConnect(){
+        console.log('Connected to server');
+        this._registerBrowser();
+        this._sendCurrentBrowserState();
     }
-    else if(data.action === "close") {
-        closeTab(data.tabId)
-            .then((res) => {
-                console.log("Tab closed", data.tabId);
-            })
-            .catch((error) => {
-            console.error("Can't close tab " + data.tabId);
-            // Check if tab still existsS
-            chrome.tabs.get(parseInt(data.tabId), (tab) => {
-                if (tab) {
-                    customTabInfo(tab).then((tab_info) => {
-                        if (!tab_info) return;
-                        tab_info.action = "update";
-                        socket.emit('tabInfo', tab_info);
-                    }).catch((error) => {
+
+    _onError(error){
+        console.error('PalamBlock error:', error.message);
+        return false;
+    }
+
+    _onDo(data) {
+        if(data.action === "block"){
+            blockTab(data.tabId);
+        }
+        else if(data.action === "warn"){
+            warnTab(data.tabId);
+        }
+        else if(data.action === "close") {
+            closeTab(data.tabId)
+                .then((res) => {
+                    console.log("Tab closed by palamBlock", data.tabId);
+                })
+                .catch((error) => {
+                    console.error("Can't close tab " + data.tabId);
+                    // Check if tab still existsS
+                    chrome.tabs.get(parseInt(data.tabId), (tab) => {
+                        if (tab) {
+                            customTabInfo(tab).then((tab_info) => {
+                                if (!tab_info) return;
+                                tab_info.action = "update";
+                                this.socket.emit('tabInfo', tab_info);
+                            });
+                        }
                     });
+                });
+        }
+    }
+
+    _registerBrowser() {
+        customShortInfo().then((short_info) => {
+            if (!short_info) return;
+            this.socket.emit('registerBrowser', short_info);
+        });
+    }
+
+    // Envia la informació dels tabs oberts al servidor
+    _sendCurrentBrowserState() {
+        chrome.tabs.query({}, async (tabs) => {
+            customTabsInfo(tabs).then((res) => {
+                const {tabsInfos,  activeTab, alumne, browser} = res;
+                if (!alumne || !browser) return;
+
+                this.socket.emit('browserInfo', {
+                    alumne: alumne,
+                    browser: browser,
+                    tabsInfos: tabsInfos,
+                    activeTab: activeTab,
+                    extVersion: version,
+                });
+            }).catch((error) => {
+                // Si l'alumne no està registrat, s'obrirà la finestra de login
+                if (error === "alumne") {
+                    forceLoginTab();
                 }
             });
         });
     }
-    else if (data.action === "message") {
-        printMesasgeToTab(data.tabId, data.message);
+
+    connected(){
+        return this.socket.connected;
     }
-});
 
+    onRemoveTab(tabid, removed) {
+        customShortInfo().then((short_info) => {
+            if (!short_info) return;
+            short_info.action = "close";
+            short_info.tabId = tabid;
+            short_info.windowId = removed.windowId;
+            this.socket.emit('tabInfo', short_info);
+        });
+    }
 
-chrome.tabs.onRemoved.addListener(function (tabid, removed) {
-    customShortInfo().then((short_info) => {
-        if (!short_info) return;
-        short_info.action = "close";
-        short_info.tabId = tabid;
-        short_info.windowId = removed.windowId;
-        socket.emit('tabInfo', short_info);
-    }).catch((error) => {});
+    onActivateTab(activeInfo) {
+        chrome.tabs.get(activeInfo.tabId, (tab) => {
+            customTabInfo(tab).then((tab_info) => {
+                if (!tab_info) return;
+                tab_info.action = "active";
+                this.socket.emit('tabInfo', tab_info);
+            });
+        });
+    }
 
-    console.log("Tab removed", tabid);
-});
-
-chrome.tabs.onActivated.addListener(function (activeInfo) {
-    chrome.tabs.get(activeInfo.tabId, async function (tab) {
-        customTabInfo(tab).then((tab_info) => {
-            if (!tab_info) return;
-            tab_info.action = "active";
-            socket.emit('tabInfo', tab_info);
-        }).catch((error) => {});
-    });
-    console.log("Tab activated", activeInfo);
-});
-
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    //Si és una pàgina de l'extenció, no cal enviar la informació
-    console.log(tab.url, tab.url.startsWith("chrome-extension://"));
-    if(tab.url.startsWith("chrome-extension://")) return;
-
-    if (changeInfo.status === "complete") {
+    onCompleteTab(tab) {
         customTabInfo(tab).then((tab_info) => {
             if (!tab_info) return;
             tab_info.action = "complete";
-            socket.emit('tabInfo', tab_info);
+            this.socket.emit('tabInfo', tab_info);
         }).catch((error) => {
             // Si l'alumne no està registrat, s'obrirà la finestra de login
             if (error === "alumne") {
@@ -101,18 +129,19 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
             }
         });
     }
-    else if (changeInfo.title || changeInfo.favIconUrl) {
+
+    onUpdateTab(tab) {
         customTabInfo(tab).then(async (tab_info) => {
             if (!tab_info) return;
             tab_info.action = "update";
 
             if(tab_info.protocol === "secure:") {
                 // Avast només es pot detectar en obrir una pestanya nova
-                await chrome.storage.local.set({browser: "Avast"}); //TODO mirar
+                await chrome.storage.local.set({browser: "Avast"}); //TODO mirar (crec q no funciona)
                 tab_info.browser = "Avast";
             }
 
-            socket.emit('tabInfo', tab_info);
+            this.socket.emit('tabInfo', tab_info);
         }).catch((error) => {
             // Si l'alumne no està registrat, s'obrirà la finestra de login
             if (error === "alumne") {
@@ -120,52 +149,39 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
             }
         });
     }
-    console.log("Tab updated", tabId, changeInfo, tab);
-});
-
-
-// Envia la informació dels tabs oberts al servidor
-function sendCurrentBrowserState() {
-    chrome.tabs.query({}, async function (tabs) {
-        customTabsInfo(tabs).then((res) => {
-            const {tabsInfos,  activeTab, alumne, browser} = res;
-            if (!alumne || !browser) return;
-
-            socket.emit('browserInfo', {
-                alumne: alumne,
-                browser: browser,
-                tabsInfos: tabsInfos,
-                activeTab: activeTab,
-                extVersion: version,
-            });
-        }).catch((error) => {
-            // Si l'alumne no està registrat, s'obrirà la finestra de login
-            if (error === "alumne") {
-                forceLoginTab();
-            }
-        });
-    });
 }
+
+let conn = null;
+
+// Si ja està registrat, es connecta al servidor
+chrome.storage.local.get(['alumne', 'server'], (res)=> {
+    if (res.alumne && res.alumne !== '') {
+        if(!conn) conn = new Conn(res.server);
+    }
+});
 
 // message from login.js
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         if (request.type === 'autentificacio') {
-            fetch(API_REGISTER, {
+            const register_url = request.server + API_REGISTER;
+            fetch(register_url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     alumne: request.alumne,
-                    clau: request.clau
+                    clau: request.clau,
+                    server: request.server
                 })
             }).then((response) => {
                 response.json().then((data) => {
                     if (response.status === 200) {
                         sendResponse({status: "OK"});
-                        registerBrowser();
-                        sendCurrentBrowserState();
+                        conn = new Conn(request.server);
+                        conn._registerBrowser();
+                        conn._sendCurrentBrowserState();
                     } else {
                         sendResponse({status: "FAILED"});
                     }
@@ -186,9 +202,31 @@ chrome.runtime.onMessage.addListener(
     }
 );
 
-function registerBrowser() {
-    customShortInfo().then((short_info) => {
-        if (!short_info) return;
-        socket.emit('registerBrowser', short_info);
-    }).catch((error) => {});
-}
+// On tab actions REMOVE
+chrome.tabs.onRemoved.addListener(function (tabid, removed) {
+    if(conn) conn.onRemoveTab(tabid, removed);
+});
+
+// On tab actions ACTIVATE
+chrome.tabs.onActivated.addListener(function (activeInfo) {
+    if(conn) conn.onActivateTab(activeInfo);
+});
+
+// On tab actions UPDATE
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    // Si és una pàgina de l'extenció, no cal enviar la informació
+    if(tab.url.startsWith("chrome-extension://")) return;
+    if(tab.url.startsWith("edge://")) return;
+    if(tab.url.startsWith("chrome://")) return;
+    if(tab.url.startsWith("brave://")) return;
+    if(tab.url.startsWith("avast://")) return;
+
+    if (changeInfo.status === "complete") {
+        if(conn) conn.onCompleteTab(tab);
+        else forceLoginTab();
+    }
+    else if (changeInfo.title || changeInfo.favIconUrl) {
+        if(conn) conn.onUpdateTab(tab);
+        else forceLoginTab();
+    }
+});

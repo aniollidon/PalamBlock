@@ -142,7 +142,7 @@ const postBrowserInfoWS = async (sid, msg) => {
         const status = await validacioAlumne.checkWeb(webPage);
         structuredTabsInfos[tabId] = new TabDetails(tab.tabId, webPage, tab.windowId, tab.incognito, tab.active, tab.audible, status);
 
-        infoService.remoteSetTabStatus(browserDetails, structuredTabsInfos[tabId].tabId, status);
+        //infoService.remoteSetTabStatus(browserDetails, structuredTabsInfos[tabId].tabId, status);
     }
     logger.trace("postBrowserInfoWS: " + browserDetails.toString() + " at:" + timestamp);
     infoService.registerBrowser(browserDetails, structuredTabsInfos, msg.activeTab, timestamp);

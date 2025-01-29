@@ -9,6 +9,7 @@ const mongoose= require('mongoose');
 const http = require('http');
 const cors = require("cors")
 const initializeAdminWebSocket = require('./v1/ws-admin');
+const initializeCastWebSocket = require('./v1/ws-cast');
 const initializeExtentionWebSocket = require('./v1/ws-extention');
 const initializeOSWebSocket = require('./v1/ws-os');
 const logger = require("./logger").logger;
@@ -43,6 +44,7 @@ app.use('/privacy', express.static(path.join(__dirname, '/v1/privacy')))
 initializeAdminWebSocket(server);
 initializeExtentionWebSocket(server);
 initializeOSWebSocket(server);
+initializeCastWebSocket(server);
 
 server.listen(PORT, () => {
   logger.info(`Server is listening on port ${PORT}`);

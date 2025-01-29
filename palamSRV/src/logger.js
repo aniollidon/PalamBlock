@@ -1,16 +1,7 @@
 // logger.js
 require('dotenv').config();
-const pino = require('pino');
 
-/*
-// Create a logging instance
-const logger = pino({
-    level: process.env.LOGGER_LEVEL || 'info',
-});
-
-module.exports.logger = logger;
- */
-
+const DEVELOPMENT = process.env.NODE_ENV === 'development';
 
 class CustomLogger {
     constructor() {
@@ -28,6 +19,8 @@ class CustomLogger {
 
     error(msg) {
         console.error(msg);
+        if(DEVELOPMENT)
+        throw new Error(msg); //TODO HIDE THIS IN PRODUCTION
     }
 
     warn(msg) {

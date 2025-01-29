@@ -661,7 +661,7 @@ function registerActionListener(browserDetails, callback) {
 
 
 function remoteSetTabStatus(browserDetails, tabId, status) {
-    if (allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser]) allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].remoteAction(status, tabId); else {
+    if (allAlumnesStatus.alumnesStat[browserDetails.owner] && allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser]) allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[browserDetails.browser].remoteAction(status, tabId); else {
         logger.error("Remote set status for tab " + tabId + " but browser " + browserDetails.browser + " not found");
     }
 }
@@ -700,7 +700,7 @@ module.exports = {
     remoteCloseTab,
     getBrowserPendingActions,
     normesWebHasChanged,
-    registerApps,
+    registerApps, //TODO deprecate
     remoteSetTabStatus,
     registerMachine,
     unregisterMachine,

@@ -232,15 +232,15 @@ export function drawHistorialWeb(alumne, historial, query) {
         const favicon = document.createElement("img");
         const noprotocols = ["chrome:", "edge:", "opera:", "brave:", "vivaldi:", "secure:", "about:"];
         const noicon = (webPage.protocol && noprotocols.indexOf(webPage.protocol) !== -1)
-        favicon.src = webPage.favicon && !noicon ? webPage.favicon : "img/undefined_favicon.png";
+        favicon.src = webPage.favicon && !noicon ? webPage.favicon : "/admin/img/undefined_favicon.png";
 
         favicon.onload = () => {
             if (favicon.naturalWidth === 0) {
-                favicon.src = "img/undefined_favicon.png";
+                favicon.src = "/admin/img/undefined_favicon.png";
             }
         }
         favicon.onerror = () => {
-            favicon.src = "img/undefined_favicon.png";
+            favicon.src = "/admin/img/undefined_favicon.png";
             return true;
         }
         favicon.setAttribute("class", "historial-favicon");
@@ -364,7 +364,7 @@ export function drawHistorialHostsSortedByUsage(alumne, sortedHistorial, days) {
         favicon.setAttribute("class", "historial-favicon");
         //if favicon not found, set default favicon
         favicon.onerror = () => {
-            favicon.src = "img/undefined_favicon.png";
+            favicon.src = "/admin/img/undefined_favicon.png";
             return true;
         }
         dTitile.appendChild(favicon);
@@ -426,7 +426,7 @@ export function drawHistorialStats(alumne, lastUsage) {
         const dTitile = document.createElement("strong");
         dTitile.setAttribute("class", "mb-1 nomesunalinia");
         const favicon = document.createElement("img");
-        favicon.setAttribute("src", `img/${browser.toLowerCase()}.png`);
+        favicon.setAttribute("src", `/admin/img/${browser.toLowerCase()}.png`);
         favicon.setAttribute("class", "historial-favicon");
         dTitile.appendChild(favicon);
 
