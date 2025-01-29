@@ -1,7 +1,5 @@
 const { Server } = require("socket.io");
 const infoController = require("../../controllers/infoController");
-const validacioController = require("../../controllers/validacioController");
-const adminController = require("../../controllers/adminController");
 const {logger} = require("../../logger");
 
 

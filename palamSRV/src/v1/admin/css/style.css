@@ -180,7 +180,7 @@ label {
 }
 
 .form-control:focus {
-    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset, 0px 0px 7px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 7px rgba(0, 0, 0, 0.2);
 }
 
 select {
@@ -378,7 +378,7 @@ main {
 }
 .w11-nav-container{display:flex;align-items:center;justify-content:space-between;height:var(--nav-height); background: #212529; border-radius: 5px 5px 0 0;}
 .w11-first-container,.w11-second-container{display:flex;height:100%;width:auto;gap:0.5rem;align-items:center;justify-content:center;}
-.w11-second-container{gap:0rem!important;}
+.w11-second-container{gap:0 !important;}
 .w11-first-container div svg,.w11-first-container div img,.w11-second-container div svg{aspect-ratio:1;height:var(--img-nav-height);width:auto;border-radius:0.1em;}
 .w11-first-container{margin:auto;}
 .w11-second-container .w11-sistema-info div{display:grid;place-content:center;}
