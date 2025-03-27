@@ -642,7 +642,7 @@ function registerMachine(alumne, sid, ip, ssid, os, version, executionCallback, 
     allAlumnesStatus.alumnesStat[alumne].setAlive(timestamp);
     allAlumnesStatus.alumnesStat[alumne].registerMachine(sid, ip, ssid, os, version, executionCallback, aliveCallback, timestamp);
 
-    logger.debug("Machine " + sid + " from " + alumne + " registered");
+    logger.debug("Machine " + sid + " from " + alumne + " registered on ip " + ip );
 }
 
 
