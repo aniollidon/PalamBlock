@@ -328,6 +328,7 @@ class AlumneStatus {
         for (const machine in this.machines) {
             if (this.machines[machine].ip === ip) {
                 delete this.machines[machine];
+                logger.debug("Machine " + machine + " with ip " + ip + " deleted");
             }
         }
 
