@@ -192,6 +192,7 @@ label {
 select {
     -webkit-appearance: none;
     -moz-appearance: none;
+    appearance: none;
     text-indent: 1px;
     text-overflow: "";
 }
@@ -353,11 +354,6 @@ main {
 
 .button-calendar-days:hover{
     background: #f0f0f0;
-}
-
-.historial-content{
-    /* flex: 1 1 auto; */
-    /* min-height: 0; */
 }
 
 .sidebar{
