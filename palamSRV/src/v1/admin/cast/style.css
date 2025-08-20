@@ -1,0 +1,28 @@
+* { box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif; margin: 0; background: #0b1020; color: #e6e6e6; }
+.container { max-width: 900px; margin: 0 auto; padding: 24px; }
+.card { background: #151a2f; border: 1px solid #232a4a; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+label { display: block; margin-bottom: 8px; }
+input { width: 100%; padding: 10px 12px; border: 1px solid #2c355f; border-radius: 8px; background: #0f1530; color: #e6e6e6; }
+.actions { margin-top: 12px; display: flex; gap: 12px; }
+button { padding: 10px 14px; border: 0; border-radius: 8px; background: #3a5cff; color: white; cursor: pointer; }
+button[disabled] { background: #444b73; cursor: not-allowed; }
+.status { margin-top: 8px; color: #aeb8ff; }
+.preview, .player { background: #0f1530; border: 1px solid #232a4a; border-radius: 10px; padding: 12px; }
+video { width: 100%; border-radius: 6px; background: black; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; background: rgba(10, 13, 30, 0.95); color: #fff; border: 1px solid #2c355f; box-shadow: 0 8px 40px rgba(0,0,0,.4); border-radius: 10px; padding: 10px 14px; opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; max-width: 90vw; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.hidden { display: none !important; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-content { width: min(520px, 92vw); background: #141a33; border: 1px solid #2c355f; border-radius: 12px; box-shadow: 0 12px 60px rgba(0,0,0,.45); padding: 16px; }
+.modal-title { font-weight: 600; margin-bottom: 8px; }
+.modal-body { color: #d8dcff; margin-bottom: 12px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.btn-primary { background: #3a5cff; color: #fff; }
+.btn-secondary { background: #2a3159; color: #fff; } 
+
+/* Extra: controls dins el modal de compartició */
+input[type="radio"] { accent-color: #3a5cff; }
+input[type="checkbox"] { accent-color: #3a5cff; }

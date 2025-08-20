@@ -1,8 +1,9 @@
 .grid-container{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* Ajusta el nombre de columnes */
-    gap: 20px; /* Espai entre els elements de la graella */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 0fr)); /* Ajusta el nombre de columnes */
+    gap: 0 20px; /* Espai entre els elements de la graella */
     justify-content: center; /* Centra els elements dins del contenidor */
+    padding: 20px;
 }
 
 .grid-container .online{
@@ -14,26 +15,41 @@
 }
 
 .grid-item{
-    padding: 20px;
+    padding: 0;
+    padding-bottom: 10px;
     text-align: center;
     box-sizing: border-box;
     width: fit-content;
 }
 
 .grid-item-buttons .btn{
-    margin-right: 5px;
+    margin-right: 2px;
     padding-bottom: 8px;
 
+}
+
+.grid-item-content-iframe, .overlay{
+    width: 300px;
+    height: 170px;
+}
+
+.grid-item-content-header-name{
+    font-size: 17px;
+    font-weight: 500;
 }
 
 .grid-item-content-header{
     display: flex;
     justify-content: space-between;
+    padding: 5px 0;
+}
+
+.offline .grid-item-content-header {
+    color: gray !important;
 }
 
 .overlay{
-    width: 400px;
-    height: 225px;
+    width: 300px;
     position: absolute;
 }
 
