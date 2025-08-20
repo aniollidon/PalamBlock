@@ -221,9 +221,9 @@
 
 <main>
     <!-- Sidebar Historial -->
-    <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" id="historialSidebar"
-         style="width: 380px; display:none !important;">
-        <div class="link-dark text-decoration-none border-bottom pt-3">
+    <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white sidebar" id="historialSidebar"
+         style="display:none !important;">
+        <div class="link-dark text-decoration-none border-bottom pt-3 sidebarContent">
             <div class="d-flex align-items-center flex-shrink-0 px-3">
                 <span class="fs-5 fw-semibold" id="historialSidebarTitle">Historial ALUMNE</span>
                 <button aria-label="Close" class="btn-close p-3 historial-close" data-bs-dismiss="modal" type="button" id="historialSidebarClose"></button>
@@ -249,7 +249,6 @@
                     </svg></a></li>
                 </ul>
             </div>
-        </div>
         <div class="list-group list-group-flush border-bottom scrollarea d-none historial-content" id="historialSidebarContent">
         </div>
 
@@ -270,13 +269,11 @@
             <div class="list-group list-group-flush border-bottom scrollarea historial-content" id="historialSearchResults">
                 </div>
         </div>
+        </div>
     </div>
 
-    <!-- Sidebar Espai -->
-    <div class="b-divider" id="sidebarDivider"></div>
-
     <!-- Main content -->
-    <div class="main-content d-flex flex-column">
+    <div class="main-content">
 
         <!-- Capçalera amb selector de grup -->
         <div class="grup-opcions p-3 link-dark text-decoration-none border-bottom">

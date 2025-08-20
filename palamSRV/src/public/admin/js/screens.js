@@ -37,6 +37,11 @@ export function drawGridGrup_update(updatedData) {
   }
 
   setAlumnesMachine(updatedData);
+
+  // Actualitzar dropdown del cast sidebar després d'actualitzar les dades
+  if (window.updateCastStudentData) {
+    window.updateCastStudentData(grupAlumnesList, alumnesMachines);
+  }
 }
 
 function drawGridItem(alumne, maquina) {
@@ -286,8 +291,9 @@ function drawGridGrup(grupName) {
     window.location.href = "../browsers?grup=" + grupName;
   });
 
-  // Ja es poden activar els botons de grup
+  // Activa els botons de grup
   document.getElementById("globalGroupPowerOffButton").disabled = false;
+  document.getElementById("globalGroupCastButton").disabled = false;
 
   // Fes el grid
   const grid = document.getElementById("grid-container");
@@ -335,14 +341,32 @@ export function preparaSelectorGrups() {
   }
 
   grupSelector.onchange = (ev) => {
-    drawGridGrup(ev.target.value);
+    const grup = ev.target.value;
+    if (!grup) {
+      document.getElementById("globalGroupPowerOffButton").disabled = true;
+      document.getElementById("globalGroupCastButton").disabled = true;
+    } else {
+      drawGridGrup(grup);
+    }
+    // Actualitzar dropdown del cast sidebar quan canvia el grup
+    if (window.updateCastStudentData) {
+      window.updateCastStudentData(grupAlumnesList, alumnesMachines);
+    }
   };
 }
 
 export function setAlumnesMachine(data) {
   alumnesMachines = data;
+  // Actualitzar dades del cast sidebar si existeix
+  if (window.updateCastStudentData) {
+    window.updateCastStudentData(grupAlumnesList, alumnesMachines);
+  }
 }
 
 export function setGrupAlumnesList(data) {
   grupAlumnesList = data;
+  // Actualitzar dades del cast sidebar si existeix
+  if (window.updateCastStudentData) {
+    window.updateCastStudentData(grupAlumnesList, alumnesMachines);
+  }
 }
