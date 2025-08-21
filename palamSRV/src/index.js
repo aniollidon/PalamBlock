@@ -38,6 +38,7 @@ app.use(bodyParser.json());
 app.use("/api/v1", v1Router);
 app.use("/admin", express.static(path.join(__dirname, "/public/admin")));
 app.use("/privacy", express.static(path.join(__dirname, "/public/privacy")));
+app.use("/cast", express.static(path.join(__dirname, "/public/cast"))); // TODO: Algun moment ho tancaré
 
 // WebSocket
 initializeAdminWebSocket(server);

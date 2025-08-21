@@ -215,14 +215,22 @@ function initializeCastWebSocket(server) {
     });
 
     // New: check room status (ack with hasBroadcaster)
-    socket.on("check-room", ({ room }, ack) => {
+    socket.on("check-room", async ({ room }, ack) => {
       if (!room || typeof room !== "string") {
         if (typeof ack === "function") ack({ hasBroadcaster: false });
         return;
       }
-      const r = getOrCreateRoom(room);
-      const hasBroadcaster = Boolean(r.broadcasterId);
-      if (typeof ack === "function") ack({ hasBroadcaster });
+
+      // Busca la room activa per aquest alumne
+      const activeRoom = await findActiveRoomForAlumne(room);
+
+      if (activeRoom) {
+        if (typeof ack === "function") ack({ hasBroadcaster: true });
+      } else {
+        const r = getOrCreateRoom(room);
+        const hasBroadcaster = Boolean(r.broadcasterId);
+        if (typeof ack === "function") ack({ hasBroadcaster });
+      }
     });
 
     socket.on(
@@ -373,8 +381,15 @@ function initializeCastWebSocket(server) {
 
     // Signaling: viewer -> broadcaster (offer)
     socket.on("viewer-offer", ({ room, sdp }) => {
-      const r = rooms.get(room);
+      const meta = socketMeta.get(socket.id);
+      if (!meta || meta.role !== "viewer") return;
+
+      // Utilitza la room real on està connectat el viewer (meta.room)
+      // però accepta tant el paràmetre room com meta.room per compatibilitat
+      const actualRoom = meta.room;
+      const r = rooms.get(actualRoom);
       if (!r || !r.broadcasterId) return;
+
       io.to(r.broadcasterId).emit("viewer-offer", { viewerId: socket.id, sdp });
     });
 
@@ -387,8 +402,12 @@ function initializeCastWebSocket(server) {
     // ICE candidates
     socket.on("ice-candidate", ({ room, toViewerId, candidate }) => {
       const meta = socketMeta.get(socket.id);
-      const r = rooms.get(room);
-      if (!meta || !r) return;
+      if (!meta) return;
+
+      // Utilitza la room real on està connectat el socket
+      const actualRoom = meta.room;
+      const r = rooms.get(actualRoom);
+      if (!r) return;
 
       if (meta.role === "viewer") {
         // forward to broadcaster with viewerId info

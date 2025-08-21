@@ -13,6 +13,7 @@ let pc = null;
 let mediaStream = null;
 let hideCursorTimer = null;
 let currentMode = null; // 'webrtc' | 'url' | null
+let actualRoom = roomName; // La room real on estem connectats (pot ser diferent si som redirigits)
 
 function showMessage(text) {
   messageEl.textContent = text;
@@ -42,26 +43,30 @@ function ensurePeer() {
   });
 
   pc.ontrack = (event) => {
-    if (!mediaStream) {
-      mediaStream = new MediaStream();
-      player.srcObject = mediaStream;
-    }
-    if (event.streams && event.streams[0]) {
-      event.streams[0].getTracks().forEach((t) => mediaStream.addTrack(t));
-    } else {
-      mediaStream.addTrack(event.track);
-    }
     try {
-      player.play();
-    } catch {}
-    hideMessage();
-    // Assegura que el mode visual és vídeo
-    if (frame) {
-      frame.classList.add("hidden");
-      frame.src = "about:blank";
+      if (!mediaStream) {
+        mediaStream = new MediaStream();
+        player.srcObject = mediaStream;
+      }
+      if (event.streams && event.streams[0]) {
+        event.streams[0].getTracks().forEach((t) => mediaStream.addTrack(t));
+      } else {
+        mediaStream.addTrack(event.track);
+      }
+      player.play().catch((e) => console.warn("Error playing video:", e));
+      hideMessage();
+      // Assegura que el mode visual és vídeo
+      if (frame) {
+        frame.classList.add("hidden");
+        frame.src = "about:blank";
+      }
+      player.classList.remove("hidden");
+      currentMode = "webrtc";
+    } catch (error) {
+      console.error("Error handling track:", error);
+      hideMessage();
+      showMessage("Error rebent el vídeo. Esperant emissió...");
     }
-    player.classList.remove("hidden");
-    currentMode = "webrtc";
   };
 
   pc.onicecandidate = (event) => {
@@ -74,6 +79,7 @@ function ensurePeer() {
   };
 
   pc.onconnectionstatechange = () => {
+    console.log("Connection state:", pc.connectionState);
     if (
       pc.connectionState === "failed" ||
       pc.connectionState === "disconnected" ||
@@ -81,6 +87,8 @@ function ensurePeer() {
     ) {
       cleanupPeer();
       showMessage("Connexió perduda. Esperant emissió...");
+    } else if (pc.connectionState === "connected") {
+      hideMessage();
     }
   };
 
@@ -120,19 +128,39 @@ socket.on("broadcaster-available", async () => {
   }
   player.classList.remove("hidden");
   currentMode = "webrtc";
-  const peer = ensurePeer();
-  const offer = await peer.createOffer({
-    offerToReceiveAudio: true,
-    offerToReceiveVideo: true,
-  });
-  await peer.setLocalDescription(offer);
-  socket.emit("viewer-offer", { room: roomName, sdp: peer.localDescription });
+
+  try {
+    const peer = ensurePeer();
+    const offer = await peer.createOffer({
+      offerToReceiveAudio: true,
+      offerToReceiveVideo: true,
+    });
+    await peer.setLocalDescription(offer);
+    socket.emit("viewer-offer", { room: roomName, sdp: peer.localDescription });
+
+    // Timeout per amagar el missatge si la negociació es queda penjada
+    setTimeout(() => {
+      if (currentMode === "webrtc" && !mediaStream) {
+        hideMessage();
+      }
+    }, 5000); // 5 segons
+  } catch (error) {
+    console.error("Error en la negociació WebRTC:", error);
+    hideMessage();
+    showMessage("Error en la connexió. Esperant emissió...");
+  }
 });
 
 socket.on("broadcaster-answer", async ({ sdp }) => {
   if (!pc) return;
-  await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-  hideMessage();
+  try {
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    hideMessage();
+  } catch (error) {
+    console.error("Error setting remote description:", error);
+    hideMessage();
+    showMessage("Error en la connexió. Esperant emissió...");
+  }
 });
 
 socket.on("ice-candidate", async ({ candidate }) => {
