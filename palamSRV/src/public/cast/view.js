@@ -252,3 +252,20 @@ document.addEventListener(
 document.addEventListener("dragstart", function (e) {
   e.preventDefault();
 });
+
+// Escoltar tancament de missatge (iframe broadcast de missatge)
+window.addEventListener("message", (ev) => {
+  const d = ev.data;
+  if (!d || d.type !== "palam-message-close") return;
+  // Neteja iframe i mostra estat d'espera
+  if (frame) {
+    frame.classList.add("hidden");
+    frame.src = "about:blank";
+  }
+  if (player) {
+    player.classList.add("hidden");
+    player.srcObject = null;
+  }
+  currentMode = null;
+  showMessage("Missatge finalitzat. Esperant nova emissió...");
+});

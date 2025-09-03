@@ -37,12 +37,10 @@ const postTabInfoAPI = (req, res) => {
     }
 
     if (action !== "active" && action !== "close" && action !== "update") {
-      res
-        .status(500)
-        .send({
-          status: "ERROR",
-          data: "Action incorrecte. Ha de ser active, close o update",
-        });
+      res.status(500).send({
+        status: "ERROR",
+        data: "Action incorrecte. Ha de ser active, close o update",
+      });
       return;
     }
 
@@ -435,11 +433,11 @@ function powerOffAll(grup) {
   }
 }
 
-function sendDisplayCommand(roomTarget, command) {
+function sendDisplayCommand(roomTarget, command, excludeAlumnes = []) {
   try {
     roomTarget = netejaText(roomTarget);
     command = netejaText(command);
-    infoService.sendDisplayCommand(roomTarget, command);
+    infoService.sendDisplayCommand(roomTarget, command, excludeAlumnes);
   } catch (err) {
     logger.error(err);
   }

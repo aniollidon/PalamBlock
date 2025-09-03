@@ -282,7 +282,19 @@ function initializeCastWebSocket(server) {
 
         // Enviar ordre open-display a les màquines dels alumnes
         try {
-          infoController.sendDisplayCommand(room, "open-display");
+          let exclude = [];
+          if (
+            emissionType === "group" &&
+            kind === "url" &&
+            typeof url === "string"
+          ) {
+            try {
+              const parsed = new URL(url);
+              const nameParam = parsed.searchParams.get("name");
+              if (nameParam) exclude.push(nameParam);
+            } catch {}
+          }
+          infoController.sendDisplayCommand(room, "open-display", exclude);
         } catch (err) {
           logger.error("Error sending open-display command:", err);
         }
@@ -353,7 +365,19 @@ function initializeCastWebSocket(server) {
 
           // Enviar ordre open-display a les màquines dels alumnes
           try {
-            infoController.sendDisplayCommand(room, "open-display");
+            let exclude = [];
+            if (
+              emissionType === "group" &&
+              kind === "url" &&
+              typeof url === "string"
+            ) {
+              try {
+                const parsed = new URL(url);
+                const nameParam = parsed.searchParams.get("name");
+                if (nameParam) exclude.push(nameParam);
+              } catch {}
+            }
+            infoController.sendDisplayCommand(room, "open-display", exclude);
           } catch (err) {
             logger.error("Error sending open-display command:", err);
           }

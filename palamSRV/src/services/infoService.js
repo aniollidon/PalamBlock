@@ -970,15 +970,19 @@ function powerOffAllGrup(grup) {
   // TODO: Implementar
 }
 
-function sendCommandToGrup(grup, command) {
+function sendCommandToGrup(grup, command, excludeAlumnes = []) {
   // Busca tots els alumnes del grup i envia la comanda a les seves màquines
   const alumneService = require("./alumneService");
+  const excludeSet = new Set(
+    Array.isArray(excludeAlumnes) ? excludeAlumnes : []
+  );
 
   alumneService
     .getGrupAlumnesList()
     .then((grupAlumnesList) => {
       if (grupAlumnesList[grup] && grupAlumnesList[grup].alumnes) {
         for (const alumneId in grupAlumnesList[grup].alumnes) {
+          if (excludeSet.has(alumneId)) continue;
           sendCommandToAlumne(alumneId, command);
         }
       }
@@ -988,7 +992,7 @@ function sendCommandToGrup(grup, command) {
     });
 }
 
-function sendDisplayCommand(roomTarget, command) {
+function sendDisplayCommand(roomTarget, command, excludeAlumnes = []) {
   // roomTarget pot ser un nom de grup o un alumne individual
   // command pot ser "open-display" o "close-display"
 
@@ -1000,8 +1004,12 @@ function sendDisplayCommand(roomTarget, command) {
   }
 
   // Si no és un alumne, prova com a grup
-  sendCommandToGrup(roomTarget, command);
-  logger.debug(`Sent ${command} to grup: ${roomTarget}`);
+  sendCommandToGrup(roomTarget, command, excludeAlumnes);
+  logger.debug(
+    `Sent ${command} to grup: ${roomTarget} (excludes: ${excludeAlumnes.join(
+      ","
+    )})`
+  );
 }
 
 function getAlumnesMachine() {

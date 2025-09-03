@@ -27,6 +27,15 @@ const castScreenTabPane = document.getElementById("castScreenTabPane");
 const castUrlTabPane = document.getElementById("castUrlTabPane");
 const castUrlInteractiu = document.getElementById("castUrlInteractiu");
 const castSidebarContainer = document.getElementById("castSidebarContainer");
+// Nova pestanya missatge
+const castMessageTab = document.getElementById("castMessageTab");
+const castMessageTabPane = document.getElementById("castMessageTabPane");
+const castShareMessageButton = document.getElementById(
+  "castShareMessageButton"
+);
+const castMessageText = document.getElementById("castMessageText");
+const castMessageTime = document.getElementById("castMessageTime");
+// Eliminat checkbox de tancar en fer clic
 
 // Elements del dropdown d'alumnes
 const castStudentScreenDropdown = document.getElementById(
@@ -45,6 +54,13 @@ let currentRoom = null;
 const peersByViewerId = new Map();
 let currentKind = null; // 'webrtc' | 'url' | null
 let pendingShare = null; // { kind, url?, interactive? }
+
+// Override per emetre a un alumne específic (sense seleccionar grup)
+let overrideRoom = null; // nom de l'alumne si estem en mode individual iniciat des del grid
+
+function getCurrentTargetRoom() {
+  return overrideRoom || grupSelector.value;
+}
 
 // Elements per toast i modals (assumim que existeixen)
 let toastEl = null;
@@ -72,33 +88,40 @@ function hideSidebar() {
   castSidebar.style.display = "none";
   castSidebarContainer.style.display = "none";
   stopPreview();
+  // Reinicia mode override
+  if (overrideRoom) {
+    overrideRoom = null;
+    // Torna a mostrar el dropdown d'alumnes si s'havia amagat
+    const dropdownWrapper = castStudentScreenDropdown?.parentElement;
+    if (dropdownWrapper) dropdownWrapper.style.display = "";
+  }
 }
 
 // Quan canvia el grup, actualitza el botó i el títol
 grupSelector.addEventListener("change", () => {
+  // Si estem en mode override (alumne individual) ignorem canvis de grup
+  if (overrideRoom) return;
   if (castSidebar.style.display === "block") {
     const grup = grupSelector.value;
     if (isBroadcasting && currentRoom) {
-      // Si està emetent, mostrar l'estat actual
-      if (currentKind === "url") {
+      if (currentKind === "url")
         setStatus(`Emetent URL a la sala: ${currentRoom}`);
-      } else {
-        setStatus(`Emetent a la sala: ${currentRoom}`);
-      }
+      else setStatus(`Emetent a la sala: ${currentRoom}`);
     } else {
-      // Si no està emetent, mostrar el nom del grup
       castSidebarTitle.textContent = grup ? `Emet a ${grup}` : "Emet a";
     }
   }
-  // Actualitzar dropdown d'alumnes quan canvia el grup
   updateStudentDropdown();
 });
 
 // Toggle sidebar només si hi ha grup
 castButton.addEventListener("click", () => {
+  // Mode grup: assegura que no estem en override
+  overrideRoom = null;
+  const dropdownWrapper = castStudentScreenDropdown?.parentElement;
+  if (dropdownWrapper) dropdownWrapper.style.display = "";
   const grup = grupSelector.value;
   if (!grup) return;
-  // Si la sidebar ja està visible, tanca-la
   if (
     castSidebar.style.display !== "none" &&
     castSidebarContainer.style.display !== "none"
@@ -106,17 +129,36 @@ castButton.addEventListener("click", () => {
     hideSidebar();
     return;
   }
-  // Si està tancada, obre-la
   showSidebar();
   castSidebarTitle.textContent = `Emet a ${grup}`;
-  // Per defecte, activa la pestanya de pantalla
   castScreenTab.classList.add("active");
   castUrlTab.classList.remove("active");
   castScreenTabPane.classList.add("show", "active");
   castUrlTabPane.classList.remove("show", "active");
-  // Actualitzar dropdown d'alumnes
   updateStudentDropdown();
 });
+
+// Funció global per obrir la sidebar per un alumne concret (emissió individual)
+window.openCastSidebarForStudent = function (alumne) {
+  overrideRoom = alumne;
+  // Amaga dropdown d'alumnes (no té sentit en mode individual)
+  const dropdownWrapper = castStudentScreenDropdown?.parentElement;
+  if (dropdownWrapper) dropdownWrapper.style.display = "none";
+  if (
+    castSidebar.style.display !== "none" &&
+    castSidebarContainer.style.display !== "none"
+  ) {
+    // Ja oberta: simplement actualitza títol
+    castSidebarTitle.textContent = `Emet a ${alumne}`;
+  } else {
+    showSidebar();
+    castSidebarTitle.textContent = `Emet a ${alumne}`;
+    castScreenTab.classList.add("active");
+    castUrlTab.classList.remove("active");
+    castScreenTabPane.classList.add("show", "active");
+    castUrlTabPane.classList.remove("show", "active");
+  }
+};
 
 // Tancar sidebar
 castSidebarClose.addEventListener("click", () => {
@@ -135,13 +177,25 @@ castUrlTab.addEventListener("click", () => {
   castScreenTab.classList.remove("active");
   castUrlTabPane.classList.add("show", "active");
   castScreenTabPane.classList.remove("show", "active");
+  if (castMessageTab) castMessageTab.classList.remove("active");
+  if (castMessageTabPane) castMessageTabPane.classList.remove("show", "active");
 });
+if (castMessageTab) {
+  castMessageTab.addEventListener("click", () => {
+    castMessageTab.classList.add("active");
+    castScreenTab.classList.remove("active");
+    castUrlTab.classList.remove("active");
+    if (castMessageTabPane) castMessageTabPane.classList.add("show", "active");
+    castScreenTabPane.classList.remove("show", "active");
+    castUrlTabPane.classList.remove("show", "active");
+  });
+}
 
 // Compartir URL amb emissió real i verificació prèvia
 castShareUrlButton.addEventListener("click", async () => {
-  const grup = grupSelector.value;
-  if (!grup) {
-    alert("Selecciona un grup abans d'emetre");
+  const targetRoom = getCurrentTargetRoom();
+  if (!targetRoom) {
+    alert("Selecciona un grup o alumne abans d'emetre");
     return;
   }
 
@@ -170,7 +224,7 @@ castShareUrlButton.addEventListener("click", async () => {
   // Comprova si ja hi ha emissor i demana confirmació
   let proceed = true;
   await new Promise((resolve) => {
-    castSocket.emit("check-room", { room: grup }, async (resp) => {
+    castSocket.emit("check-room", { room: targetRoom }, async (resp) => {
       if (resp && resp.hasBroadcaster) {
         proceed = await showConfirmReplaceModal();
       }
@@ -185,7 +239,7 @@ castShareUrlButton.addEventListener("click", async () => {
     return;
   }
 
-  currentRoom = grup;
+  currentRoom = targetRoom;
   currentKind = "url";
 
   // Mostrar previsualització amb iframe
@@ -202,6 +256,83 @@ castShareUrlButton.addEventListener("click", async () => {
   });
 });
 
+// Emetre missatge (utilitza emissió URL oculta)
+if (castShareMessageButton) {
+  castShareMessageButton.addEventListener("click", async () => {
+    const targetRoom = getCurrentTargetRoom();
+    if (!targetRoom) {
+      alert("Selecciona un grup o alumne abans d'emetre");
+      return;
+    }
+    if (isBroadcasting) {
+      alert("Ja estàs emetent. Atura l'emissió actual primer.");
+      return;
+    }
+    const txt = (castMessageText?.value || "").trim();
+    if (!txt) {
+      alert("Introdueix un missatge");
+      return;
+    }
+    let secs = parseInt(castMessageTime?.value || "10", 10);
+    if (isNaN(secs) || secs < 0) secs = 0;
+    // Construeix URL cap a misssatge.html (sense tancar per clic)
+    const url = `http://192.168.1.72:4000/cast/misssatge.html?text=${encodeURIComponent(
+      txt
+    )}&temps=${secs}`;
+
+    // Preparar dades de compartició
+    const choice = { kind: "url", url: url, interactive: false };
+    pendingShare = choice;
+
+    // Comprova si ja hi ha emissor
+    let proceed = true;
+    await new Promise((resolve) => {
+      castSocket.emit("check-room", { room: targetRoom }, async (resp) => {
+        if (resp && resp.hasBroadcaster) {
+          proceed = await showConfirmReplaceModal();
+        }
+        resolve();
+      });
+    });
+    if (!proceed) {
+      setStatus("Operació cancel·lada");
+      showToast("Operació cancel·lada");
+      pendingShare = null;
+      return;
+    }
+
+    currentRoom = targetRoom;
+    currentKind = "url";
+
+    // Previsualització (iframe) del missatge
+    showIframePreview(url);
+    setStatus("Compartint missatge. Connectant...");
+    showToast("Emetent missatge...");
+
+    castSocket.emit("broadcaster-join-request", {
+      room: currentRoom,
+      kind: "url",
+      url: url,
+      interactive: false,
+    });
+
+    // Auto aturar emissió si hi ha temps definit
+    if (secs > 0) {
+      setTimeout(() => {
+        if (
+          isBroadcasting &&
+          currentKind === "url" &&
+          currentRoom === targetRoom &&
+          castPreviewIframe?.src.includes("misssatge.html")
+        ) {
+          stopCast();
+          showToast("Emissió de missatge finalitzada");
+        }
+      }, secs * 1000 + 500);
+    }
+  });
+}
+
 // Atura emissió real
 castStopButton.addEventListener("click", () => {
   stopCast();
@@ -210,9 +341,9 @@ castStopButton.addEventListener("click", () => {
 
 // Compartir pantalla amb emissió real i verificació prèvia
 castShareScreenButton.addEventListener("click", async () => {
-  const grup = grupSelector.value;
-  if (!grup) {
-    alert("Selecciona un grup abans d'emetre");
+  const targetRoom = getCurrentTargetRoom();
+  if (!targetRoom) {
+    alert("Selecciona un grup o alumne abans d'emetre");
     return;
   }
 
@@ -228,7 +359,7 @@ castShareScreenButton.addEventListener("click", async () => {
   // Comprova si ja hi ha emissor i demana confirmació
   let proceed = true;
   await new Promise((resolve) => {
-    castSocket.emit("check-room", { room: grup }, async (resp) => {
+    castSocket.emit("check-room", { room: targetRoom }, async (resp) => {
       if (resp && resp.hasBroadcaster) {
         proceed = await showConfirmReplaceModal();
       }
@@ -247,7 +378,7 @@ castShareScreenButton.addEventListener("click", async () => {
     // Obtenir pantalla amb preferència d'àudio
     screenStream = await getScreenStreamPreferAudio();
 
-    currentRoom = grup;
+    currentRoom = targetRoom;
     currentKind = "webrtc";
 
     // Mostrar previsualització amb vídeo
@@ -537,8 +668,8 @@ function createTemporaryConfirmModal() {
 function setStatus(text) {
   // Actualitzar el títol de la sidebar amb l'estat
   if (castSidebarTitle) {
-    const grup = grupSelector.value;
-    castSidebarTitle.textContent = grup ? `${grup} - ${text}` : text;
+    const room = getCurrentTargetRoom();
+    castSidebarTitle.textContent = room ? `${room} - ${text}` : text;
   }
   console.log("Status:", text);
 }
@@ -827,5 +958,19 @@ window.addEventListener("pagehide", () => {
     try {
       castSocket.emit("stop-broadcast");
     } catch {}
+  }
+});
+
+// Rebre notificació de tancament de missatge des de l'iframe
+window.addEventListener("message", (ev) => {
+  const d = ev.data;
+  if (!d || d.type !== "palam-message-close") return;
+  if (
+    isBroadcasting &&
+    currentKind === "url" &&
+    castPreviewIframe?.src.includes("misssatge.html")
+  ) {
+    stopCast();
+    showToast("Missatge tancat");
   }
 });
