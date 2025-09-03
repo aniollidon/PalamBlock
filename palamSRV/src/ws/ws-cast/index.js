@@ -170,6 +170,30 @@ function initializeCastWebSocket(server) {
   }
 
   io.on("connection", (socket) => {
+    // Petició puntual per saber si hi ha emissió activa d'un alumne (room individual o grup)
+    socket.on("cast-active-query", async ({ alumne }, cb) => {
+      if (typeof cb !== "function") return; // cal callback
+      if (!alumne || typeof alumne !== "string") return cb({ active: false });
+      try {
+        const active = await findActiveRoomForAlumne(alumne);
+        if (!active) return cb({ active: false });
+        cb({
+          active: true,
+          room: active.roomName,
+          type: active.type,
+          mode: active.room.mode,
+          url:
+            active.room.urlState && active.room.urlState.url
+              ? active.room.urlState.url
+              : null,
+          interactive:
+            active.room.urlState && !!active.room.urlState.interactive,
+        });
+      } catch (e) {
+        logger.error("Error cast-active-query:", e);
+        cb({ active: false, error: "internal" });
+      }
+    });
     socket.on("viewer-join", async ({ room }) => {
       if (!room || typeof room !== "string") return;
 

@@ -43,8 +43,9 @@ app.use("/cast", express.static(path.join(__dirname, "/public/cast"))); // TODO:
 // WebSocket
 initializeAdminWebSocket(server);
 initializeExtentionWebSocket(server);
-initializeOSWebSocket(server);
+// Primer cast per poder consultar emissions des de ws-os
 initializeCastWebSocket(server);
+initializeOSWebSocket(server);
 
 server.listen(PORT, () => {
   logger.info(`Server is listening on port ${PORT}`);
