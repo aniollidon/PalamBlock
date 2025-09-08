@@ -276,7 +276,7 @@ if (castShareMessageButton) {
     let secs = parseInt(castMessageTime?.value || "10", 10);
     if (isNaN(secs) || secs < 0) secs = 0;
     // Construeix URL cap a misssatge.html (sense tancar per clic)
-    const url = `http://192.168.1.72:4000/cast/misssatge.html?text=${encodeURIComponent(
+    const url = `http://192.168.0.103:4000/cast/misssatge.html?text=${encodeURIComponent(
       txt
     )}&temps=${secs}`;
 
