@@ -1,5 +1,6 @@
-const socket = io(":4000", {
+const socket = io({
   path: "/ws-cast",
+  transports: ["websocket", "polling"],
 });
 
 const player = document.getElementById("player");

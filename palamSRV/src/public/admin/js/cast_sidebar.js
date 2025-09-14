@@ -1,9 +1,10 @@
 // Cast sidebar logic for /admin/screens
 // Mostra i amaga la sidebar, gestiona la previsualització i la captura de pantalla
 
-// Socket per cast (ws-cast)
-const castSocket = io(":4000", {
+// Socket per cast (ws-cast) - connecta al mateix origen de la pàgina
+const castSocket = io({
   path: "/ws-cast",
+  transports: ["websocket", "polling"],
 });
 
 // Elements
@@ -276,9 +277,9 @@ if (castShareMessageButton) {
     let secs = parseInt(castMessageTime?.value || "10", 10);
     if (isNaN(secs) || secs < 0) secs = 0;
     // Construeix URL cap a misssatge.html (sense tancar per clic)
-    const url = `http://192.168.1.72:4000/cast/misssatge.html?text=${encodeURIComponent(
-      txt
-    )}&temps=${secs}`;
+    const url = `${
+      location.origin
+    }/cast/misssatge.html?text=${encodeURIComponent(txt)}&temps=${secs}`;
 
     // Preparar dades de compartició
     const choice = { kind: "url", url: url, interactive: false };
