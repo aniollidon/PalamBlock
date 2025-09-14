@@ -35,6 +35,8 @@ database.once("connected", () => {
 // API
 app.use(cors());
 app.use(bodyParser.json());
+// Redirigeix l'arrel a /admin
+app.get("/", (req, res) => res.redirect("/admin"));
 app.use("/api/v1", v1Router);
 app.use("/admin", express.static(path.join(__dirname, "/public/admin")));
 app.use("/privacy", express.static(path.join(__dirname, "/public/privacy")));
