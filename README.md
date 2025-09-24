@@ -4,7 +4,7 @@ Aquest repo conté les diferents peces per fer anar Palamblock.
 ## PalamSRV: Server
 Servidor de PalamBlock. Es connecta amb les extensions instal·lades (PalamExt), amb els ordinadors d'alumne (PalamOs) i amb l'aplicció de professor (PalamMaster)
 
-# PalamMaster: Applicació d'administració (versió professor)
+## PalamMaster: Applicació d'administració (versió professor)
 
 ## PalamOS: Versió windows
 Actualment deprecat
