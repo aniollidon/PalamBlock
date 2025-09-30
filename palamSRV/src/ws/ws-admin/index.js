@@ -16,13 +16,28 @@ function initializeAdminWebSocket(server) {
   io.use((socket, next) => {
     // Obtenim les credencials de l'usuari i la contrasenya
     const { user, authToken } = socket.handshake.query;
+    try {
+      // Log segur del handshake (no exposar token complet)
+      const tokenPreview = authToken
+        ? `${String(authToken).slice(0, 6)}…(${String(authToken).length})`
+        : "<cap>";
+      logger.info(
+        `[ws-admin handshake] user=${user || "<cap>"} token=${tokenPreview}`
+      );
+    } catch (_) {}
 
     // Verifiquem les credencials
     const auth = adminController.checkAdmin(user, authToken);
     if (auth) {
+      logger.info(
+        `[ws-admin handshake] autenticació OK per usuari ${user || "<cap>"}`
+      );
       return next();
     }
 
+    logger.warn(
+      `[ws-admin handshake] autenticació FALLIDA per usuari ${user || "<cap>"}`
+    );
     return next(new Error("Autenticació fallida"));
   });
 
@@ -40,7 +55,10 @@ function initializeAdminWebSocket(server) {
   });
 
   io.on("connection", async (socket) => {
-    logger.info("S'ha connectat un client ws-admin " + socket.id);
+    const { user } = socket.handshake.query || {};
+    logger.info(
+      `S'ha connectat un client ws-admin ${socket.id} (user=${user || "<cap>"})`
+    );
     // Emissions inicials amb logs mínims
     try {
       const grups = await alumneController.getGrupAlumnesList();
