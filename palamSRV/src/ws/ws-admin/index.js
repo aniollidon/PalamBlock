@@ -21,7 +21,7 @@ function initializeAdminWebSocket(server) {
       const tokenPreview = authToken
         ? `${String(authToken).slice(0, 6)}…(${String(authToken).length})`
         : "<cap>";
-      logger.info(
+      logger.debug(
         `[ws-admin handshake] user=${user || "<cap>"} token=${tokenPreview}`
       );
     } catch (_) {}
@@ -29,13 +29,13 @@ function initializeAdminWebSocket(server) {
     // Verifiquem les credencials
     const auth = adminController.checkAdmin(user, authToken);
     if (auth) {
-      logger.info(
+      logger.debug(
         `[ws-admin handshake] autenticació OK per usuari ${user || "<cap>"}`
       );
       return next();
     }
 
-    logger.warn(
+    logger.debug(
       `[ws-admin handshake] autenticació FALLIDA per usuari ${user || "<cap>"}`
     );
     return next(new Error("Autenticació fallida"));
@@ -197,7 +197,7 @@ function initializeAdminWebSocket(server) {
       try {
         const grups = await alumneController.getGrupAlumnesList();
         socket.emit("grupAlumnesList", grups);
-        logger.info(
+        logger.trace(
           `[ws-admin ${socket.id}] getGrupAlumnesList -> ${
             grups ? Object.keys(grups).length : 0
           }`
@@ -210,14 +210,14 @@ function initializeAdminWebSocket(server) {
     // Endpoint compacte per tornar a demanar tot el paquet inicial si cal.
     socket.on("getInitialData", async () => {
       try {
-        logger.info(`[ws-admin ${socket.id}] getInitialData request`);
+        logger.trace(`[ws-admin ${socket.id}] getInitialData request`);
         const grups = await alumneController.getGrupAlumnesList();
         socket.emit("grupAlumnesList", grups);
         const activity = await infoController.getAlumnesActivity();
         socket.emit("alumnesActivity", activity);
         socket.emit("alumnesMachine", infoController.getAlumnesMachine());
         socket.emit("normesWeb", await normaController.getAllNormes2Web());
-        logger.info(
+        logger.trace(
           `[ws-admin ${socket.id}] getInitialData -> grups:${
             grups ? Object.keys(grups).length : 0
           } activity:${activity ? Object.keys(activity).length : 0}`
@@ -372,6 +372,108 @@ function initializeAdminWebSocket(server) {
           callback({
             status: "ERROR",
             error: error.message || "Error esborrant el grup",
+          });
+      }
+    });
+
+    // ============================================
+    // GESTIÓ D'ADMINISTRADORS
+    // ============================================
+
+    /**
+     * Llistar administradors
+     */
+    socket.on("getAdminsList", async (callback) => {
+      try {
+        const admins = await adminController.llistarAdmins();
+        logger.trace(
+          `[ws-admin ${socket.id}] getAdminsList -> ${admins.length} admins`
+        );
+        if (callback) callback({ status: "OK", data: admins });
+      } catch (error) {
+        logger.error(`[ws-admin ${socket.id}] Error obtenint admins:`, error);
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error obtenint administradors",
+          });
+      }
+    });
+
+    /**
+     * Crear administrador
+     */
+    socket.on("createAdmin", async (data, callback) => {
+      try {
+        const { user, clau } = data;
+        if (!user || !clau) {
+          throw new Error("Falten dades obligatòries (user, clau)");
+        }
+        await adminController.crearAdmin({ user, clau });
+        // Actualitzar la llista d'admins per a tots els clients
+        const admins = await adminController.llistarAdmins();
+        io.emit("adminsList", admins);
+        logger.info(`[ws-admin ${socket.id}] Admin creat: ${user}`);
+        if (callback) callback({ status: "OK" });
+      } catch (error) {
+        logger.error(`[ws-admin ${socket.id}] Error creant admin:`, error);
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error creant administrador",
+          });
+      }
+    });
+
+    /**
+     * Actualitzar contrasenya d'administrador
+     */
+    socket.on("updateAdmin", async (data, callback) => {
+      try {
+        const { user, clau } = data;
+        if (!user || !clau) {
+          throw new Error("Falten dades obligatòries (user, clau)");
+        }
+        await adminController.actualitzarAdmin(user, clau);
+        // Actualitzar la llista d'admins per a tots els clients
+        const admins = await adminController.llistarAdmins();
+        io.emit("adminsList", admins);
+        logger.info(`[ws-admin ${socket.id}] Admin actualitzat: ${user}`);
+        if (callback) callback({ status: "OK" });
+      } catch (error) {
+        logger.error(
+          `[ws-admin ${socket.id}] Error actualitzant admin:`,
+          error
+        );
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error actualitzant administrador",
+          });
+      }
+    });
+
+    /**
+     * Esborrar administrador
+     */
+    socket.on("deleteAdmin", async (data, callback) => {
+      try {
+        const { user } = data;
+        if (!user) {
+          throw new Error("Falta user");
+        }
+        await adminController.esborrarAdmin(user);
+        // Actualitzar la llista d'admins per a tots els clients
+        const admins = await adminController.llistarAdmins();
+        io.emit("adminsList", admins);
+        logger.info(`[ws-admin ${socket.id}] Admin esborrat: ${user}`);
+        if (callback) callback({ status: "OK" });
+      } catch (error) {
+        logger.error(`[ws-admin ${socket.id}] Error esborrant admin:`, error);
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error esborrant administrador",
           });
       }
     });
