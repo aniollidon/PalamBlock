@@ -1,103 +1,173 @@
 const db = require("../database/db");
-const crypto = require('crypto');
+const crypto = require("crypto");
 const logger = require("../logger").logger;
 const cryptoSalt = process.env.CRYPTO_SALT;
 
-
-function encriptaClau(clau){
-    return  crypto.pbkdf2Sync(clau, cryptoSalt,
-        1000, 64, `sha512`).toString(`hex`);
+function encriptaClau(clau) {
+  return crypto
+    .pbkdf2Sync(clau, cryptoSalt, 1000, 64, `sha512`)
+    .toString(`hex`);
 }
 
-function checkClau(clau, clauEncriptada){
-    return clauEncriptada === encriptaClau(clau);
+function checkClau(clau, clauEncriptada) {
+  return clauEncriptada === encriptaClau(clau);
 }
 
-async function creaAlumne(alumneId, grupId, clau, nom, cognoms){
-    // Si no existeix el grup, el crea.
-    let grup = await db.Grup.findOne({grupId: grupId});
-    if(!grup) {
-        grup = await db.Grup.create({
-            grupId: grupId,
-            nom: grupId,
-            normesWeb: [],
-            status: "RuleOn"
-        });
-    }
-
-    return db.Alumne.create({
-        alumneId: alumneId,
-        nom: nom,
-        cognoms: cognoms,
-        clauEncriptada: encriptaClau(clau),
-        status: "RuleOn",
-        normesWeb: [],
-        grup: grupId
+async function creaAlumne(alumneId, grupId, clau, nom, cognoms) {
+  // Si no existeix el grup, el crea.
+  let grup = await db.Grup.findOne({ grupId: grupId });
+  if (!grup) {
+    grup = await db.Grup.create({
+      grupId: grupId,
+      nom: grupId,
+      normesWeb: [],
+      status: "RuleOn",
     });
+  }
 
+  return db.Alumne.create({
+    alumneId: alumneId,
+    nom: nom,
+    cognoms: cognoms,
+    clauEncriptada: encriptaClau(clau),
+    status: "RuleOn",
+    normesWeb: [],
+    grup: grupId,
+  });
 }
 
-async function autentificaAlumne(alumneId, clau){
-    const alumne = await db.Alumne.findOne({alumneId: alumneId});
-    if(!alumne)
-        throw {status: 404, message: "Alumne no trobat"};
+async function autentificaAlumne(alumneId, clau) {
+  const alumne = await db.Alumne.findOne({ alumneId: alumneId });
+  if (!alumne) throw { status: 404, message: "Alumne no trobat" };
 
-    if(!checkClau(clau, alumne.clauEncriptada))
-        throw {status: 401, message: "Clau incorrecta"};
+  if (!checkClau(clau, alumne.clauEncriptada))
+    throw { status: 401, message: "Clau incorrecta" };
 
-    return alumne;
+  return alumne;
 }
 
-async function getGrupAlumnesList(){
-    const list = {};
-    const grups = await db.Grup.find();
-    for (let grup of grups) {
-        list[grup.grupId] = {
-            grupId: grup.grupId,
-            status: grup.status,
-            alumnes: {}
-        }
+async function getGrupAlumnesList() {
+  const list = {};
+  const grups = await db.Grup.find();
+  for (let grup of grups) {
+    list[grup.grupId] = {
+      grupId: grup.grupId,
+      status: grup.status,
+      alumnes: {},
+    };
+  }
+  for (let alumne of await db.Alumne.find()) {
+    if (!list[alumne.grup]) {
+      logger.error("No existeix el grup " + alumne.grup);
+      continue;
     }
-    for (let alumne of await db.Alumne.find()) {
 
-        if(!list[alumne.grup]){
-            logger.error("No existeix el grup " + alumne.grup);
-            continue;
-        }
-
-        list[alumne.grup].alumnes[alumne.alumneId] = {
-            alumneId: alumne.alumneId,
-            nom: alumne.nom,
-            cognoms: alumne.cognoms,
-            status: alumne.status,
-            grup: alumne.grup
-        }
-    }
-    return list;
+    list[alumne.grup].alumnes[alumne.alumneId] = {
+      alumneId: alumne.alumneId,
+      nom: alumne.nom,
+      cognoms: alumne.cognoms,
+      status: alumne.status,
+      grup: alumne.grup,
+    };
+  }
+  return list;
 }
 
-function setAlumneStatus(alumneId, status){
-    return db.Alumne.updateOne({alumneId: alumneId}, {status: status});
+function setAlumneStatus(alumneId, status) {
+  return db.Alumne.updateOne({ alumneId: alumneId }, { status: status });
 }
 
-function setGrupStatus(grupId, status){
-    return db.Grup.updateOne({grupId: grupId}, {status: status});
+function setGrupStatus(grupId, status) {
+  return db.Grup.updateOne({ grupId: grupId }, { status: status });
 }
 
-async function getAlumneStatus(alumneId){
-    const alumne = await db.Alumne.findOne({alumneId: alumneId});
-    if(!alumne)
-        throw {status: 404, message: "Alumne " + alumneId +" no trobat"};
+async function getAlumneStatus(alumneId) {
+  const alumne = await db.Alumne.findOne({ alumneId: alumneId });
+  if (!alumne)
+    throw { status: 404, message: "Alumne " + alumneId + " no trobat" };
 
-    return alumne.status;
+  return alumne.status;
 }
 
+async function updateAlumne(alumneId, updates) {
+  const alumne = await db.Alumne.findOne({ alumneId: alumneId });
+  if (!alumne)
+    throw { status: 404, message: "Alumne " + alumneId + " no trobat" };
+
+  // Si es canvia la clau, l'encriptem
+  if (updates.clau) {
+    updates.clauEncriptada = encriptaClau(updates.clau);
+    delete updates.clau;
+  }
+
+  // Si es canvia de grup, validem que el grup existeix
+  if (updates.grup && updates.grup !== alumne.grup) {
+    const grup = await db.Grup.findOne({ grupId: updates.grup });
+    if (!grup)
+      throw { status: 404, message: "Grup " + updates.grup + " no trobat" };
+  }
+
+  return db.Alumne.updateOne({ alumneId: alumneId }, updates);
+}
+
+async function deleteAlumne(alumneId) {
+  const alumne = await db.Alumne.findOne({ alumneId: alumneId });
+  if (!alumne)
+    throw { status: 404, message: "Alumne " + alumneId + " no trobat" };
+
+  return db.Alumne.deleteOne({ alumneId: alumneId });
+}
+
+async function creaGrup(grupId, nom) {
+  const grupExistent = await db.Grup.findOne({ grupId: grupId });
+  if (grupExistent)
+    throw { status: 409, message: "El grup " + grupId + " ja existeix" };
+
+  return db.Grup.create({
+    grupId: grupId,
+    nom: nom || grupId,
+    normesWeb: [],
+    status: "RuleOn",
+  });
+}
+
+async function updateGrup(grupId, updates) {
+  const grup = await db.Grup.findOne({ grupId: grupId });
+  if (!grup) throw { status: 404, message: "Grup " + grupId + " no trobat" };
+
+  return db.Grup.updateOne({ grupId: grupId }, updates);
+}
+
+async function deleteGrup(grupId) {
+  const grup = await db.Grup.findOne({ grupId: grupId });
+  if (!grup) throw { status: 404, message: "Grup " + grupId + " no trobat" };
+
+  // Comprovar si hi ha alumnes en aquest grup
+  const alumnesCount = await db.Alumne.countDocuments({ grup: grupId });
+  if (alumnesCount > 0)
+    throw {
+      status: 409,
+      message:
+        "No es pot esborrar el grup " +
+        grupId +
+        " perquè té " +
+        alumnesCount +
+        " alumnes assignats",
+    };
+
+  return db.Grup.deleteOne({ grupId: grupId });
+}
 
 module.exports = {
-    creaAlumne,
-    autentificaAlumne,
-    getGrupAlumnesList,
-    setAlumneStatus,
-    setGrupStatus,
-    getAlumneStatus
-}
+  creaAlumne,
+  autentificaAlumne,
+  getGrupAlumnesList,
+  setAlumneStatus,
+  setGrupStatus,
+  getAlumneStatus,
+  updateAlumne,
+  deleteAlumne,
+  creaGrup,
+  updateGrup,
+  deleteGrup,
+};

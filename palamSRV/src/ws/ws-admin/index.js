@@ -231,6 +231,151 @@ function initializeAdminWebSocket(server) {
       await infoController.powerOffAll(msg.grup);
     });
 
+    // ========== SUPER MODE: Gestió d'alumnes ==========
+    socket.on("createAlumne", async (msg, callback) => {
+      try {
+        const { alumneId, grupId, clau, nom, cognoms } = msg;
+        if (!alumneId || !grupId || !clau || !nom || !cognoms) {
+          throw new Error(
+            "Falten dades. Es necessiten: alumneId, grupId, clau, nom, cognoms"
+          );
+        }
+        const alumne = await alumneController.creaAlumne(
+          alumneId,
+          grupId,
+          clau,
+          nom,
+          cognoms
+        );
+        // Actualitzar la llista de grups per a tots els clients
+        const grups = await alumneController.getGrupAlumnesList();
+        io.emit("grupAlumnesList", grups);
+        logger.info(`[ws-admin ${socket.id}] Alumne creat: ${alumneId}`);
+        if (callback) callback({ status: "OK", data: alumne });
+      } catch (error) {
+        logger.error(`[ws-admin ${socket.id}] Error creant alumne:`, error);
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error creant l'alumne",
+          });
+      }
+    });
+
+    socket.on("updateAlumne", async (msg, callback) => {
+      try {
+        const { alumneId, updates } = msg;
+        if (!alumneId || !updates) {
+          throw new Error("Falten dades. Es necessiten: alumneId, updates");
+        }
+        await alumneController.updateAlumne(alumneId, updates);
+        // Actualitzar la llista de grups per a tots els clients
+        const grups = await alumneController.getGrupAlumnesList();
+        io.emit("grupAlumnesList", grups);
+        logger.info(`[ws-admin ${socket.id}] Alumne actualitzat: ${alumneId}`);
+        if (callback) callback({ status: "OK" });
+      } catch (error) {
+        logger.error(
+          `[ws-admin ${socket.id}] Error actualitzant alumne:`,
+          error
+        );
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error actualitzant l'alumne",
+          });
+      }
+    });
+
+    socket.on("deleteAlumne", async (msg, callback) => {
+      try {
+        const { alumneId } = msg;
+        if (!alumneId) {
+          throw new Error("Falta alumneId");
+        }
+        await alumneController.deleteAlumne(alumneId);
+        // Actualitzar la llista de grups per a tots els clients
+        const grups = await alumneController.getGrupAlumnesList();
+        io.emit("grupAlumnesList", grups);
+        logger.info(`[ws-admin ${socket.id}] Alumne esborrat: ${alumneId}`);
+        if (callback) callback({ status: "OK" });
+      } catch (error) {
+        logger.error(`[ws-admin ${socket.id}] Error esborrant alumne:`, error);
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error esborrant l'alumne",
+          });
+      }
+    });
+
+    // ========== SUPER MODE: Gestió de grups ==========
+    socket.on("createGrup", async (msg, callback) => {
+      try {
+        const { grupId, nom } = msg;
+        if (!grupId) {
+          throw new Error("Falta grupId");
+        }
+        await alumneController.creaGrup(grupId, nom);
+        // Actualitzar la llista de grups per a tots els clients
+        const grups = await alumneController.getGrupAlumnesList();
+        io.emit("grupAlumnesList", grups);
+        logger.info(`[ws-admin ${socket.id}] Grup creat: ${grupId}`);
+        if (callback) callback({ status: "OK" });
+      } catch (error) {
+        logger.error(`[ws-admin ${socket.id}] Error creant grup:`, error);
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error creant el grup",
+          });
+      }
+    });
+
+    socket.on("updateGrup", async (msg, callback) => {
+      try {
+        const { grupId, updates } = msg;
+        if (!grupId || !updates) {
+          throw new Error("Falten dades. Es necessiten: grupId, updates");
+        }
+        await alumneController.updateGrup(grupId, updates);
+        // Actualitzar la llista de grups per a tots els clients
+        const grups = await alumneController.getGrupAlumnesList();
+        io.emit("grupAlumnesList", grups);
+        logger.info(`[ws-admin ${socket.id}] Grup actualitzat: ${grupId}`);
+        if (callback) callback({ status: "OK" });
+      } catch (error) {
+        logger.error(`[ws-admin ${socket.id}] Error actualitzant grup:`, error);
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error actualitzant el grup",
+          });
+      }
+    });
+
+    socket.on("deleteGrup", async (msg, callback) => {
+      try {
+        const { grupId } = msg;
+        if (!grupId) {
+          throw new Error("Falta grupId");
+        }
+        await alumneController.deleteGrup(grupId);
+        // Actualitzar la llista de grups per a tots els clients
+        const grups = await alumneController.getGrupAlumnesList();
+        io.emit("grupAlumnesList", grups);
+        logger.info(`[ws-admin ${socket.id}] Grup esborrat: ${grupId}`);
+        if (callback) callback({ status: "OK" });
+      } catch (error) {
+        logger.error(`[ws-admin ${socket.id}] Error esborrant grup:`, error);
+        if (callback)
+          callback({
+            status: "ERROR",
+            error: error.message || "Error esborrant el grup",
+          });
+      }
+    });
+
     socket.on("disconnect", () => {
       logger.info("S'ha desconnectat un client ws-admin " + socket.id);
       delete info_activityCallbacks[socket.id];

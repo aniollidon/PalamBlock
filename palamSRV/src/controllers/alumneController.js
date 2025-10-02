@@ -72,10 +72,40 @@ function setGrupStatus(grupId, status) {
   });
 }
 
+async function creaAlumne(alumneId, grupId, clau, nom, cognoms) {
+  return alumneService.creaAlumne(alumneId, grupId, clau, nom, cognoms);
+}
+
+async function updateAlumne(alumneId, updates) {
+  return alumneService.updateAlumne(alumneId, updates);
+}
+
+async function deleteAlumne(alumneId) {
+  return alumneService.deleteAlumne(alumneId);
+}
+
+async function creaGrup(grupId, nom) {
+  return alumneService.creaGrup(grupId, nom);
+}
+
+async function updateGrup(grupId, updates) {
+  return alumneService.updateGrup(grupId, updates);
+}
+
+async function deleteGrup(grupId) {
+  return alumneService.deleteGrup(grupId);
+}
+
 module.exports = {
   postAlumneAPI,
   autentificaAlumneAPI,
   getGrupAlumnesList,
   setAlumneStatus,
   setGrupStatus,
+  creaAlumne,
+  updateAlumne,
+  deleteAlumne,
+  creaGrup,
+  updateGrup,
+  deleteGrup,
 };
