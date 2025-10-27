@@ -13,6 +13,7 @@ const initializeCastWebSocket = require("./ws/ws-cast");
 const initializeExtentionWebSocket = require("./ws/ws-extention");
 const initializeOSWebSocket = require("./ws/ws-os");
 const logger = require("./logger").logger;
+const { scheduleDailyRuleOnReset } = require("./services/dailyReset");
 
 const app = express();
 const server = http.createServer(app);
@@ -28,8 +29,12 @@ database.on("error", (error) => {
   logger.error(error);
 });
 
+let dailyResetJob;
+
 database.once("connected", () => {
   logger.info("Database Connected");
+  // Start daily scheduler after DB is ready
+  dailyResetJob = scheduleDailyRuleOnReset();
 });
 
 // API
@@ -67,11 +72,27 @@ function gracefulShutdown(signal) {
     const tokenManager = getTokenManager();
     tokenManager.destroy();
 
-    // Tanca la connexió a la base de dades
-    mongoose.connection.close(false, () => {
-      logger.info("Connexió a MongoDB tancada");
-      process.exit(0);
-    });
+    // Atura el cron si està actiu
+    try {
+      if (dailyResetJob) {
+        dailyResetJob.stop();
+        logger.info("Scheduler diari aturat");
+      }
+    } catch (e) {
+      logger.warn("No s'ha pogut aturar l'scheduler diari", e);
+    }
+
+    // Tanca la connexió a la base de dades (Mongoose v7: retorna una Promise, sense callback)
+    mongoose.connection
+      .close(false)
+      .then(() => {
+        logger.info("Connexió a MongoDB tancada");
+        process.exit(0);
+      })
+      .catch((err) => {
+        logger.error("Error tancant la connexió a MongoDB", err);
+        process.exit(1);
+      });
   });
 
   // Força el tancament després de 10 segons
