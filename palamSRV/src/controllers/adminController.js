@@ -43,6 +43,14 @@ async function esborrarAdmin(user) {
   return await adminService.esborrarAdmin(user);
 }
 
+/**
+ * Obtenir estadístiques del sistema de tokens d'autenticació
+ * Útil per monitorització i debugging
+ */
+function getAuthStats() {
+  return adminService.getAuthTokenStats();
+}
+
 module.exports = {
   autentificaAdminAPI,
   checkAdmin,
@@ -50,4 +58,5 @@ module.exports = {
   crearAdmin,
   actualitzarAdmin,
   esborrarAdmin,
+  getAuthStats,
 };

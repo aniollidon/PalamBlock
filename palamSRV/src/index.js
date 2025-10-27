@@ -52,3 +52,46 @@ initializeOSWebSocket(server);
 server.listen(PORT, () => {
   logger.info(`Server is listening on port ${PORT}`);
 });
+
+// Gestió de tancament del servidor
+const { getInstance: getTokenManager } = require("./services/authTokenManager");
+
+function gracefulShutdown(signal) {
+  logger.info(`${signal} rebut. Tancant el servidor...`);
+
+  // Tanca el servidor HTTP
+  server.close(() => {
+    logger.info("Servidor HTTP tancat");
+
+    // Neteja el TokenManager
+    const tokenManager = getTokenManager();
+    tokenManager.destroy();
+
+    // Tanca la connexió a la base de dades
+    mongoose.connection.close(false, () => {
+      logger.info("Connexió a MongoDB tancada");
+      process.exit(0);
+    });
+  });
+
+  // Força el tancament després de 10 segons
+  setTimeout(() => {
+    logger.error("Forçant tancament del servidor després de 10 segons");
+    process.exit(1);
+  }, 10000);
+}
+
+// Escolta senyals de tancament
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+// Gestió d'errors no capturats
+process.on("uncaughtException", (error) => {
+  logger.error("Uncaught Exception:", error);
+  gracefulShutdown("uncaughtException");
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+  gracefulShutdown("unhandledRejection");
+});

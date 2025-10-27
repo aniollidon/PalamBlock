@@ -54,7 +54,7 @@ class BrowserStatus extends BrowserDetails {
     this._passiveupdatedAt = timestamp; // (v1.0) used to check if the browser is disconnected
     this._onUpdateCallback = onUpdateCallback;
     this._onActionCallback = () => {};
-    this._checkInterval = undefined; // (v1.0) used to check if the browser is disconnected
+    this._checkInterval = null; // (v1.0) used to check if the browser is disconnected
     this.opened = true;
 
     if (this.extVersion === "1.0") {
@@ -78,17 +78,47 @@ class BrowserStatus extends BrowserDetails {
     super.from(details);
 
     if (prevVersion !== this.extVersion && this.extVersion !== "1.0") {
-      clearInterval(this._checkInterval);
+      this._clearCheckInterval();
     }
   }
 
+  /**
+   * Neteja l'interval de comprovació de connexió
+   * @private
+   */
+  _clearCheckInterval() {
+    if (this._checkInterval) {
+      clearInterval(this._checkInterval);
+      this._checkInterval = null;
+    }
+  }
+
+  /**
+   * Tanca el browser i tots els seus tabs
+   * Neteja tots els recursos associats
+   */
   close(timestamp, silent = false) {
     for (const tab in this.tabs) {
       this.tabs[tab].close(timestamp);
     }
     this.opened = false;
     this.updatedAt = timestamp;
+
+    // Neteja l'interval per evitar memory leaks
+    this._clearCheckInterval();
+
     if (!silent) this._onUpdateCallback("browsers");
+  }
+
+  /**
+   * Destrueix l'objecte i allibera recursos
+   * Crida aquest mètode quan el browser ja no es necessita
+   */
+  destroy() {
+    this._clearCheckInterval();
+    this._onUpdateCallback = () => {};
+    this._onActionCallback = () => {};
+    this.tabs = {};
   }
 
   setAlive(timestamp) {
@@ -247,10 +277,11 @@ class MachineStatus {
     this._execute = executionCallback;
     this._isAlive = aliveCallback;
     this._onUpdateCallback = onUpdateCallback;
+    this._connectionCheckInterval = null;
 
     // Comprova si la màquina s'ha desconnectat
     const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
-    setInterval(() => {
+    this._connectionCheckInterval = setInterval(() => {
       if (
         this.connected &&
         this.lastUpdate &&
@@ -305,6 +336,20 @@ class MachineStatus {
     this.lastUpdate = new Date();
     this._onUpdateCallback("machines");
   }
+
+  /**
+   * Destrueix l'objecte i allibera recursos
+   * Neteja l'interval de comprovació de connexió
+   */
+  destroy() {
+    if (this._connectionCheckInterval) {
+      clearInterval(this._connectionCheckInterval);
+      this._connectionCheckInterval = null;
+    }
+    this._execute = null;
+    this._isAlive = null;
+    this._onUpdateCallback = () => {};
+  }
 }
 
 class AlumneStatus {
@@ -315,12 +360,13 @@ class AlumneStatus {
     this.conected = true;
     this.machines = {};
     this._onUpdateCallback = onUpdateCallback;
-    this._garbageInterval = undefined;
+    this._garbageInterval = null;
+    this._connectionCheckInterval = null;
     this._lastNews = new Date();
 
     // Comprova si l'alumne s'ha desconnectat
     const NOCONN_TIME = parseInt(process.env.NOCONNECTION_TIME || 60000);
-    setInterval(() => {
+    this._connectionCheckInterval = setInterval(() => {
       if (
         this.conected &&
         this._lastNews &&
@@ -336,20 +382,34 @@ class AlumneStatus {
     }, NOCONN_TIME);
 
     // Neteja Browsers antics
+    const GARBAGE_TIME = parseInt(process.env.GARBAGE_COLLECTOR_TIME || 300000);
     this._garbageInterval = setInterval(() => {
-      for (const browser in this.browsers) {
-        if (
-          !this.browsers[browser].opened &&
-          this.browsers[browser].updatedAt >
-            new Date() - process.env.GARBAGE_COLLECTOR_TIME
-        ) {
-          logger.trace(
-            "[GARBAGE COLLECTOR] Browser " + browser + " deleted from " + alumne
-          );
-          delete this.browsers[browser];
-        }
+      this._cleanupClosedBrowsers();
+    }, GARBAGE_TIME);
+  }
+
+  /**
+   * Neteja browsers tancats que ja no es necessiten
+   * @private
+   */
+  _cleanupClosedBrowsers() {
+    const GARBAGE_TIME = parseInt(process.env.GARBAGE_COLLECTOR_TIME || 300000);
+    const now = new Date();
+
+    for (const browser in this.browsers) {
+      const browserStatus = this.browsers[browser];
+      if (
+        !browserStatus.opened &&
+        now - browserStatus.updatedAt > GARBAGE_TIME
+      ) {
+        logger.trace(
+          `[GARBAGE COLLECTOR] Browser ${browser} deleted from ${this.alumne}`
+        );
+        // Destrueix el browser abans d'esborrar-lo
+        browserStatus.destroy();
+        delete this.browsers[browser];
       }
-    }, process.env.GARBAGE_COLLECTOR_TIME);
+    }
   }
 
   setAlive(timestamp) {
@@ -379,6 +439,8 @@ class AlumneStatus {
     // Si hi ha una maquina amb la mateixa ip, la borra i la substitueix
     for (const machine in this.machines) {
       if (this.machines[machine].ip === ip) {
+        // Destrueix la màquina abans d'esborrar-la
+        this.machines[machine].destroy();
         delete this.machines[machine];
         logger.debug("Machine " + machine + " with ip " + ip + " deleted");
       }
@@ -429,6 +491,8 @@ class AlumneStatus {
       // Borra totes excepte
       for (const machine in this.machines) {
         if (machine !== mostRecentUnconnected) {
+          // Destrueix la màquina abans d'esborrar-la
+          this.machines[machine].destroy();
           delete this.machines[machine];
           logger.trace("Machine " + machine + " deleted");
         }
@@ -436,7 +500,9 @@ class AlumneStatus {
     } else if (connected > 1) {
       // Borra totes les desconnectades
       for (const machine in this.machines) {
-        if (!machine.connected) {
+        if (!this.machines[machine].connected) {
+          // Destrueix la màquina abans d'esborrar-la
+          this.machines[machine].destroy();
           delete this.machines[machine];
           logger.trace("Machine " + machine + " deleted");
         }
@@ -530,6 +596,45 @@ class AlumneStatus {
     }
 
     this.browsers[browserDetails.browser].registerActionCallback(callback);
+  }
+
+  /**
+   * Destrueix l'objecte AlumneStatus i allibera tots els recursos
+   * Neteja tots els intervals i crida destroy() de tots els objectes fills
+   */
+  destroy() {
+    // Neteja intervals
+    if (this._connectionCheckInterval) {
+      clearInterval(this._connectionCheckInterval);
+      this._connectionCheckInterval = null;
+    }
+
+    if (this._garbageInterval) {
+      clearInterval(this._garbageInterval);
+      this._garbageInterval = null;
+    }
+
+    // Destrueix tots els browsers
+    for (const browser in this.browsers) {
+      if (this.browsers[browser].destroy) {
+        this.browsers[browser].destroy();
+      }
+    }
+    this.browsers = {};
+
+    // Destrueix totes les màquines
+    for (const machine in this.machines) {
+      if (this.machines[machine].destroy) {
+        this.machines[machine].destroy();
+      }
+    }
+    this.machines = {};
+
+    // Neteja apps
+    this.apps = {};
+
+    // Neteja callbacks
+    this._onUpdateCallback = () => {};
   }
 }
 
