@@ -130,6 +130,22 @@ class Conn {
         });
     }
 
+    onIframeNav(tabId, frameId, iframeUrl) {
+        chrome.tabs.get(tabId, (tab) => {
+            if (chrome.runtime.lastError || !tab) return;
+            customTabInfo(tab).then((tab_info) => {
+                if (!tab_info) return;
+                tab_info.action = "iframe";
+                tab_info.iframeUrl = iframeUrl;
+                tab_info.iframeHost = new URL(iframeUrl).host.replace("www.", "");
+                tab_info.frameId = frameId;
+                this.socket.emit('tabInfo', tab_info);
+            }).catch((error) => {
+                if (error === "alumne") forceLoginTab();
+            });
+        });
+    }
+
     onUpdateTab(tab) {
         customTabInfo(tab).then(async (tab_info) => {
             if (!tab_info) return;
@@ -210,6 +226,24 @@ chrome.tabs.onRemoved.addListener(function (tabid, removed) {
 // On tab actions ACTIVATE
 chrome.tabs.onActivated.addListener(function (activeInfo) {
     if(conn) conn.onActivateTab(activeInfo);
+});
+
+// On iframe navigation COMPLETE (sub-frames only)
+chrome.webNavigation.onCompleted.addListener(function (details) {
+    // frameId 0 = main frame, ignorem-lo perquè ja ho gestiona onUpdated
+    if (details.frameId === 0) return;
+
+    const url = details.url;
+    // Ignorem URLs internes del navegador/extensió
+    if (url.startsWith("chrome-extension://")) return;
+    if (url.startsWith("about:")) return;
+    if (url.startsWith("chrome://")) return;
+    if (url.startsWith("edge://")) return;
+    if (url.startsWith("brave://")) return;
+    if (url.startsWith("avast://")) return;
+
+    if (conn) conn.onIframeNav(details.tabId, details.frameId, url);
+    console.log("Iframe navigation detected", {tabId: details.tabId, frameId: details.frameId, url: url});
 });
 
 // On tab actions UPDATE

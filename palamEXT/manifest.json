@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "PalamBlock",
-  "version": "2.3",
+  "version": "2.4",
   "description": "Una extensió per bloquejar pàgines web específiques.",
-  "permissions": ["storage", "tabs", "scripting"],
+  "permissions": ["storage", "tabs", "scripting", "webNavigation"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
@@ -25,5 +25,8 @@
   "background": {
     "service_worker": "background.js",
     "type": "module"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newTab/newtab.html"
   }
 }
