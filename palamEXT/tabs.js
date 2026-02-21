@@ -4,21 +4,21 @@ const manifestData = chrome.runtime.getManifest();
 const version = manifestData.version;
 
 function urlToHost(url) {
-    let s =  new URL(url).host;
+    let s = new URL(url).host;
     return s.replace("www.", "");
 }
 
 async function getBrowser() {
     const stored = await chrome.storage.local.get(['browser']);
-    if(!stored || !stored.browser || stored.browser === "unknown") {
+    if (!stored || !stored.browser || stored.browser === "unknown") {
         try {
             if (navigator.brave.isBrave())
-                chrome.storage.local.set({browser: "Brave"});
+                chrome.storage.local.set({ browser: "Brave" });
             return "Brave"
-        } catch (e) {}
+        } catch (e) { }
 
         const uap = new uaParserJs();
-        chrome.storage.local.set({browser: uap.getBrowser().name});
+        chrome.storage.local.set({ browser: uap.getBrowser().name });
         return uap.getBrowser().name;
     }
     else {
@@ -26,103 +26,110 @@ async function getBrowser() {
     }
 }
 
+/**
+ * Gets credentials from local or managed storage.
+ * Local storage takes precedence if alumne is set.
+ */
+export async function getCredentials() {
+    const local = await chrome.storage.local.get(['alumne', 'server']);
+    if (local.alumne && local.alumne !== '') {
+        return { alumne: local.alumne, server: local.server };
+    }
+
+    const managed = await chrome.storage.managed.get(['username', 'serverUrl']);
+    if (managed.username && managed.username !== '') {
+        return { alumne: managed.username, server: managed.serverUrl };
+    }
+
+    return null;
+}
+
 export async function customTabsInfo(chromeTabs) {
-    return new Promise((resolve, reject) => {
-        chrome.storage.local.get(['alumne'], async (result) => {
-            if (!result.alumne) {
-                reject("alumne");
-                return;
-            }
-            const browser = await getBrowser();
-            const alumne = result.alumne;
-            let tabsInfos = {};
-            let activeTab = null;
-            for (let i = 0; i < chromeTabs.length; i++) {
-                if (chromeTabs[i].active) {
-                    activeTab = chromeTabs[i].id;
-                }
+    const creds = await getCredentials();
+    if (!creds) {
+        throw "alumne";
+    }
+    const browser = await getBrowser();
+    const alumne = creds.alumne;
+    let tabsInfos = {};
+    let activeTab = null;
+    for (let i = 0; i < chromeTabs.length; i++) {
+        if (chromeTabs[i].active) {
+            activeTab = chromeTabs[i].id;
+        }
 
-                const chromeTab = chromeTabs[i];
-                const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
-                tabsInfos[chromeTab.id] = {
-                    host: url ? url.host : "",
-                    protocol: url ? url.protocol : "",
-                    search: url ? url.search : "",
-                    pathname: url ? url.pathname : "",
-                    title: chromeTab.title,
-                    favicon: chromeTab.favIconUrl,
-                    alumne: alumne,
-                    browser: browser,
-                    windowId: chromeTab.windowId,
-                    tabId: chromeTab.id,
-                    incognito: chromeTab.incognito,
-                    active: chromeTab.active,
-                    audible: chromeTab.audible,
-                    extVersion: version
-                };
-            }
-            resolve({
-                tabsInfos: tabsInfos,
-                activeTab: activeTab,
-                alumne: alumne,
-                browser: browser
-            });
-        });
-
-        return true;
+        const chromeTab = chromeTabs[i];
+        const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
+        tabsInfos[chromeTab.id] = {
+            host: url ? url.host : "",
+            protocol: url ? url.protocol : "",
+            search: url ? url.search : "",
+            pathname: url ? url.pathname : "",
+            title: chromeTab.title,
+            favicon: chromeTab.favIconUrl,
+            alumne: alumne,
+            browser: browser,
+            windowId: chromeTab.windowId,
+            tabId: chromeTab.id,
+            incognito: chromeTab.incognito,
+            active: chromeTab.active,
+            audible: chromeTab.audible,
+            extVersion: version
+        };
+    }
+    resolve({
+        tabsInfos: tabsInfos,
+        activeTab: activeTab,
+        alumne: alumne,
+        browser: browser
     });
 }
 
 export async function customTabInfo(chromeTab) {
-    return new Promise((resolve, reject) => {
-        chrome.storage.local.get(['alumne'], async (result) => {
-            if (!result.alumne) {
-                reject("alumne");
-                return;
-            }
+    const creds = await getCredentials();
+    if (!creds) {
+        throw "alumne";
+    }
+    const alumne = creds.alumne;
+    const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
 
-            const url = chromeTab.url ? new URL(chromeTab.url) : undefined;
-            const basetab_info = {
-                host: url ? url.host : "",
-                protocol: url ? url.protocol : "",
-                search: url ? url.search : "",
-                pathname: url ? url.pathname : "",
-                title: chromeTab.title,
-                favicon: chromeTab.favIconUrl,
-                alumne: result.alumne,
-                browser: await getBrowser(),
-                windowId: chromeTab.windowId,
-                tabId: chromeTab.id,
-                incognito: chromeTab.incognito,
-                active: chromeTab.active,
-                audible: chromeTab.audible,
-                extVersion: version
-            }
-            resolve(basetab_info);
-        });
-        return true;
-    });
+
+    const basetab_info = {
+        host: url ? url.host : "",
+        protocol: url ? url.protocol : "",
+        search: url ? url.search : "",
+        pathname: url ? url.pathname : "",
+        title: chromeTab.title,
+        favicon: chromeTab.favIconUrl,
+        alumne: alumne,
+        browser: await getBrowser(),
+        windowId: chromeTab.windowId,
+        tabId: chromeTab.id,
+        incognito: chromeTab.incognito,
+        active: chromeTab.active,
+        audible: chromeTab.audible,
+        extVersion: version
+    }
+    return basetab_info;
 }
 
 export async function customShortInfo() {
-    return new Promise((resolve, reject) => {
-        chrome.storage.local.get(['alumne'], async (result) => {
-            if (!result.alumne) {
-                reject("alumne");
-                return;
-            }
-            resolve({
-                alumne: result.alumne,
-                browser: await getBrowser(),
-                extVersion: version
-            });
-        });
-
-        return true;
-    });
+    const creds = await getCredentials();
+    if (!creds) {
+        throw "alumne";
+    }
+    return {
+        alumne: creds.alumne,
+        browser: await getBrowser(),
+        extVersion: version
+    };
 }
 
 export async function forceLoginTab() {
+    // Check if we have credentials (could have been added in managed storage since first check)
+    const creds = await getCredentials();
+    if (creds) return;
+
     // is login tab already open?
     const opened = await new Promise((resolve, reject) => {
         chrome.tabs.query({}, (tabs) => {
@@ -141,20 +148,20 @@ export async function forceLoginTab() {
         chrome.tabs.query({}, (tabs) => {
             for (let i = 0; i < tabs.length; i++) {
                 if (tabs[i].url !== chrome.runtime.getURL("login.html")) {
-                    chrome.tabs.remove(tabs[i].id).catch((error) => {});
+                    chrome.tabs.remove(tabs[i].id).catch((error) => { });
                 }
             }
         });
     }
     else {
         // Create login tab and close others
-        chrome.tabs.create({url: chrome.runtime.getURL("login.html")}, (tab) => {
+        chrome.tabs.create({ url: chrome.runtime.getURL("login.html") }, (tab) => {
             // Close all other tabs
             const tabId = tab.id;
             chrome.tabs.query({}, (tabs) => {
                 for (let i = 0; i < tabs.length; i++) {
                     if (tabs[i].id !== tabId) {
-                        chrome.tabs.remove(tabs[i].id).catch((error) => {});
+                        chrome.tabs.remove(tabs[i].id).catch((error) => { });
                     }
                 }
             });
@@ -169,7 +176,7 @@ export async function blockTab(tabId) {
         // find tab by id
         chrome.tabs.get(tabId, (tab) => {
             // Set tab url
-            chrome.tabs.update(tabId, {url: chrome.runtime.getURL("blocked.html?title="+ tab.title + "&host=" + urlToHost(tab.url))}, (tab) => {
+            chrome.tabs.update(tabId, { url: chrome.runtime.getURL("blocked.html?title=" + tab.title + "&host=" + urlToHost(tab.url)) }, (tab) => {
                 resolve(tab);
             });
         });
@@ -202,15 +209,15 @@ export async function warnTab(tabId) {
                             </div>
                         </div> ` + document.body.innerHTML;
 
-                        document.getElementById("palablock").addEventListener("click", function(){
-                            document.getElementById("palablock").remove();
-                        });
+                    document.getElementById("palablock").addEventListener("click", function () {
+                        document.getElementById("palablock").remove();
+                    });
                 }
-                }).then(() => {
-                    resolve(tab);
-                }).catch((error) => {
-                    reject(error);
-                });
+            }).then(() => {
+                resolve(tab);
+            }).catch((error) => {
+                reject(error);
+            });
         });
         return true;
     });

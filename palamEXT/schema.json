@@ -14,6 +14,8 @@
       "minLength": 1
     }
   },
-  "required": ["serverUrl", "username"],
-  "additionalProperties": false
+  "required": [
+    "serverUrl",
+    "username"
+  ]
 }
