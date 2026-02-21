@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "serverUrl": {
+      "type": "string",
+      "title": "PalamBlock Server URL",
+      "description": "URL base del servidor de PalamBlock",
+      "pattern": "^(http|https)://.*"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Usuari per autenticar-se al servidor PalamBlock",
+      "minLength": 1
+    }
+  },
+  "required": ["serverUrl", "username"],
+  "additionalProperties": false
+}

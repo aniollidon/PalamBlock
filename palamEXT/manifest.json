@@ -28,5 +28,8 @@
   },
   "chrome_url_overrides": {
     "newtab": "newTab/newtab.html"
+  },
+    "storage": {
+    "managed_schema": "schema.json"
   }
 }
