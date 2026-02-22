@@ -1,17 +1,10 @@
 {
   "manifest_version": 3,
   "name": "PalamBlock",
-  "version": "2.5",
+  "version": "2.6",
   "description": "Una extensió per bloquejar pàgines web específiques.",
-  "permissions": [
-    "storage",
-    "tabs",
-    "scripting",
-    "webNavigation"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "permissions": ["storage", "tabs", "scripting", "webNavigation"],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -25,15 +18,8 @@
   },
   "web_accessible_resources": [
     {
-      "resources": [
-        "blocked.html",
-        "login.html",
-        "login.js",
-        "blocked.js"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
+      "resources": ["blocked.html", "login.html", "login.js", "blocked.js"],
+      "matches": ["<all_urls>"]
     }
   ],
   "background": {
