@@ -51,7 +51,7 @@ const postTabInfoAPI = (req, res) => {
       windowId,
       incognito,
       active,
-      audible
+      audible,
     );
 
     if (action === "active" || action === "close" || action === "update") {
@@ -100,19 +100,19 @@ const postBrowserInfoAPI = (req, res) => {
           tab.search,
           tab.pathname,
           tab.title,
-          tab.favicon
+          tab.favicon,
         ),
         tab.windowId,
         tab.incognito,
         tab.active,
-        tab.audible
+        tab.audible,
       );
     }
     infoService.registerBrowser(
       browserDetails,
       structuredTabsInfos,
       activeTab,
-      timestamp
+      timestamp,
     );
 
     res.send({
@@ -157,13 +157,13 @@ const postTabInfoWS = (sid, msg) => {
       msg.search,
       msg.pathname,
       msg.title,
-      msg.favicon
+      msg.favicon,
     );
     const browserDetails = new BrowserDetails(
       msg.alumne,
       msg.browser,
       msg.extVersion,
-      sid
+      sid,
     );
     const tabDetails = new TabDetails(
       msg.tabId,
@@ -171,19 +171,52 @@ const postTabInfoWS = (sid, msg) => {
       msg.windowId,
       msg.incognito,
       msg.active,
-      msg.audible
+      msg.audible,
     );
 
     if (
       action !== "active" &&
       action !== "close" &&
       action !== "update" &&
+      action !== "iframe" &&
       action !== "complete"
     ) {
       return;
     }
 
-    if (action === "complete") {
+    if (action === "iframe") {
+      const iframeDetails = {
+        url: new WebPage(
+          msg.iframeUrl.host,
+          msg.iframeUrl.protocol,
+          msg.iframeUrl.search,
+          msg.iframeUrl.pathname,
+        ),
+        frameId: msg.frameId,
+      };
+
+      const validacioAlumne = new validacioService.Validacio(msg.alumne);
+      const validacio = validacioAlumne.checkWeb(iframeDetails.url);
+      validacio
+        .then((status) => {
+          /*infoService.registerIframe(
+            browserDetails,
+            tabDetails,
+            timestamp,
+            iframeDetails,
+          );*/
+          console.log("Iframe validat amb status: " + status);
+          console.log("Iframe details: ", iframeDetails);
+          infoService.remoteSetTabStatus(
+            browserDetails,
+            tabDetails.tabId,
+            status === 'block' ? 'iframe-block' :status,
+          );
+        })
+        .catch((err) => {
+          logger.error(err);
+        });
+    } else if (action === "complete") {
       const validacioAlumne = new validacioService.Validacio(msg.alumne);
       const validacio = validacioAlumne.checkWeb(webPage);
 
@@ -194,12 +227,12 @@ const postTabInfoWS = (sid, msg) => {
             "complete",
             browserDetails,
             tabDetails,
-            timestamp
+            timestamp,
           );
           infoService.remoteSetTabStatus(
             browserDetails,
             tabDetails.tabId,
-            status
+            status,
           );
           historialService
             .saveWeb(browserDetails, tabDetails, timestamp)
@@ -230,7 +263,7 @@ const postBrowserInfoWS = async (sid, msg) => {
       msg.alumne,
       msg.browser,
       msg.extVersion,
-      sid
+      sid,
     );
     const structuredTabsInfos = {};
 
@@ -244,7 +277,7 @@ const postBrowserInfoWS = async (sid, msg) => {
         tab.search,
         tab.pathname,
         tab.title,
-        tab.favicon
+        tab.favicon,
       );
       const status = await validacioAlumne.checkWeb(webPage);
       structuredTabsInfos[tabId] = new TabDetails(
@@ -254,7 +287,7 @@ const postBrowserInfoWS = async (sid, msg) => {
         tab.incognito,
         tab.active,
         tab.audible,
-        status
+        status,
       );
 
       //infoService.remoteSetTabStatus(browserDetails, structuredTabsInfos[tabId].tabId, status);
@@ -263,7 +296,7 @@ const postBrowserInfoWS = async (sid, msg) => {
       browserDetails,
       structuredTabsInfos,
       msg.activeTab,
-      timestamp
+      timestamp,
     );
   } catch (err) {
     logger.error(err);
@@ -333,7 +366,7 @@ function registerActionListenerBrowserWS(sid, msg, callback) {
       msg.alumne,
       msg.browser,
       msg.extVersion,
-      sid
+      sid,
     );
     infoService.registerActionListener(browserDetails, callback);
   } catch (err) {
@@ -358,7 +391,7 @@ function registerMachine(
   ssid,
   alumne,
   executionCallback,
-  aliveCallback
+  aliveCallback,
 ) {
   try {
     const timestamp = new Date();
@@ -377,7 +410,7 @@ function registerMachine(
       version,
       executionCallback,
       aliveCallback,
-      timestamp
+      timestamp,
     );
   } catch (err) {
     logger.error(err);
