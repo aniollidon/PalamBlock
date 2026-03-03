@@ -1,4 +1,57 @@
 const API_REGISTER = "/api/v1/alumne/auth";
+const DEFAULT_SECONDARY_SERVER = "https://palamblock.online/";
+
+function normalizeServerUrl(url) {
+  if (!url || typeof url !== "string") return "";
+  return url.trim().replace(/\/+$/, "");
+}
+
+function getServerCandidates(primaryServer, secondaryServer) {
+  const candidates = [];
+  const primary = normalizeServerUrl(primaryServer);
+  const secondary = normalizeServerUrl(
+    secondaryServer || DEFAULT_SECONDARY_SERVER,
+  );
+
+  if (primary) candidates.push(primary);
+  if (secondary && secondary !== primary) candidates.push(secondary);
+
+  return candidates;
+}
+
+async function registerWithFallback(
+  alumne,
+  clau,
+  primaryServer,
+  secondaryServer,
+) {
+  const servers = getServerCandidates(primaryServer, secondaryServer);
+
+  for (const server of servers) {
+    const registerUrl = server + API_REGISTER;
+    try {
+      const response = await fetch(registerUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          alumne: alumne,
+          clau: clau,
+          server: server,
+        }),
+      });
+
+      if (response.status === 200) {
+        return { ok: true, serverUsed: server };
+      }
+    } catch (error) {
+      console.error("Registration error on", server, error);
+    }
+  }
+
+  return { ok: false };
+}
 
 // get manifest version
 const manifestData = chrome.runtime.getManifest();
@@ -19,15 +72,29 @@ import {
 } from "./tabs.js";
 
 class Conn {
-  constructor(server) {
-    this.socket = io
-      .connect(server, {
-        transports: ["websocket"],
-        path: "/ws-extention",
-      })
-      .on("connect_error", (error) => {
-        console.error("Connection error:", error.message);
-      });
+  constructor(primaryServer, secondaryServer = DEFAULT_SECONDARY_SERVER) {
+    this.primaryServer = normalizeServerUrl(primaryServer);
+    this.secondaryServer = normalizeServerUrl(
+      secondaryServer || DEFAULT_SECONDARY_SERVER,
+    );
+    this.switchedToSecondary = false;
+    this.activeServer = null;
+    this.socket = null;
+
+    this._connect(this.primaryServer);
+  }
+
+  _connect(server) {
+    if (this.socket) {
+      this.socket.removeAllListeners();
+      this.socket.disconnect();
+    }
+
+    this.activeServer = server;
+    this.socket = io.connect(server, {
+      transports: ["websocket"],
+      path: "/ws-extention",
+    });
 
     this.socket.on("connect", this._onConnect.bind(this));
     this.socket.on("connect_error", this._onError.bind(this));
@@ -35,13 +102,29 @@ class Conn {
   }
 
   _onConnect() {
-    console.log("Connected to server");
+    console.log("Connected to server", this.activeServer);
     this._registerBrowser();
     this._sendCurrentBrowserState();
   }
 
   _onError(error) {
     console.error("PalamBlock error:", error.message);
+
+    if (
+      !this.switchedToSecondary &&
+      this.activeServer === this.primaryServer &&
+      this.secondaryServer &&
+      this.secondaryServer !== this.primaryServer
+    ) {
+      this.switchedToSecondary = true;
+      console.warn(
+        "Primary server failed, switching to secondary",
+        this.secondaryServer,
+      );
+      this._connect(this.secondaryServer);
+      return true;
+    }
+
     return false;
   }
 
@@ -202,7 +285,10 @@ const initializing = new Promise((resolve) => {
 async function initialize() {
   const creds = await getCredentials();
   if (creds) {
-    if (!conn) conn = new Conn(creds.server);
+    const secondaryServer = normalizeServerUrl(
+      creds.secondaryServer || DEFAULT_SECONDARY_SERVER,
+    );
+    if (!conn) conn = new Conn(creds.server, secondaryServer);
   } else {
     forceLoginTab();
   }
@@ -214,32 +300,29 @@ initialize();
 // message from login.js
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type === "autentificacio") {
-    const register_url = request.server + API_REGISTER;
-    fetch(register_url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        alumne: request.alumne,
-        clau: request.clau,
-        server: request.server,
-      }),
-    })
-      .then((response) => {
-        response.json().then((data) => {
-          if (response.status === 200) {
-            sendResponse({ status: "OK" });
-            conn = new Conn(request.server);
-            conn._registerBrowser();
-            conn._sendCurrentBrowserState();
-          } else {
-            sendResponse({ status: "FAILED" });
-          }
-        });
+    const primaryServer = normalizeServerUrl(request.server);
+    const secondaryServer = normalizeServerUrl(
+      request.secondaryServer || DEFAULT_SECONDARY_SERVER,
+    );
+
+    registerWithFallback(
+      request.alumne,
+      request.clau,
+      primaryServer,
+      secondaryServer,
+    )
+      .then((result) => {
+        if (result.ok) {
+          sendResponse({ status: "OK", serverUsed: result.serverUsed });
+          conn = new Conn(primaryServer, secondaryServer);
+          conn._registerBrowser();
+          conn._sendCurrentBrowserState();
+        } else {
+          sendResponse({ status: "FAILED" });
+        }
       })
       .catch((error) => {
-        //console.error(error);
+        console.error(error);
         sendResponse({ status: "FAILED" });
       });
   } else if (request.type === "uninstall") {

@@ -1,11 +1,18 @@
 import uaParserJs from "https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.37/+esm";
 
+const DEFAULT_SECONDARY_SERVER = "https://palamblock.online/";
+
 const manifestData = chrome.runtime.getManifest();
 const version = manifestData.version;
 
 function urlToHost(url) {
   let s = new URL(url).host;
   return s.replace("www.", "");
+}
+
+function normalizeServerUrl(url) {
+  if (!url || typeof url !== "string") return "";
+  return url.trim().replace(/\/+$/, "");
 }
 
 async function getBrowser() {
@@ -30,14 +37,50 @@ async function getBrowser() {
  * Local storage takes precedence if alumne is set.
  */
 export async function getCredentials() {
-  const local = await chrome.storage.local.get(["alumne", "server"]);
-  if (local.alumne && local.alumne !== "") {
-    return { alumne: local.alumne, server: local.server };
+  const local = await chrome.storage.local.get([
+    "alumne",
+    "server",
+    "secondaryServer",
+  ]);
+  if (
+    local.alumne &&
+    local.alumne !== "" &&
+    local.server &&
+    local.server !== ""
+  ) {
+    const secondaryServer = normalizeServerUrl(local.secondaryServer)
+      ? normalizeServerUrl(local.secondaryServer)
+      : normalizeServerUrl(DEFAULT_SECONDARY_SERVER);
+
+    if (!local.secondaryServer || local.secondaryServer === "") {
+      chrome.storage.local.set({ secondaryServer: secondaryServer });
+    }
+
+    return {
+      alumne: local.alumne,
+      server: normalizeServerUrl(local.server),
+      secondaryServer: secondaryServer,
+    };
   }
 
-  const managed = await chrome.storage.managed.get(["username", "serverUrl"]);
-  if (managed.username && managed.username !== "") {
-    return { alumne: managed.username, server: managed.serverUrl };
+  const managed = await chrome.storage.managed.get([
+    "username",
+    "serverUrl",
+    "secondaryServerUrl",
+  ]);
+  if (
+    managed.username &&
+    managed.username !== "" &&
+    managed.serverUrl &&
+    managed.serverUrl !== ""
+  ) {
+    return {
+      alumne: managed.username,
+      server: normalizeServerUrl(managed.serverUrl),
+      secondaryServer: normalizeServerUrl(managed.secondaryServerUrl)
+        ? normalizeServerUrl(managed.secondaryServerUrl)
+        : normalizeServerUrl(DEFAULT_SECONDARY_SERVER),
+    };
   }
 
   return null;
