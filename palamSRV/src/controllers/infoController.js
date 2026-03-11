@@ -210,7 +210,11 @@ const postTabInfoWS = (sid, msg) => {
           infoService.remoteSetTabStatus(
             browserDetails,
             tabDetails.tabId,
-            status === 'block' ? 'iframe-block' :status,
+            status === "block" ? "iframe-block" : status,
+            undefined,
+            {
+              frameId: iframeDetails.frameId,
+            },
           );
         })
         .catch((err) => {

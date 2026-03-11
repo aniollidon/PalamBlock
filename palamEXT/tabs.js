@@ -233,6 +233,40 @@ export async function blockTab(tabId, mode = undefined) {
   });
 }
 
+export async function blockIframe(tabId, frameId) {
+  tabId = parseInt(tabId);
+  frameId = parseInt(frameId);
+
+  return new Promise((resolve, reject) => {
+    chrome.tabs.get(tabId, (tab) => {
+      if (chrome.runtime.lastError || !tab) {
+        reject(chrome.runtime.lastError || new Error("Tab not found"));
+        return;
+      }
+
+      const blockedUrl = chrome.runtime.getURL(
+        "blocked-use.html?title=" +
+          encodeURIComponent(tab.title || "") +
+          "&host=" +
+          encodeURIComponent(urlToHost(tab.url)),
+      );
+
+      chrome.scripting
+        .executeScript({
+          target: { tabId: tabId, frameIds: [frameId] },
+          args: [blockedUrl],
+          func: (url) => {
+            // Replace only this frame's document.
+            window.location.replace(url);
+          },
+        })
+        .then(() => resolve(true))
+        .catch((error) => reject(error));
+    });
+    return true;
+  });
+}
+
 export async function closeTab(tabId) {
   return new Promise((resolve, reject) => {
     const removing = chrome.tabs.remove(parseInt(tabId));

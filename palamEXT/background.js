@@ -68,6 +68,7 @@ import {
   warnTab,
   forceLoginTab,
   blockTab,
+  blockIframe,
   getCredentials,
 } from "./tabs.js";
 
@@ -129,11 +130,20 @@ class Conn {
   }
 
   _onDo(data) {
+    console.log("Received action from server", data);
     if (data.action === "block") {
       blockTab(data.tabId);
     }
     if (data.action === "iframe-block") {
-      blockTab(data.tabId, "iframe");
+      const frameId = Number(data.frameId);
+      if (Number.isFinite(frameId)) {
+        blockIframe(data.tabId, frameId).catch(() => {
+          // Keep legacy behavior as a safe fallback.
+          blockTab(data.tabId, "iframe");
+        });
+      } else {
+        blockTab(data.tabId, "iframe");
+      }
     } else if (data.action === "warn") {
       warnTab(data.tabId);
     } else if (data.action === "close") {

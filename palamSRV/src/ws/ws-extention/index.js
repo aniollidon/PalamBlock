@@ -18,8 +18,12 @@ function initializeExtentionWebSocket(server) {
         logger.info('S\'ha connectat un client ws-extention ' + socket.id );
 
         socket.on('registerBrowser', (data) => {
-            infoController.registerActionListenerBrowserWS(socket.id, data, (action, tabId, message= undefined) => {
-                socket.emit('do', {action: action, tabId: tabId, message: message});
+            infoController.registerActionListenerBrowserWS(socket.id, data, (action, tabId, message = undefined, extra = undefined) => {
+                const payload = { action: action, tabId: tabId, message: message };
+                if (extra && typeof extra === 'object') {
+                    Object.assign(payload, extra);
+                }
+                socket.emit('do', payload);
             });
         });
 

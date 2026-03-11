@@ -226,8 +226,8 @@ class BrowserStatus extends BrowserDetails {
     return changes;
   }
 
-  remoteAction(action, tabId, message = undefined) {
-    this._onActionCallback(action, tabId, message);
+  remoteAction(action, tabId, message = undefined, extra = undefined) {
+    this._onActionCallback(action, tabId, message, extra);
   }
 }
 
@@ -1021,7 +1021,13 @@ function registerActionListener(browserDetails, callback) {
   allAlumnesStatus.updateActionCallback(browserDetails, callback);
 }
 
-function remoteSetTabStatus(browserDetails, tabId, status) {
+function remoteSetTabStatus(
+  browserDetails,
+  tabId,
+  status,
+  message = undefined,
+  extra = undefined
+) {
   if (
     allAlumnesStatus.alumnesStat[browserDetails.owner] &&
     allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[
@@ -1030,7 +1036,7 @@ function remoteSetTabStatus(browserDetails, tabId, status) {
   )
     allAlumnesStatus.alumnesStat[browserDetails.owner].browsers[
       browserDetails.browser
-    ].remoteAction(status, tabId);
+    ].remoteAction(status, tabId, message, extra);
   else {
     logger.error(
       "Remote set status for tab " +
