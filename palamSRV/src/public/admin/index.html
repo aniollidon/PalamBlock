@@ -1,11 +1,155 @@
 <!DOCTYPE html>
-<html lang="en">
-<!-- REDIRECT TO /admin/browsers/ -->
+<html lang="ca">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=/admin/browsers/">
-    <title>Redirecció...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PalamBlock</title>
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet">
+    <style>
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: inherit;
+            margin: 0;
+            overflow: hidden;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            font-family: "Raleway", sans-serif;
+        }
+
+        .top:before,
+        .top:after,
+        .bottom:before,
+        .bottom:after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 200vmax;
+            height: 200vmax;
+            top: 50%;
+            left: 50%;
+            margin-top: -100vmax;
+            transform-origin: 0 50%;
+            z-index: 10;
+            opacity: 0.65;
+            animation: openBackground 1s cubic-bezier(0.445, 0.05, 0, 1) forwards;
+            animation-delay: 0.3s;
+        }
+
+        .top:before { transform: rotate(45deg); background: #f6511d; }
+        .top:after { transform: rotate(135deg); background: #ffb400; }
+        .bottom:before { transform: rotate(-45deg); background: #00a6ed; }
+        .bottom:after { transform: rotate(-135deg); background: #7fb800; }
+
+        @keyframes openBackground {
+            to {
+                margin-left: 200vw; /* Desplaçament ajustat per assegurar vista lliure */
+                transform-origin: -200vw 50%;
+            }
+        }
+
+        .center {
+            position: absolute;
+            width: 90%;
+            max-width: 600px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            opacity: 0;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            animation: fadeInCenter 1s cubic-bezier(0.445, 0.05, 0, 1) forwards;
+            animation-delay: 0.8s;
+            z-index: 20;
+            text-align: center;
+        }
+
+        @keyframes fadeInCenter {
+            to { opacity: 1; }
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 28px;
+            background-color: #f6511d; /* Color taronja del fons per a destacar i fer conjunció */
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(246, 81, 29, 0.3);
+        }
+
+        a:hover {
+            background-color: #d14013;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(246, 81, 29, 0.4);
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="top"></div>
+        <div class="bottom"></div>
+        <div class="center">
+            <div class="logo">
+                <img src="images/palamblock-logo.png" alt="Logo de PalamBlock">
+            </div>
+            
+            <h1> PalamBlock</h1>
+            <p><strong>PalamBlock</strong> és un sistema de monitorització i control interactiu per a ordinadors d'aula de l'institut de Palamòs. Permet la gestió d'usuaris, el bloqueig de pantalles i un control total del rendiment i ús dels dispositius.</p>
+            <p>Per configurar els paràmetres, gestionar i supervisar l'activitat, és necessari utilitzar l'aplicació d'escriptori per a professors.</p>
+            
+            <a href="https://github.com/aniollidon/palamblock-master/blob/main/README.md" target="_blank">Instal·la PalamMaster</a>
+        </div>
+    </div>
 </body>
 </html>
