@@ -209,6 +209,18 @@ const HistorialWebSchema = new mongoose.Schema({
     },
     pbAction: {
         type: String // block, warn, allow
+    },
+    isExamUser: {
+        type: Boolean,
+        default: false
+    },
+    tempSessionUser: {
+        type: String,
+        default: null
+    },
+    tempDisplayName: {
+        type: String,
+        default: null
     }
 });
 
@@ -239,6 +251,18 @@ const HistorialAppsSchema = new mongoose.Schema({
     },
     onTaskBar: {
         type: Boolean
+    },
+    isExamUser: {
+        type: Boolean,
+        default: false
+    },
+    tempSessionUser: {
+        type: String,
+        default: null
+    },
+    tempDisplayName: {
+        type: String,
+        default: null
     }
 });
 const Alumne = mongoose.model('Alumne', AlumneSchema);

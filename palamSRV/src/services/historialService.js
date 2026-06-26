@@ -1,11 +1,30 @@
 const db = require("../database/db");
 const logger = require("../logger").logger;
 
-function saveWeb(browserDetails, tabDetails, timestamp) {
+function normalizeSessionMeta(owner, sessionMeta = undefined) {
+    const isExamUser = typeof owner === "string" && owner.startsWith("examen");
+    if (!isExamUser) {
+        return {
+            isExamUser: false,
+            tempSessionUser: null,
+            tempDisplayName: null,
+        };
+    }
+
+    return {
+        isExamUser: true,
+        tempSessionUser: sessionMeta?.sessionActive ? sessionMeta?.sessionUser || null : null,
+        tempDisplayName: sessionMeta?.sessionActive ? sessionMeta?.displayName || null : null,
+    };
+}
+
+function saveWeb(browserDetails, tabDetails, timestamp, sessionMeta = undefined) {
     if(tabDetails.webPage.protocol.includes("chrome")) return new Promise((resolve, reject) => {resolve();});
     if(tabDetails.webPage.protocol.includes("edge")) return new Promise((resolve, reject) => {resolve();});
     if(tabDetails.webPage.protocol.includes("secure")) return new Promise((resolve, reject) => {resolve();});
     if(tabDetails.webPage.protocol.includes("about")) return new Promise((resolve, reject) => {resolve();});
+
+    const sessionInfo = normalizeSessionMeta(browserDetails.owner, sessionMeta);
 
     // Si fa menys de 5 minuts, i és el mateix web actualitzem
     return db.HistorialWeb.findOneAndUpdate({
@@ -23,7 +42,10 @@ function saveWeb(browserDetails, tabDetails, timestamp) {
         title: tabDetails.webPage.title,
         incognito: tabDetails.incognito,
         favicon: tabDetails.webPage.favicon,
-        pbAction: tabDetails.pbStatus
+        pbAction: tabDetails.pbStatus,
+        isExamUser: sessionInfo.isExamUser,
+        tempSessionUser: sessionInfo.tempSessionUser,
+        tempDisplayName: sessionInfo.tempDisplayName,
     }, {
         new: true
     }).then((doc) => {
@@ -41,13 +63,16 @@ function saveWeb(browserDetails, tabDetails, timestamp) {
                 tabId: tabDetails.tabId,
                 incognito: tabDetails.incognito,
                 favicon: tabDetails.webPage.favicon,
-                pbAction: tabDetails.pbStatus
+                pbAction: tabDetails.pbStatus,
+                isExamUser: sessionInfo.isExamUser,
+                tempSessionUser: sessionInfo.tempSessionUser,
+                tempDisplayName: sessionInfo.tempDisplayName,
             });
         }
     });
 }
 
-function saveApp(alumne, timestamp, processName, processPath, caption, icon, iconType, onTaskBar) {
+function saveApp(alumne, timestamp, processName, processPath, caption, icon, iconType, onTaskBar, sessionMeta = undefined) {
     logger.debug("saveApp: " + alumne + " " + timestamp + " " + processName + " " + processPath + " " + caption + " " + iconType + " " + onTaskBar);
     // Fa una hora
     const now = new Date();
@@ -58,6 +83,8 @@ function saveApp(alumne, timestamp, processName, processPath, caption, icon, ico
         faUnaHora.setHours(0,0,0,0);
     }
 
+    const sessionInfo = normalizeSessionMeta(alumne, sessionMeta);
+
     // Si la app ha estat creada o actualitzada en l'última hora del mateix dia només l'actualitzem
     return db.HistorialApps.findOneAndUpdate({
         alumneid: alumne,
@@ -66,7 +93,10 @@ function saveApp(alumne, timestamp, processName, processPath, caption, icon, ico
             $gte: faUnaHora,
         }
     }, {
-        updatedTimestamp: timestamp
+        updatedTimestamp: timestamp,
+        isExamUser: sessionInfo.isExamUser,
+        tempSessionUser: sessionInfo.tempSessionUser,
+        tempDisplayName: sessionInfo.tempDisplayName,
     }, {
         new: true
     }).then((doc) => {
@@ -81,7 +111,10 @@ function saveApp(alumne, timestamp, processName, processPath, caption, icon, ico
                 caption: caption,
                 iconB64: iconType === "base64" ? icon : undefined,
                 iconSVG: iconType === "svg" ? icon : undefined,
-                onTaskBar: onTaskBar
+                onTaskBar: onTaskBar,
+                isExamUser: sessionInfo.isExamUser,
+                tempSessionUser: sessionInfo.tempSessionUser,
+                tempDisplayName: sessionInfo.tempDisplayName,
             });
         }
     });

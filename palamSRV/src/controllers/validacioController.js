@@ -42,7 +42,12 @@ const postValidacioAPI = (req, res) => { // Deprecated
         tabDetails.pbStatus = status;
         if(!silentQuery) {
             infoService.registerTab(browserDetails, tabDetails, timestamp);
-            historialService.saveWeb(browserDetails, tabDetails, timestamp).catch((err) => {
+            historialService.saveWeb(
+                browserDetails,
+                tabDetails,
+                timestamp,
+                infoService.getSessionMetaForAlumne(alumne)
+            ).catch((err) => {
                 logger.error(err);
             });
         }
@@ -67,7 +72,17 @@ const postAppsAPI = (req, res) => { // Deprecated
     validacioAlumne.checkApps(apps).then((status) => {
         infoService.registerApps(apps, alumne, status, timestamp);
         for (const app of apps) {
-            historialService.saveApp(alumne, timestamp, app.name, app.path, app.title, app.icon, app.iconType, app.onTaskBar);
+            historialService.saveApp(
+                alumne,
+                timestamp,
+                app.name,
+                app.path,
+                app.title,
+                app.icon,
+                app.iconType,
+                app.onTaskBar,
+                infoService.getSessionMetaForAlumne(alumne)
+            );
         }
         res.status(200).send({ do:status} );
     }).catch((err) => {

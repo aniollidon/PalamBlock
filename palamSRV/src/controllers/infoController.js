@@ -9,6 +9,36 @@ const { logger } = require("../logger");
 const validacioService = require("../services/validacioService");
 const { netejaText } = require("./utils");
 
+function sanitizeSessionPayload(sessionData) {
+  if (!sessionData || typeof sessionData !== "object") return undefined;
+
+  const sessionUser =
+    typeof sessionData.user === "string" ? netejaText(sessionData.user) : null;
+  const displayName =
+    typeof sessionData.displayName === "string"
+      ? netejaText(sessionData.displayName)
+      : null;
+  const active =
+    typeof sessionData.active === "boolean"
+      ? sessionData.active
+      : Boolean(sessionUser || displayName);
+
+  return {
+    user: sessionUser,
+    displayName,
+    active,
+    expiresAt:
+      typeof sessionData.expiresAt === "string" ||
+      sessionData.expiresAt instanceof Date
+        ? new Date(sessionData.expiresAt)
+        : null,
+  };
+}
+
+function getHistorySessionMeta(alumne) {
+  return infoService.getSessionMetaForAlumne(alumne);
+}
+
 const postTabInfoAPI = (req, res) => {
   //DEPRECATED
   try {
@@ -57,7 +87,12 @@ const postTabInfoAPI = (req, res) => {
     if (action === "active" || action === "close" || action === "update") {
       infoService.registerTab(action, browserDetails, tabDetails, timestamp);
       if (action === "update") {
-        historialService.saveWeb(browserDetails, tabDetails, timestamp);
+        historialService.saveWeb(
+          browserDetails,
+          tabDetails,
+          timestamp,
+          getHistorySessionMeta(browserDetails.owner)
+        );
       }
     }
 
@@ -239,7 +274,12 @@ const postTabInfoWS = (sid, msg) => {
             status,
           );
           historialService
-            .saveWeb(browserDetails, tabDetails, timestamp)
+            .saveWeb(
+              browserDetails,
+              tabDetails,
+              timestamp,
+              getHistorySessionMeta(browserDetails.owner)
+            )
             .catch((err) => {
               logger.error(err);
             });
@@ -251,7 +291,12 @@ const postTabInfoWS = (sid, msg) => {
       infoService.registerTab(action, browserDetails, tabDetails, timestamp);
 
       if (action === "update") {
-        historialService.saveWeb(browserDetails, tabDetails, timestamp);
+        historialService.saveWeb(
+          browserDetails,
+          tabDetails,
+          timestamp,
+          getHistorySessionMeta(browserDetails.owner)
+        );
       }
     }
   } catch (err) {
@@ -430,13 +475,20 @@ function unregisterMachine(sid) {
   }
 }
 
-function updateMachine(sid, ip, ssid, username) {
+function updateMachine(sid, ip, ssid, username, sessionData = undefined) {
   try {
     const timestamp = new Date();
     username = netejaText(username);
     ip = netejaText(ip);
     ssid = netejaText(ssid);
-    infoService.updateMachine(username, sid, ip, ssid, timestamp);
+    infoService.updateMachine(
+      username,
+      sid,
+      ip,
+      ssid,
+      timestamp,
+      sanitizeSessionPayload(sessionData)
+    );
   } catch (err) {
     logger.error(err);
   }
@@ -444,9 +496,17 @@ function updateMachine(sid, ip, ssid, username) {
 
 function sessionChangeMachine(sid, userSession) {
   try {
-    const timestamp = new Date();
-    userSession = netejaText(userSession);
-    infoService.sessionChangeMachine(userSession, sid, timestamp);
+    const payload =
+      typeof userSession === "string"
+        ? {
+            user: netejaText(userSession),
+            displayName: null,
+            active: Boolean(userSession),
+            expiresAt: null,
+          }
+        : sanitizeSessionPayload(userSession);
+
+    infoService.sessionChangeMachine(payload, sid, new Date());
   } catch (err) {
     logger.error(err);
   }

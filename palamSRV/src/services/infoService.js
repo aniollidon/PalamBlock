@@ -274,6 +274,13 @@ class MachineStatus {
     this.lastUpdate = timestamp;
     this.connected = true;
     this.session = "undefined";
+    this.baseUser = null;
+    this.sessionUser = null;
+    this.sessionDisplayName = null;
+    this.sessionActive = false;
+    this.sessionUpdatedAt = null;
+    this.sessionExpiresAt = null;
+    this.displayName = null;
     this._execute = executionCallback;
     this._isAlive = aliveCallback;
     this._onUpdateCallback = onUpdateCallback;
@@ -331,8 +338,19 @@ class MachineStatus {
     }
   }
 
-  updateSession(userSession) {
-    this.session = userSession;
+  updateSession(sessionData) {
+    if (!sessionData || typeof sessionData !== "object") return;
+
+    this.session = sessionData.user || "undefined";
+    this.sessionUser = sessionData.user || null;
+    this.sessionDisplayName = sessionData.displayName || null;
+    this.sessionActive = Boolean(sessionData.active);
+    this.sessionUpdatedAt = new Date();
+    this.sessionExpiresAt = sessionData.expiresAt
+      ? new Date(sessionData.expiresAt)
+      : null;
+    this.displayName = this.sessionActive ? this.sessionDisplayName : null;
+
     this.lastUpdate = new Date();
     this._onUpdateCallback("machines");
   }
@@ -457,6 +475,8 @@ class AlumneStatus {
       this._onUpdateCallback
     );
 
+    this.machines[sid].baseUser = this.alumne;
+
     this._onlyOneOrAlive();
     this._onUpdateCallback("machines");
   }
@@ -510,7 +530,7 @@ class AlumneStatus {
     }
   }
 
-  updateMachine(sid, ip, ssid, timestamp) {
+  updateMachine(sid, ip, ssid, timestamp, sessionData = undefined) {
     this.setAlive(timestamp);
     if (!this.machines[sid]) {
       this.machines[sid] = new MachineStatus(
@@ -521,11 +541,16 @@ class AlumneStatus {
         timestamp,
         this._onUpdateCallback
       );
+      this.machines[sid].baseUser = this.alumne;
     }
 
     this.machines[sid].ip = ip;
     this.machines[sid].wifi_ssid = ssid;
     this.machines[sid].lastUpdate = timestamp;
+    if (sessionData) {
+      this.machines[sid].updateSession(sessionData);
+      return;
+    }
     this._onUpdateCallback("machines");
   }
 
@@ -972,23 +997,31 @@ function unregisterMachine(sid, timestamp) {
   }
 }
 
-function updateMachine(sid, ip, ssid, alumne, timestamp) {
+function updateMachine(
+  alumne,
+  sid,
+  ip,
+  ssid,
+  timestamp,
+  sessionData = undefined
+) {
   if (allAlumnesStatus.alumnesStat[alumne]) {
     allAlumnesStatus.alumnesStat[alumne].updateMachine(
       sid,
       ip,
       ssid,
-      timestamp
+      timestamp,
+      sessionData
     );
     logger.debug("Machine " + sid + " from " + alumne + " updated");
   }
 }
 
-function sessionChangeMachine(sid, userSession) {
+function sessionChangeMachine(sid, sessionData) {
   for (const alumne in allAlumnesStatus.alumnesStat) {
     if (allAlumnesStatus.alumnesStat[alumne].machines[sid]) {
       allAlumnesStatus.alumnesStat[alumne].machines[sid].updateSession(
-        userSession
+        sessionData
       );
       logger.debug(
         "Machine " +
@@ -996,10 +1029,47 @@ function sessionChangeMachine(sid, userSession) {
           " from " +
           alumne +
           " changed session to " +
-          userSession
+          (sessionData?.user || "undefined")
       );
     }
   }
+}
+
+function getSessionMetaForAlumne(alumne) {
+  const alumneStat = allAlumnesStatus.alumnesStat[alumne];
+  if (!alumneStat) return null;
+
+  let selected = null;
+  for (const sid in alumneStat.machines) {
+    const machine = alumneStat.machines[sid];
+    if (!machine) continue;
+    if (!selected) {
+      selected = machine;
+      continue;
+    }
+    if (machine.connected && !selected.connected) {
+      selected = machine;
+      continue;
+    }
+    if (
+      machine.lastUpdate &&
+      selected.lastUpdate &&
+      machine.lastUpdate > selected.lastUpdate
+    ) {
+      selected = machine;
+    }
+  }
+
+  if (!selected) return null;
+
+  return {
+    baseUser: selected.baseUser || alumne,
+    sessionUser: selected.sessionUser || null,
+    displayName: selected.displayName || null,
+    sessionActive: Boolean(selected.sessionActive),
+    sessionUpdatedAt: selected.sessionUpdatedAt || null,
+    sessionExpiresAt: selected.sessionExpiresAt || null,
+  };
 }
 
 function unregisterBrowser(sid, timestamp) {
@@ -1157,4 +1227,5 @@ module.exports = {
   sendDisplayCommand,
   powerOffAllGrup,
   getAlumnesMachine,
+  getSessionMetaForAlumne,
 };
