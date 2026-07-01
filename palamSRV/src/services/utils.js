@@ -7,6 +7,11 @@ function estructuraPublica(original) {
     // Primera creem una còpia de l'objecte original
     let copia;
 
+    // Important: mantenim null com null (evita convertir-lo en {})
+    if (original === null) {
+        return null;
+    }
+
     if (Array.isArray(original)) {
         // Si és una llista (array)
         copia = original.map(element => {

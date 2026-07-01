@@ -12,6 +12,7 @@ router.post("/alumne", alumneController.postAlumneAPI); // TODO mantenir endpoin
 router.post("/alumne/auth", alumneController.autentificaAlumneAPI); // TODO mantenir endpoint
 router.post("/admin/login", adminController.autentificaAdminAPI); // TODO mantenir endpoint
 
+// TODO, mirar quins endpoints mantenir i quins eliminar, ja que alguns es fan a apartir de ws.
 router.post("/validacio/tab", validacioController.postValidacioAPI);
 router.post("/info/tab", infoController.postTabInfoAPI);
 router.post("/info/browser", infoController.postBrowserInfoAPI);

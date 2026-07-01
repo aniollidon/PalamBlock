@@ -506,7 +506,7 @@ function sessionChangeMachine(sid, userSession) {
           }
         : sanitizeSessionPayload(userSession);
 
-    infoService.sessionChangeMachine(payload, sid, new Date());
+    infoService.sessionChangeMachine(sid, payload, new Date());
   } catch (err) {
     logger.error(err);
   }

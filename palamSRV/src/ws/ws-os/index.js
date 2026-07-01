@@ -44,7 +44,9 @@ function initializeOSWebSocket(server) {
 
         socket.on('session_change', (data) => {
             infoController.sessionChangeMachine(socket.id, data);
-            logger.info('S\'ha rebut un canvi de sessió a ' + socket.id + ' amb usuari ' + (data?.user || 'undefined'));
+            logger.info(
+                `[ws-os session_change] sid=${socket.id} active=${Boolean(data?.active)} user=${data?.user || "undefined"} displayName=${data?.displayName || "undefined"} expiresAt=${data?.expiresAt || "undefined"}`
+            );
         });
     });
 

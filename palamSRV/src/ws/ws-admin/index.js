@@ -79,8 +79,29 @@ function initializeAdminWebSocket(server) {
           "alumnesActivity",
           await infoController.getAlumnesActivity()
         );
-      if (topic.includes("machines"))
-        socket.emit("updateAlumnesMachine", infoController.getAlumnesMachine());
+      if (topic.includes("machines")) {
+        const machines = infoController.getAlumnesMachine();
+        let diag = null;
+        for (const alumne of Object.keys(machines || {})) {
+          for (const machine of Object.values(machines[alumne] || {})) {
+            if (machine && (machine.sessionActive || machine.displayName)) {
+              diag = {
+                alumne,
+                sessionActive: Boolean(machine.sessionActive),
+                sessionUser: machine.sessionUser || null,
+                sessionDisplayName: machine.sessionDisplayName || null,
+                displayName: machine.displayName || null,
+              };
+              break;
+            }
+          }
+          if (diag) break;
+        }
+        logger.debug(
+          `[ws-admin updateAlumnesMachine] topic=${topic} diag=${JSON.stringify(diag)}`
+        );
+        socket.emit("updateAlumnesMachine", machines);
+      }
     };
 
     norma_activityCallbacks[socket.id] = async () => {

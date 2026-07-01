@@ -5,6 +5,20 @@ const logger = require("../logger").logger;
 const { BrowserDetails, TabDetails } = require("./structures");
 const { estructuraPublica } = require("./utils");
 
+function normalizeTextValue(value) {
+  if (typeof value === "string") {
+    return value.replace(/(\r\n|\n|\r)/gm, "").trim();
+  }
+
+  if (value && typeof value === "object") {
+    return normalizeTextValue(
+      value.displayName ?? value.name ?? value.user ?? value.label ?? value.text ?? value.value
+    );
+  }
+
+  return null;
+}
+
 class TabStatus extends TabDetails {
   constructor(details, timestamp) {
     super();
@@ -341,15 +355,19 @@ class MachineStatus {
   updateSession(sessionData) {
     if (!sessionData || typeof sessionData !== "object") return;
 
-    this.session = sessionData.user || "undefined";
-    this.sessionUser = sessionData.user || null;
-    this.sessionDisplayName = sessionData.displayName || null;
+    this.sessionUser = normalizeTextValue(sessionData.user);
+    this.sessionDisplayName = normalizeTextValue(sessionData.displayName);
+    this.session = this.sessionUser || "undefined";
     this.sessionActive = Boolean(sessionData.active);
     this.sessionUpdatedAt = new Date();
     this.sessionExpiresAt = sessionData.expiresAt
       ? new Date(sessionData.expiresAt)
       : null;
     this.displayName = this.sessionActive ? this.sessionDisplayName : null;
+
+    logger.info(
+      `[infoService updateSession] baseUser=${this.baseUser || "undefined"} sessionUser=${this.sessionUser || "undefined"} sessionDisplayName=${this.sessionDisplayName || "undefined"} sessionActive=${this.sessionActive} displayName=${this.displayName || "undefined"}`
+    );
 
     this.lastUpdate = new Date();
     this._onUpdateCallback("machines");
@@ -1064,8 +1082,8 @@ function getSessionMetaForAlumne(alumne) {
 
   return {
     baseUser: selected.baseUser || alumne,
-    sessionUser: selected.sessionUser || null,
-    displayName: selected.displayName || null,
+    sessionUser: normalizeTextValue(selected.sessionUser),
+    displayName: normalizeTextValue(selected.displayName),
     sessionActive: Boolean(selected.sessionActive),
     sessionUpdatedAt: selected.sessionUpdatedAt || null,
     sessionExpiresAt: selected.sessionExpiresAt || null,
