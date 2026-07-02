@@ -10,6 +10,7 @@ const errorController = require("../../../controllers/errorController");
 
 router.post("/alumne", alumneController.postAlumneAPI); // TODO mantenir endpoint (única manera de crear alumnes)
 router.post("/alumne/auth", alumneController.autentificaAlumneAPI); // TODO mantenir endpoint
+router.post("/alumne/auth/google", alumneController.autentificaAlumneGoogleAPI); 
 router.post("/admin/login", adminController.autentificaAdminAPI); // TODO mantenir endpoint
 
 // TODO, mirar quins endpoints mantenir i quins eliminar, ja que alguns es fan a apartir de ws.

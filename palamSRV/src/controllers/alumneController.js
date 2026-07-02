@@ -1,6 +1,31 @@
 const alumneService = require("../services/alumneService");
 const logger = require("../logger").logger;
 
+const autentificaAlumneGoogleAPI = (req, res) => {
+  const { body } = req;
+  const oauthCode = body.code;
+
+  if (oauthCode) {
+    alumneService
+      .autentificaAlumneGoogle(oauthCode)
+      .then((alumne) => {
+        res.send({ status: "OK", data: alumne });
+      })
+      .catch((error) => {
+        if (error?.status === 401 || error?.status === 403 || error?.status === 404) {
+          logger.warn("Error d'autenticació amb Google:", error.message);
+        } else {
+          logger.error("Error autenticant l'alumne amb Google:", error);
+        }
+
+        const statusCode = error?.status || 401;
+        res
+          .status(statusCode)
+          .send({ status: "FAILED", data: { error: error?.message || error } });
+      });
+  } else res.send({ status: "ERROR", data: "Falta el codi d'autorització de Google" });
+};
+
 const postAlumneAPI = (req, res) => {
   const { body } = req;
   const alumneId = body.alumne;
@@ -99,6 +124,7 @@ async function deleteGrup(grupId) {
 module.exports = {
   postAlumneAPI,
   autentificaAlumneAPI,
+  autentificaAlumneGoogleAPI,
   getGrupAlumnesList,
   setAlumneStatus,
   setGrupStatus,
