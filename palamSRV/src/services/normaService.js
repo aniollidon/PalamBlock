@@ -2,9 +2,9 @@ const db = require("../database/db");
 let onUpdateCallback = () => {};
 
 
-async function creaNorma2WebAlumne(alumneId, severity, mode, webList, enabled_on) {
+async function creaNorma2WebAlumne(alumneId, severity, mode, webList, enabled_on, categories) {
 
-    const norma =  await _creaNorma2Web(severity, mode, webList, enabled_on);
+    const norma =  await _creaNorma2Web(severity, mode, webList, enabled_on, categories);
 
     const result = await db.Alumne.findOneAndUpdate({alumneId: alumneId}, {$push: {normes2Web: norma}}).populate("normes2Web");
     onUpdateCallback();
@@ -12,16 +12,16 @@ async function creaNorma2WebAlumne(alumneId, severity, mode, webList, enabled_on
 }
 
 
-async function creaNorma2WebGrup(grupId, severity, mode, webList, enabled_on) {
+async function creaNorma2WebGrup(grupId, severity, mode, webList, enabled_on, categories) {
 
-    const norma =  await _creaNorma2Web(severity, mode, webList, enabled_on);
+    const norma =  await _creaNorma2Web(severity, mode, webList, enabled_on, categories);
 
     const result = db.Grup.findOneAndUpdate({grupId: grupId}, {$push: {normes2Web: norma}}).populate("normes2Web");
     onUpdateCallback();
     return result;
 }
 
-async function _creaNorma2Web(severity, mode, webList, enabled_on) {
+async function _creaNorma2Web(severity, mode, webList, enabled_on, categories) {
 
     const wlist = [];
     for (const web of webList) {
@@ -45,7 +45,7 @@ async function _creaNorma2Web(severity, mode, webList, enabled_on) {
         alive: true,
         enabled_on: enabled_on? enabled_on : [],
         lines: wlist,
-        categories: ["general"]
+        categories: (categories && categories.length > 0) ? categories : ["general"]
     };
 }
 
@@ -74,23 +74,31 @@ async function creaNormaGrupApp(grupId, processName, processPath, processPathisR
     return result;
 }
 
-async function updateNorma2WebGrup(whoid, normaId, severity, mode, list, enabled_on, alive){
+async function updateNorma2WebGrup(whoid, normaId, severity, mode, list, enabled_on, alive, categories){
+    const updateSet = { "normes2Web.$.alive": alive };
+
+    if (categories !== undefined) {
+        updateSet["normes2Web.$.categories"] = (categories && categories.length > 0) ? categories : ["general"];
+    }
+
     const result = await db.Grup.findOneAndUpdate({grupId: whoid, "normes2Web._id": normaId}, {
-        $set: {
-            "normes2Web.$.alive": alive
-        }
+        $set: updateSet
     }).populate("normes2Web");
 
     onUpdateCallback();
     return result;
 }
 
-async function updateNorma2WebAlumne(whoid, normaId, severity, mode, list, enabled_on, alive){
+async function updateNorma2WebAlumne(whoid, normaId, severity, mode, list, enabled_on, alive, categories){
+
+    const updateSet = { "normes2Web.$.alive": alive };
+
+    if (categories !== undefined) {
+        updateSet["normes2Web.$.categories"] = (categories && categories.length > 0) ? categories : ["general"];
+    }
 
     const result = await db.Alumne.findOneAndUpdate({alumneId: whoid, "normes2Web._id": normaId}, {
-        $set: {
-            "normes2Web.$.alive": alive
-        }
+        $set: updateSet
     }).populate("normes2Web");
     onUpdateCallback();
     return result;
@@ -124,7 +132,8 @@ async function getAllNormes2Web() {
                 mode: norma.mode,
                 lines: lines,
                 enabled_on: norma.enabled_on,
-                alive: norma.alive
+                alive: norma.alive,
+                categories: norma.categories || ["general"]
             };
         }
     }
@@ -155,7 +164,8 @@ async function getAllNormes2Web() {
                 mode: norma.mode,
                 lines: lines,
                 enabled_on: norma.enabled_on,
-                alive: norma.alive
+                alive: norma.alive,
+                categories: norma.categories || ["general"]
             };
         }
     }
@@ -217,15 +227,54 @@ async function removeNorma2Web(who, whoid, normaId) {
 
 async function removeNormaApp(who, whoid, normaId) {
     if(who === "grup") {
-        await db.NormaApp.deleteOne({_id: normaId});
         await db.Grup.updateMany({}, {$pull: {normesApp: {_id: normaId}}});
     } else if(who === "alumne"){
-        await db.NormaApp.deleteOne({_id: normaId});
         await db.Alumne.updateMany({}, {$pull: {normesApp: {_id: normaId}}});
     }
 }
 function registerOnUpdateCallback(callback) {
     onUpdateCallback = callback;
+}
+
+async function getAllCategories() {
+    const categoriesSet = new Set();
+
+    const alumnes = await db.Alumne.find({}, "normes2Web.categories");
+    for (const alumne of alumnes) {
+        for (const norma of (alumne.normes2Web || [])) {
+            for (const cat of (norma.categories || [])) {
+                categoriesSet.add(cat);
+            }
+        }
+    }
+
+    const grups = await db.Grup.find({}, "normes2Web.categories");
+    for (const grup of grups) {
+        for (const norma of (grup.normes2Web || [])) {
+            for (const cat of (norma.categories || [])) {
+                categoriesSet.add(cat);
+            }
+        }
+    }
+
+    return [...categoriesSet].sort();
+}
+
+async function setCategoryAlive(who, whoid, category, alive) {
+    const Model = who === "grup" ? db.Grup : db.Alumne;
+    const idField = who === "grup" ? "grupId" : "alumneId";
+
+    const result = await Model.findOneAndUpdate(
+        { [idField]: whoid },
+        { $set: { "normes2Web.$[elem].alive": alive } },
+        {
+            arrayFilters: [{ "elem.categories": category }],
+            new: true
+        }
+    ).populate("normes2Web");
+
+    onUpdateCallback();
+    return result;
 }
 
 module.exports = {
@@ -239,5 +288,7 @@ module.exports = {
     creaNormaGrupApp,
     creaNormaAlumneApp,
     updateNorma2WebGrup,
-    updateNorma2WebAlumne
+    updateNorma2WebAlumne,
+    getAllCategories,
+    setCategoryAlive
 }

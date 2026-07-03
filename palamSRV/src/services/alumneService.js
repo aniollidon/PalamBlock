@@ -56,7 +56,6 @@ async function creaAlumne(alumneId, grupId, clau, nom, cognoms) {
     grup = await db.Grup.create({
       grupId: grupId,
       nom: grupId,
-      normesWeb: [],
       status: "RuleOn",
     });
   }
@@ -67,7 +66,6 @@ async function creaAlumne(alumneId, grupId, clau, nom, cognoms) {
     cognoms: cognoms,
     clauEncriptada: encriptaClau(clau),
     status: "RuleOn",
-    normesWeb: [],
     grup: grupId,
   });
 }
@@ -208,7 +206,6 @@ async function creaGrup(grupId, nom) {
   return db.Grup.create({
     grupId: grupId,
     nom: nom || grupId,
-    normesWeb: [],
     status: "RuleOn",
   });
 }

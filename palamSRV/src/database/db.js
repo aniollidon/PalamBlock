@@ -16,33 +16,6 @@ const DateTimeEnabledSchema = new mongoose.Schema({
 });
 
 
-const NormaWebSchema = new mongoose.Schema({
-    severity: {
-        type: String // warn, block
-    },
-    mode:{
-        type: String // whitelist (legacy), blacklist
-    },
-    hosts_list: {
-        type: [String]
-    },
-    protocols_list: {
-        type: [String]
-    },
-    searches_list: {
-        type: [String]
-    },
-    pathnames_list: {
-        type: [String]
-    },
-    titles_list: {
-        type: [String]
-    },
-    enabled_on: {
-        type: [DateTimeEnabledSchema] // if empty, always enabled
-    }
-});
-
 const WebLineSchema = new mongoose.Schema({ // new def
     host: {
         type: String
@@ -114,9 +87,6 @@ const GrupSchema = new mongoose.Schema({
     nom: {
         type: String
     },
-    normesWeb: { //legacy, to deprecate
-        type: [NormaWebSchema]
-    },
     normes2Web: {
         type: [Norma2WebSchema]
     },
@@ -149,9 +119,6 @@ const AlumneSchema = new mongoose.Schema({
     },
     status: {
         type: String // Blocked, RuleFree, RuleOn
-    },
-    normesWeb: { // legacy, to deprecate
-        type: [NormaWebSchema]
     },
     normes2Web: {
         type: [Norma2WebSchema]
@@ -270,7 +237,6 @@ const Grup = mongoose.model('Grup', GrupSchema);
 const HistorialWeb = mongoose.model('HistorialWeb', HistorialWebSchema);
 const HistorialApps = mongoose.model('HistorialApps', HistorialAppsSchema);
 const Admin = mongoose.model('Admin', AdminSchema);
-const WebLine = mongoose.model('WebLine', WebLineSchema);
 
 
 // Fes ids unics
@@ -278,7 +244,6 @@ AlumneSchema.index({alumneId: 1}, {unique: true});
 GrupSchema.index({grupId: 1}, {unique: true});
 
 module.exports = {
-    WebLine,
     Alumne,
     Grup,
     HistorialWeb,

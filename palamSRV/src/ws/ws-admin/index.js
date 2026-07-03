@@ -120,7 +120,8 @@ function initializeAdminWebSocket(server) {
         msg.severity,
         msg.mode,
         msg.list,
-        msg.enabled_on
+        msg.enabled_on,
+        msg.categories
       );
     });
 
@@ -198,8 +199,32 @@ function initializeAdminWebSocket(server) {
         msg.mode,
         msg.list,
         msg.enabled_on,
-        msg.alive
+        msg.alive,
+        msg.categories
       );
+    });
+
+    socket.on("getAllCategories", async () => {
+      try {
+        const categories = await normaController.getAllCategories();
+        socket.emit("allCategories", categories);
+      } catch (e) {
+        logger.warn("No s'han pogut obtenir les categories", e);
+        socket.emit("allCategories", []);
+      }
+    });
+
+    socket.on("setCategoryAlive", async (msg) => {
+      try {
+        await normaController.setCategoryAlive(
+          msg.who,
+          msg.whoid,
+          msg.category,
+          msg.alive
+        );
+      } catch (e) {
+        logger.warn("No s'ha pogut canviar l'estat de la categoria", e);
+      }
     });
 
     socket.on("sendMessageToAlumne", async (msg) => {
