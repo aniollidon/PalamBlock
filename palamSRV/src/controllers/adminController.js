@@ -6,7 +6,7 @@ function autentificaAdminAPI(req, res, next) {
 
   adminService.autentificaAdmin(user, clauMd5).then((auth) => {
     if (auth) {
-      res.send(JSON.stringify({ authToken: auth.authToken }));
+      res.send(JSON.stringify({ authToken: auth.authToken, role: auth.role, grupsPermesos: auth.grupsPermesos }));
     } else res.status(401).json({ error: "Autenticació fallida" });
   });
 }
@@ -26,14 +26,14 @@ async function llistarAdmins() {
  * Crear un nou administrador
  */
 async function crearAdmin(data) {
-  return await adminService.crearAdmin(data.user, data.clau);
+  return await adminService.crearAdmin(data.user, data.clau, data.role, data.grupsPermesos);
 }
 
 /**
  * Actualitzar contrasenya d'un administrador
  */
-async function actualitzarAdmin(user, novaClau) {
-  return await adminService.actualitzarAdmin(user, novaClau);
+async function actualitzarAdmin(user, novaClau, role, grupsPermesos) {
+  return await adminService.actualitzarAdmin(user, novaClau, role, grupsPermesos);
 }
 
 /**

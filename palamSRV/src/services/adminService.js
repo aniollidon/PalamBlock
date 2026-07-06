@@ -20,8 +20,10 @@ async function autentificaAdmin(user, clauMd5) {
   if (admin && admin.clauMd5 === clauMd5) {
     // Credencials correctes - genera o reutilitza token
     const tokenManager = getTokenManager();
-    const authToken = tokenManager.createToken(user);
-    return { authToken };
+    const role = admin.role || 'admin';
+    const grupsPermesos = admin.grupsPermesos || [];
+    const authToken = tokenManager.createToken(user, role, grupsPermesos);
+    return { authToken, role, grupsPermesos };
   }
 
   return null;
@@ -35,29 +37,43 @@ async function autentificaAdmin(user, clauMd5) {
  */
 function checkAdmin(user, authToken) {
   if (!user || !authToken) {
-    return false;
+    return { valid: false, role: null, grupsPermesos: [] };
   }
 
   const tokenManager = getTokenManager();
-  return tokenManager.validateToken(user, authToken);
+  const isValid = tokenManager.validateToken(user, authToken);
+  if (isValid) {
+    const tokenInfo = tokenManager.getTokenInfo(user, authToken);
+    return {
+      valid: true,
+      role: tokenInfo ? tokenInfo.role : 'admin',
+      grupsPermesos: tokenInfo ? tokenInfo.grupsPermesos : [],
+    };
+  }
+  return { valid: false, role: null, grupsPermesos: [] };
 }
 
 /**
  * Obtenir llista de tots els administradors
  */
 async function llistarAdmins() {
-  const admins = await db.Admin.find({}).select("user -_id").lean();
+  const admins = await db.Admin.find({}).select("user role grupsPermesos -_id").lean();
   return admins;
 }
 
 /**
  * Crear un nou administrador
  */
-async function crearAdmin(user, clau) {
+async function crearAdmin(user, clau, role = 'admin', grupsPermesos = []) {
   // Validar que l'usuari no existeix
   const existeix = await db.Admin.findOne({ user });
   if (existeix) {
     throw new Error("Ja existeix un administrador amb aquest usuari");
+  }
+
+  // Validar role
+  if (role && !['superadmin', 'admin'].includes(role)) {
+    throw new Error("Rol invàlid. Ha de ser 'superadmin' o 'admin'");
   }
 
   // Crear hash MD5 de la contrasenya
@@ -66,10 +82,12 @@ async function crearAdmin(user, clau) {
   const nouAdmin = new db.Admin({
     user,
     clauMd5,
+    role,
+    grupsPermesos: grupsPermesos || [],
   });
 
   await nouAdmin.save();
-  return { user };
+  return { user, role, grupsPermesos };
 }
 
 /**
@@ -79,9 +97,9 @@ async function crearAdmin(user, clau) {
  * @param {string} novaClau - Nova contrasenya en text pla
  * @returns {Promise<Object>} Objecte amb el nom d'usuari
  */
-async function actualitzarAdmin(user, novaClau) {
-  if (!user || !novaClau) {
-    throw new Error("Usuari i contrasenya són obligatoris");
+async function actualitzarAdmin(user, novaClau, role = null, grupsPermesos = null) {
+  if (!user) {
+    throw new Error("L'usuari és obligatori");
   }
 
   const admin = await db.Admin.findOne({ user });
@@ -89,9 +107,22 @@ async function actualitzarAdmin(user, novaClau) {
     throw new Error("Administrador no trobat");
   }
 
-  // Crear hash MD5 de la nova contrasenya
-  const clauMd5 = crypto.createHash("md5").update(novaClau).digest("hex");
-  admin.clauMd5 = clauMd5;
+  // Actualitzar contrasenya si se'n proporciona una de nova
+  if (novaClau) {
+    const clauMd5 = crypto.createHash("md5").update(novaClau).digest("hex");
+    admin.clauMd5 = clauMd5;
+  }
+
+  // Actualitzar role si es proporciona
+  if (role && ['superadmin', 'admin'].includes(role)) {
+    admin.role = role;
+  }
+
+  // Actualitzar grupsPermesos si es proporciona
+  if (grupsPermesos !== null && Array.isArray(grupsPermesos)) {
+    admin.grupsPermesos = grupsPermesos;
+  }
+
   await admin.save();
 
   // Invalidar tots els tokens d'autenticació per forçar re-login

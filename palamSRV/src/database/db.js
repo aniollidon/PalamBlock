@@ -137,6 +137,15 @@ const AdminSchema = new mongoose.Schema({
     clauMd5: {
         type: String,
         required: true
+    },
+    role: {
+        type: String,
+        enum: ['superadmin', 'admin'],
+        default: 'admin'
+    },
+    grupsPermesos: {
+        type: [String],
+        default: []
     }
 });
 

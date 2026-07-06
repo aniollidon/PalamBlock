@@ -1,0 +1,10 @@
+{
+  "name": "palamblock-scripts",
+  "version": "1.0.0",
+  "description": "Scripts de manteniment per PalamBlock",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "mongoose": "^7.6.0"
+  }
+}

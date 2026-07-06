@@ -56,9 +56,11 @@ class AuthTokenManager {
    * Crea un nou token per a un usuari
    * Si l'usuari ja té un token vàlid, el retorna
    * @param {string} user - Identificador de l'usuari
+   * @param {string} [role='admin'] - Rol de l'usuari (superadmin|admin)
+   * @param {string[]} [grupsPermesos=[]] - Grups als quals té accés l'admin
    * @returns {string} Token d'autenticació
    */
-  createToken(user) {
+  createToken(user, role = 'admin', grupsPermesos = []) {
     if (!user) {
       throw new Error("L'usuari és obligatori per crear un token");
     }
@@ -85,16 +87,18 @@ class AuthTokenManager {
       userTokens = userTokens.slice(-this.maxTokensPerUser + 1);
     }
 
-    // Afegeix el nou token
+    // Afegeix el nou token amb role i grupsPermesos
     userTokens.push({
       token,
       createdAt: now,
       lastUsedAt: now,
+      role,
+      grupsPermesos,
     });
 
     this.tokens.set(user, userTokens);
 
-    logger.info(`Nou token creat per usuari: ${user}`);
+    logger.info(`Nou token creat per usuari: ${user} (role=${role}, grups=${grupsPermesos.length})`);
     return token;
   }
 
@@ -130,6 +134,41 @@ class AuthTokenManager {
     }
 
     return false;
+  }
+
+  /**
+   * Obté la informació associada a un token (role, grupsPermesos)
+   * @param {string} user - Identificador de l'usuari
+   * @param {string} token - Token a consultar
+   * @returns {Object|null} { role, grupsPermesos } o null si no és vàlid
+   */
+  getTokenInfo(user, token) {
+    if (!user || !token) {
+      return null;
+    }
+
+    const userTokens = this.tokens.get(user);
+    if (!userTokens) {
+      return null;
+    }
+
+    const now = Date.now();
+    const tokenData = userTokens.find((t) => {
+      const isMatch = t.token === token;
+      const isNotExpired = now - t.createdAt < this.tokenExpiryMs;
+      return isMatch && isNotExpired;
+    });
+
+    if (tokenData) {
+      // Actualitza lastUsedAt
+      tokenData.lastUsedAt = now;
+      return {
+        role: tokenData.role || 'admin',
+        grupsPermesos: tokenData.grupsPermesos || [],
+      };
+    }
+
+    return null;
   }
 
   /**
