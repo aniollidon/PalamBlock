@@ -45,7 +45,7 @@ async function _creaNorma2Web(severity, mode, webList, enabled_on, categories) {
         alive: true,
         enabled_on: enabled_on? enabled_on : [],
         lines: wlist,
-        categories: (categories && categories.length > 0) ? categories : ["general"]
+        categories: (categories && categories.length > 0) ? categories : (mode === "whitelist" ? ["llista-blanca"] : [])
     };
 }
 
