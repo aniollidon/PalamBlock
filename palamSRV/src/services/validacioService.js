@@ -18,6 +18,8 @@ function hhmmToMinutes(hhmm){
 }
 
 function compara(paraula, norma, ishost = false) {
+    // ⚠️ ATENCIÓ: Aquesta funció té una anàloga al client (normes-logic.js → comparaClient).
+    // Si modifiques la lògica aquí, recorda replicar els canvis a l'altra banda.
     if (norma === undefined || norma === null || norma === "" || norma === "*")
         return true;
 
