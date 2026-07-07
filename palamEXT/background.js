@@ -307,6 +307,102 @@ async function initialize() {
 
 initialize();
 
+// ── Resolució d'icones per al newTab ──────────────────────────────────────────
+// El service worker té host_permissions i pot fer fetch cross-origin.
+// Les icones es guarden en caché a chrome.storage.local (24h) per evitar
+// consultes repetides.
+
+const ICON_CACHE_KEY = "iconCache";
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hores
+const inFlightRequests = {}; // host → Promise (evita duplicats en paral·lel)
+
+async function getCachedIcon(host) {
+  const stored = await chrome.storage.local.get([ICON_CACHE_KEY]);
+  const cache = stored[ICON_CACHE_KEY] || {};
+  const entry = cache[host];
+  if (entry && entry.expiresAt > Date.now()) {
+    return entry.url; // string (URL) o null (sense icona)
+  }
+  return undefined; // no en caché
+}
+
+async function setCachedIcon(host, url) {
+  const stored = await chrome.storage.local.get([ICON_CACHE_KEY]);
+  const cache = stored[ICON_CACHE_KEY] || {};
+  cache[host] = { url: url, expiresAt: Date.now() + CACHE_DURATION };
+  // Neteja entrades caducades
+  for (const key of Object.keys(cache)) {
+    if (cache[key].expiresAt <= Date.now()) delete cache[key];
+  }
+  await chrome.storage.local.set({ [ICON_CACHE_KEY]: cache });
+}
+
+function tryLoadIcon(url, timeoutMs) {
+  if (typeof timeoutMs !== "number" || timeoutMs <= 0) timeoutMs = 3000;
+  return new Promise((resolve) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      controller.abort();
+      resolve(null);
+    }, timeoutMs);
+
+    fetch(url, { method: "GET", signal: controller.signal })
+      .then((response) => {
+        clearTimeout(timer);
+        if (!response.ok) { resolve(null); return; }
+        const ct = response.headers.get("content-type");
+        if (ct && ct.startsWith("image/")) {
+          resolve(url);
+        } else {
+          resolve(null);
+        }
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        resolve(null);
+      });
+  });
+}
+
+function resolveBestIcon(host) {
+  const sources = [
+    "https://" + host + "/apple-touch-icon.png",
+    "https://" + host + "/favicon.ico",
+    "https://www.google.com/s2/favicons?domain=" +
+      encodeURIComponent(host) +
+      "&sz=128",
+  ];
+
+  function tryNext(index) {
+    if (index >= sources.length) return Promise.resolve(null);
+    return tryLoadIcon(sources[index]).then((result) => {
+      if (result) return result;
+      return tryNext(index + 1);
+    });
+  }
+
+  return tryNext(0);
+}
+
+async function resolveIconForHost(host) {
+  // 1. Mirar caché
+  const cached = await getCachedIcon(host);
+  if (cached !== undefined) return cached; // pot ser null (sense icona)
+
+  // 2. Evitar duplicats en vol
+  if (inFlightRequests[host]) return inFlightRequests[host];
+
+  // 3. Resoldre i guardar en caché
+  const promise = resolveBestIcon(host).then(async (url) => {
+    delete inFlightRequests[host];
+    await setCachedIcon(host, url);
+    return url;
+  });
+
+  inFlightRequests[host] = promise;
+  return promise;
+}
+
 // message from login.js
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type === "autentificacio") {
@@ -337,6 +433,26 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       });
   } else if (request.type === "uninstall") {
     chrome.management.uninstallSelf();
+  } else if (request.type === "resolveIcons") {
+    const hosts = request.hosts;
+    if (!Array.isArray(hosts) || hosts.length === 0) {
+      sendResponse({});
+      return true;
+    }
+
+    // Resol totes les icones en paral·lel (amb caché)
+    Promise.all(hosts.map((host) => resolveIconForHost(host)))
+      .then((results) => {
+        const mapping = {};
+        for (let i = 0; i < hosts.length; i++) {
+          mapping[hosts[i]] = results[i];
+        }
+        sendResponse(mapping);
+      })
+      .catch(() => {
+        sendResponse({});
+      });
+    return true;
   } else {
     console.error("Unknown request", request);
     sendResponse({ status: "FAILED" });
