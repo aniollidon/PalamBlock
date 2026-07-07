@@ -244,6 +244,102 @@ class Validacio {
 
 
 
+/**
+ * Retorna les línies (webs) de totes les normes whitelist actives per a un alumne.
+ * Si no hi ha cap norma whitelist activa, retorna null.
+ * Aquesta funció és independent de la classe Validacio i no modifica checkWeb.
+ *
+ * @param {string} alumneId - Identificador de l'alumne
+ * @returns {Array|null} - Array de línies {host, protocol, search, pathname, title} o null
+ */
+async function getActiveWhitelist(alumneId) {
+    const alumne = await db.Alumne.findOne({alumneId: alumneId})
+        .populate('grup')
+        .populate('normes2Web');
+
+    if (!alumne) return null;
+
+    // Si l'alumne està en estat especial, no hi ha llista blanca activa
+    if (alumne.status === "RuleFree" || alumne.status === "Blocked") return null;
+
+    const grup = await db.Grup.findOne({grupId: alumne.grup}).populate('normes2Web');
+    if (!grup) return null;
+
+    if (grup.status === "RuleFree" || grup.status === "Blocked") return null;
+
+    // Recull les normesWeb del grup i de l'alumne
+    const normesWeb = [];
+    for (const norma of grup.normes2Web) {
+        normesWeb.push(norma);
+    }
+    for (const norma of alumne.normes2Web) {
+        normesWeb.push(norma);
+    }
+
+    const dataActual = new Date();
+    const datetime_ara = dataActual.getTime();
+    const dia_avui = dataActual.toLocaleDateString('ca-ES', { weekday: 'long' });
+
+    const whitelistLines = [];
+
+    for (const norma of normesWeb) {
+        // Només normes whitelist actives
+        if (!norma.alive) continue;
+        if (norma.mode !== "whitelist") continue;
+
+        // Comprova marques temporals (mateixa lògica que checkWeb)
+        if (norma.enabled_on && norma.enabled_on.length > 0) {
+            const norma_enabled = norma.enabled_on.find((enabled) => {
+                const duration = enabled.duration || 0;
+
+                // Mira per datetime
+                for (const datetime of enabled.datetimes) {
+                    const ts = datetime.getTime();
+                    if (duration === 0 && datetime_ara > ts)
+                        return true;
+                    else if (datetime_ara > ts && datetime_ara < ts + duration * 60000)
+                        return true;
+                }
+
+                let horaTrobada = false;
+                // Mira per hora
+                for (const startHour of enabled.startHours) {
+                    const startHourM = hhmmToMinutes(startHour);
+                    const endHourM = startHourM + duration;
+                    const momentM = hhmmToMinutes(dataActual.toLocaleTimeString('ca-ES', {hour: '2-digit', minute:'2-digit'}));
+                    if (momentM >= startHourM && momentM <= endHourM) {
+                        horaTrobada = true;
+                        break;
+                    }
+                }
+
+                // Mira per dia
+                const diaTrobat = enabled.days.includes(dia_avui);
+
+                return horaTrobada && diaTrobat
+                    || enabled.startHours === 0 && diaTrobat
+                    || horaTrobada && enabled.days.length === 0;
+            });
+
+            if (!norma_enabled) continue;
+        }
+
+        // Afegeix totes les línies d'aquesta norma
+        for (const line of norma.lines) {
+            whitelistLines.push({
+                host: line.host || null,
+                protocol: line.protocol || null,
+                search: line.search || null,
+                pathname: line.pathname || null,
+                title: line.title || null
+            });
+        }
+    }
+
+    return whitelistLines.length > 0 ? whitelistLines : null;
+}
+
 module.exports = {
-    Validacio
+    Validacio,
+    getActiveWhitelist
 }

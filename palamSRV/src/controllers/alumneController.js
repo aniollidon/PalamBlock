@@ -1,4 +1,5 @@
 const alumneService = require("../services/alumneService");
+const { getActiveWhitelist } = require("../services/validacioService");
 const logger = require("../logger").logger;
 
 const autentificaAlumneGoogleAPI = (req, res) => {
@@ -121,10 +122,27 @@ async function deleteGrup(grupId) {
   return alumneService.deleteGrup(grupId);
 }
 
+const getActiveWhitelistAPI = async (req, res) => {
+  const alumneId = req.query.alumne;
+
+  if (!alumneId) {
+    return res.status(400).send({ status: "ERROR", data: "Falta el paràmetre 'alumne'" });
+  }
+
+  try {
+    const whitelist = await getActiveWhitelist(alumneId);
+    res.send({ status: "OK", data: { whitelist } });
+  } catch (error) {
+    logger.error("Error obtenint active_whitelist:", error);
+    res.status(500).send({ status: "ERROR", data: { error: error?.message || error } });
+  }
+};
+
 module.exports = {
   postAlumneAPI,
   autentificaAlumneAPI,
   autentificaAlumneGoogleAPI,
+  getActiveWhitelistAPI,
   getGrupAlumnesList,
   setAlumneStatus,
   setGrupStatus,
