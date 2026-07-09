@@ -2,3 +2,4 @@ node_modules/
 package-lock.json
 .env
 client_secret_*.json
+screenshots/*
