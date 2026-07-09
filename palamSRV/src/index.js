@@ -14,6 +14,7 @@ const initializeExtentionWebSocket = require("./ws/ws-extention");
 const initializeOSWebSocket = require("./ws/ws-os");
 const logger = require("./logger").logger;
 const { scheduleDailyRuleOnReset } = require("./services/dailyReset");
+const { scheduleScreenshotsCleanup } = require("./services/screenshotsService");
 
 const app = express();
 const server = http.createServer(app);
@@ -30,11 +31,15 @@ database.on("error", (error) => {
 });
 
 let dailyResetJob;
+let screenshotsCleanupJob;
 
 database.once("connected", () => {
   logger.info("Database Connected");
   // Start daily scheduler after DB is ready
   dailyResetJob = scheduleDailyRuleOnReset();
+
+  // Neteja de captures antigues
+  screenshotsCleanupJob = scheduleScreenshotsCleanup();
 });
 
 // API
@@ -72,14 +77,18 @@ function gracefulShutdown(signal) {
     const tokenManager = getTokenManager();
     tokenManager.destroy();
 
-    // Atura el cron si està actiu
+    // Atura els cron jobs si estan actius
     try {
       if (dailyResetJob) {
         dailyResetJob.stop();
         logger.info("Scheduler diari aturat");
       }
+      if (screenshotsCleanupJob) {
+        screenshotsCleanupJob.stop();
+        logger.info("Scheduler neteja screenshots aturat");
+      }
     } catch (e) {
-      logger.warn("No s'ha pogut aturar l'scheduler diari", e);
+      logger.warn("No s'ha pogut aturar els schedulers", e);
     }
 
     // Tanca la connexió a la base de dades (Mongoose v7: retorna una Promise, sense callback)

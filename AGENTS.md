@@ -22,6 +22,8 @@ Inclou (no limitat a):
 * `tokens.json`, `auth.json`, `session.json`
 * `cookies.txt`, `cookies.json`
 
+Com que no tens accés al `.env`. Treballaràs amb el fitxer `.env.example` que es troba al mateix directori.
+
 ## Informació sensible
 
 Prohibit accedir o exposar:

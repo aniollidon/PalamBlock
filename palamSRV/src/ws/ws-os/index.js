@@ -1,5 +1,6 @@
 const { Server } = require("socket.io");
 const infoController = require("../../controllers/infoController");
+const screenshotsController = require("../../controllers/screenshotsController");
 const {logger} = require("../../logger");
 
 
@@ -47,6 +48,10 @@ function initializeOSWebSocket(server) {
             logger.info(
                 `[ws-os session_change] sid=${socket.id} active=${Boolean(data?.active)} user=${data?.user || "undefined"} displayName=${data?.displayName || "undefined"} expiresAt=${data?.expiresAt || "undefined"}`
             );
+        });
+
+        socket.on('screenshot_upload', (data, buffer) => {
+            screenshotsController.handleScreenshotUpload(socket, data, buffer);
         });
     });
 
