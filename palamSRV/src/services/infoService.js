@@ -1041,6 +1041,22 @@ function sessionChangeMachine(sid, sessionData) {
       allAlumnesStatus.alumnesStat[alumne].machines[sid].updateSession(
         sessionData
       );
+
+      // Persisteix l'historial de sessions
+      const sessionsHistoryService = require('./sessionsHistoryService');
+      const machineId = sessionData.machineId || machine.ip || sid;
+
+      if (sessionData && sessionData.active && sessionData.sessionId) {
+        sessionsHistoryService.saveSession(alumne, machineId, {
+          sessionId: sessionData.sessionId,
+          user: sessionData.user || null,
+          displayName: sessionData.displayName || null,
+          startedAt: sessionData.startedAt || new Date().toISOString(),
+        });
+      } else if (sessionData && !sessionData.active) {
+        sessionsHistoryService.endSession(alumne, machineId);
+      }
+
       logger.debug(
         "Machine " +
           sid +

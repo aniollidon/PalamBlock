@@ -5,16 +5,21 @@ const validacioController = require("../../../controllers/validacioController");
 const alumneController = require("../../../controllers/alumneController");
 const normaController = require("../../../controllers/normaController");
 const infoController = require("../../../controllers/infoController");
+const screenshotsController = require("../../../controllers/screenshotsController");
 const adminController = require("../../../controllers/adminController");
 const errorController = require("../../../controllers/errorController");
 
-router.post("/alumne", alumneController.postAlumneAPI); // TODO mantenir endpoint (única manera de crear alumnes)
-router.post("/alumne/auth", alumneController.autentificaAlumneAPI); // TODO mantenir endpoint
+router.post("/alumne", alumneController.postAlumneAPI);
+router.post("/alumne/auth", alumneController.autentificaAlumneAPI);
 router.post("/alumne/auth/google", alumneController.autentificaAlumneGoogleAPI);
 router.get("/alumne/active_whitelist", alumneController.getActiveWhitelistAPI);
-router.post("/admin/login", adminController.autentificaAdminAPI); // TODO mantenir endpoint
+router.post("/admin/login", adminController.autentificaAdminAPI);
 
-// TODO, mirar quins endpoints mantenir i quins eliminar, ja que alguns es fan a apartir de ws.
+// Screenshots (historial de captures) — autenticació admin via query token
+router.get("/screenshots/:alumne", screenshotsController.listScreenshots);
+router.get("/screenshots/:alumne/:machineId/:sessionId", screenshotsController.listSessionImages);
+router.get("/screenshots/:alumne/:machineId/:sessionId/:filename", screenshotsController.serveScreenshot);
+
 router.post("/validacio/tab", validacioController.postValidacioAPI);
 router.post("/info/tab", infoController.postTabInfoAPI);
 router.post("/info/browser", infoController.postBrowserInfoAPI);

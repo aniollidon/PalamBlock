@@ -32,6 +32,12 @@ function sanitizeSessionPayload(sessionData) {
       sessionData.expiresAt instanceof Date
         ? new Date(sessionData.expiresAt)
         : null,
+    sessionId:
+      typeof sessionData.sessionId === "string" ? sessionData.sessionId : null,
+    startedAt:
+      typeof sessionData.startedAt === "string" ? sessionData.startedAt : null,
+    machineId:
+      typeof sessionData.machineId === "string" ? netejaText(sessionData.machineId) : null,
   };
 }
 
