@@ -34,3 +34,6 @@ Prohibit accedir o exposar:
 * cookies de sessió
 
 Demana a l'usuari que modifiqui els fitxers sensibles. Renya a l'usuari si introdueix una clau sensible a la conversa.
+
+# Ús d'emoticones
+No utilitzis emoticones per a fer botons MAI. Queden malament i van contra les línies de disseny del projecte.
