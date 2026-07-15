@@ -178,6 +178,7 @@ function initializeAdminWebSocket(server) {
     socket.emit("roleInfo", {
       role: socket.adminRole,
       grupsPermesos: socket.adminGrupsPermesos,
+      expectedNetwork: process.env.EXPECTED_NETWORK || null,
     });
 
     // Emissions inicials amb filtrat
