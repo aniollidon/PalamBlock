@@ -5,7 +5,7 @@ A la carpeta docs/project.md es pot consultar els diferents blocs que composen e
 + palamSRV: Servidor node - gestió centrelitzada
 + plamMaster: Aplicació electron per a gestionar ordinadors i navegadors d'alumne
 + palamEXT: Extensió chrome que monitoritza els navegadors dels alumnes.
-+ PalamOS-linux: Servei node que monitoritza els ordinadors dels alumens: Transmet IP, screenshoots i permet emetre contingut a la pantalla d'alummne.
++ PalamOS-linux: Configuració + PalamDash: Servei node que monitoritza els ordinadors dels alumens: Transmet IP, screenshoots i permet emetre contingut a la pantalla d'alummne.
 
 En aquest projecte no hi ha la imatge dels sistemes operatius dels alumnes. És una versió customitzada sobre pop-os (debian). On hi ha instal·lat diversos serveis/configuracions: palam-dash (palamOS-linux), novnc, directives de navegadors, permisos d'usuaris...
 

@@ -1,5 +1,6 @@
 const alumneService = require("../services/alumneService");
 const { getActiveWhitelist } = require("../services/validacioService");
+const { validateLocalAuth } = require("../services/infoService");
 const logger = require("../logger").logger;
 
 const autentificaAlumneGoogleAPI = (req, res) => {
@@ -58,28 +59,62 @@ const autentificaAlumneAPI = (req, res) => {
   const { body } = req;
   const alumneId = body.alumne;
   const clau = body.clau;
+  const isLocalAuth = body.localAuth === true;
 
-  if (alumneId) {
-    alumneService
-      .autentificaAlumne(alumneId, clau)
+  if (!alumneId) {
+    res.send({ status: "ERROR", data: "Falten dades de l'Alumne" });
+    return;
+  }
+
+  // Auth local: validació per IP + machineId (pont palam-dash → palamEXT)
+  if (isLocalAuth) {
+    const clientIp = req.ip || req.socket?.remoteAddress || "";
+    validateLocalAuth(alumneId, clientIp)
+      .then((valid) => {
+        if (valid) {
+          // Retornar les dades de l'alumne des de la BD
+          return alumneService.getAlumne(alumneId);
+        } else {
+          throw { status: 401, message: "No s'ha trobat cap màquina activa amb aquesta IP per a l'alumne" };
+        }
+      })
       .then((alumne) => {
         res.send({ status: "OK", data: alumne });
       })
       .catch((error) => {
-        // Diferencia entre errors d'autenticació (esperats) i errors del sistema
         if (error?.status === 401 || error?.status === 404) {
-          logger.warn("Error d'autenticació:", error.message);
+          logger.warn("Error d'autenticació local:", error.message);
         } else {
-          logger.error("Error autenticant l'alumne:", error);
+          logger.error("Error autenticant l'alumne (local):", error);
         }
-
-        // Per errors d'autenticació, utilitza 401 per defecte en lloc de 500
         const statusCode = error?.status || 401;
         res
           .status(statusCode)
           .send({ status: "FAILED", data: { error: error?.message || error } });
       });
-  } else res.send({ status: "ERROR", data: "Falten dades de l'Alumne" });
+    return;
+  }
+
+  // Auth normal amb clau
+  alumneService
+    .autentificaAlumne(alumneId, clau)
+    .then((alumne) => {
+      res.send({ status: "OK", data: alumne });
+    })
+    .catch((error) => {
+      // Diferencia entre errors d'autenticació (esperats) i errors del sistema
+      if (error?.status === 401 || error?.status === 404) {
+        logger.warn("Error d'autenticació:", error.message);
+      } else {
+        logger.error("Error autenticant l'alumne:", error);
+      }
+
+      // Per errors d'autenticació, utilitza 401 per defecte en lloc de 500
+      const statusCode = error?.status || 401;
+      res
+        .status(statusCode)
+        .send({ status: "FAILED", data: { error: error?.message || error } });
+    });
 };
 
 const getGrupAlumnesList = () => {

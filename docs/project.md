@@ -19,11 +19,23 @@ L'objectiu de PalamBlock és la monitorització i control dels dispositius dels 
 Extensió basava en Chromium instal·lada obligatòriament al dispositiu de l'alumne.
 * **Funció:** S'encarrega de l'autenticació (sistema de *login* per saber qui és l'alumne) i monitoritza en temps real les pestanyes i l'activitat de navegació.
 * **Interacció:** Realitza el login mitjançant l'API REST i, utilitzant el canal bidireccional exclusiu `ws-extension` a través de WebSocket, es connecta permanentment al servidor per reportar l'ús i bloquejar immediatament les webs no permeses, o actuar sota demanda d'altres missatges i requeriments (forçar tancament de pestanyes, etc.).
+* **Auto-login local:** Quan l'extensió està instal·lada per política (`installType === "admin"`), fa polling periòdic a `localhost:9876/credentials` per obtenir les credencials des de `palam-dash` i evitar el login manual en sistemes congelats. Si el pont no respon, mostra el formulari manual com a fallback.
 
-### 3. palamOS-linux (Client: Agent del Sistema Operatiu)
+### 3. palamOS-linux 
+#### setup-OS
+Tot allò que cal per configurar la màquina d'alumne: Directives, permisos, customitzacions. Serveis esencials: novnc, x11vnc
+
+#### palam-dash (Client: Agent del Sistema Operatiu)
 Servei autònom que s'executa a la màquina Linux de l'alumne preparada amb directives específiques.
 * **Funció:** Permet l'enllaç de PalamBlock arrelat en l'OS de Linux (per recollir dades com ara la IP del dispositiu). L'agent força instruccions extres on l'extensió no arriba. 
 * **Interacció:** Després del login, interactua per defecte via WebSockets utilitzant el canal `ws-os`.  S'activa acompanyat d'un procés **noVNC** configurat per accedir a la pantalla de la màquina; d'aquesta manera el servidor intervé mostrant sobre la pantalla de l'alumne el formulari de *login*, missatges, o pantalles completes a través del sub-canal especialitzat de vídeo `ws-cast`.
+
+#### Pont local palam-dash ↔ palamEXT
+En sistemes congelats (plantilla Examen), les dades del navegador no persisteixen entre sessions. Per evitar que l'alumne hagi d'introduir credencials manualment, `palam-dash` exposa un petit servidor HTTP a `localhost:9876` que proporciona les credencials a l'extensió:
+* **`GET /credentials`** → `{ server, alumne }` (o HTTP 503 si encara no s'ha fet login)
+* `palamEXT` (només amb `installType === "admin"`) fa polling cada 3 segons fins a obtenir-les
+* L'autenticació resultant (`localAuth`) es valida al servidor creuant la IP de la connexió amb el `registerOS` previ de `palam-dash`
+* Si el pont falla, l'extensió mostra el formulari de login manual com a fallback
 
 ### 4. palamMaster (Client: Panell de Control / Professor)
 Aplicació d'escriptori (construïda amb Electron) per als professors o l'administrador informàtic.

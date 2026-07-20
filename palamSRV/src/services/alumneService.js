@@ -169,6 +169,14 @@ async function getAlumneStatus(alumneId) {
   return alumne.status;
 }
 
+async function getAlumne(alumneId) {
+  const alumne = await db.Alumne.findOne({ alumneId: alumneId });
+  if (!alumne)
+    throw { status: 404, message: "Alumne " + alumneId + " no trobat" };
+
+  return alumne;
+}
+
 async function updateAlumne(alumneId, updates) {
   const alumne = await db.Alumne.findOne({ alumneId: alumneId });
   if (!alumne)
@@ -245,6 +253,7 @@ module.exports = {
   setAlumneStatus,
   setGrupStatus,
   getAlumneStatus,
+  getAlumne,
   updateAlumne,
   deleteAlumne,
   creaGrup,

@@ -1239,6 +1239,49 @@ function getAlumnesMachine() {
   return alumnes;
 }
 
+/**
+ * Normalitza una IP: elimina el prefix IPv4-mapped IPv6 (::ffff:)
+ * i retalla espais.
+ */
+function normalizeIp(ip) {
+  if (!ip || typeof ip !== "string") return "";
+  return ip.replace(/^::ffff:/i, "").trim();
+}
+
+/**
+ * Valida l'autenticació local (pont palam-dash → palamEXT).
+ * Comprova si hi ha una màquina registrada amb el mateix alumne i IP.
+ * @param {string} alumneId - Nom d'alumne
+ * @param {string} clientIp - IP del client que fa la petició
+ * @returns {Promise<boolean>}
+ */
+async function validateLocalAuth(alumneId, clientIp) {
+  const alumneStat = allAlumnesStatus.alumnesStat[alumneId];
+  if (!alumneStat) return false;
+
+  const normalizedClientIp = normalizeIp(clientIp);
+
+  for (const sid in alumneStat.machines) {
+    const machine = alumneStat.machines[sid];
+    const normalizedMachineIp = normalizeIp(machine.ip);
+    if (normalizedMachineIp === normalizedClientIp && machine.connected) {
+      logger.debug(
+        `[localAuth] Alumne "${alumneId}" validat per IP ${normalizedClientIp} (sid ${sid})`
+      );
+      return true;
+    }
+  }
+
+  // Log de debug: mostra totes les IPs registrades per ajudar a diagnosticar
+  const registeredIps = Object.values(alumneStat.machines)
+    .map((m) => normalizeIp(m.ip) + (m.connected ? "" : " (desconnectada)"))
+    .join(", ");
+  logger.debug(
+    `[localAuth] Rebutjat "${alumneId}" des de IP ${normalizedClientIp}. IPs registrades: [${registeredIps || "cap"}]`
+  );
+  return false;
+}
+
 module.exports = {
   registerTab,
   registerBrowser,
@@ -1262,4 +1305,5 @@ module.exports = {
   powerOffAllGrup,
   getAlumnesMachine,
   getSessionMetaForAlumne,
+  validateLocalAuth,
 };

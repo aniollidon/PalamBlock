@@ -26,20 +26,21 @@ async function registerWithFallback(
   secondaryServer,
 ) {
   const servers = getServerCandidates(primaryServer, secondaryServer);
+  const isLocalAuth = !clau; // Sense contrasenya → auth local per IP + machineId
 
   for (const server of servers) {
     const registerUrl = server + API_REGISTER;
+    const body = isLocalAuth
+      ? { alumne: alumne, server: server, localAuth: true }
+      : { alumne: alumne, clau: clau, server: server };
+
     try {
       const response = await fetch(registerUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          alumne: alumne,
-          clau: clau,
-          server: server,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (response.status === 200) {
