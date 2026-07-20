@@ -179,6 +179,7 @@ function initializeAdminWebSocket(server) {
       role: socket.adminRole,
       grupsPermesos: socket.adminGrupsPermesos,
       expectedNetwork: process.env.EXPECTED_NETWORK || null,
+      remoteVncPassword: process.env.REMOTE_VNC_PASSWORD || null,
     });
 
     // Emissions inicials amb filtrat
