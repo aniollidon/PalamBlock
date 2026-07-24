@@ -7,7 +7,7 @@ A la carpeta docs/project.md es pot consultar els diferents blocs que composen e
 + palamEXT: Extensió chrome que monitoritza els navegadors dels alumnes.
 + PalamOS-linux: Configuració + PalamDash: Servei node que monitoritza els ordinadors dels alumens: Transmet IP, screenshoots i permet emetre contingut a la pantalla d'alummne.
 
-En aquest projecte no hi ha la imatge dels sistemes operatius dels alumnes. És una versió customitzada sobre pop-os (debian). On hi ha instal·lat diversos serveis/configuracions: palam-dash (palamOS-linux), novnc, directives de navegadors, permisos d'usuaris...
+En aquest projecte no hi ha la imatge dels sistemes operatius dels alumnes. És una versió customitzada sobre debian. On hi ha instal·lat diversos serveis/configuracions: palam-dash (palamOS-linux), novnc, directives de navegadors, permisos d'usuaris...
 
 # Normes per als agents LLM
 ## Preguntar sempre abans d'implementar - IMPORTANT! 
