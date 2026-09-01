@@ -69,6 +69,27 @@ class AuthTokenManager {
     const existingToken = this.getValidToken(user);
     if (existingToken) {
       logger.debug(`Token existent reutilitzat per usuari: ${user}`);
+
+      // Actualitzar role i grupsPermesos al token reutilitzat per reflectir
+      // els canvis recents a la base de dades (promocions, canvi de grups...)
+      // Sense això, el token antic conservaria un rol obsolet i el servidor
+      // seguiria tractant un superadmin com a admin fins que expirés.
+      const userTokens = this.tokens.get(user) || [];
+      const now = Date.now();
+      const tokenData = userTokens.find(
+        (t) =>
+          t.token === existingToken &&
+          now - t.createdAt < this.tokenExpiryMs
+      );
+      if (tokenData) {
+        tokenData.role = role || 'admin';
+        tokenData.grupsPermesos = grupsPermesos || [];
+        this.tokens.set(user, userTokens);
+        logger.debug(
+          `Token reutilitzat amb rol actualitzat per usuari: ${user} (role=${tokenData.role}, grups=${tokenData.grupsPermesos.length})`
+        );
+      }
+
       return existingToken;
     }
 
