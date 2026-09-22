@@ -845,15 +845,17 @@ function registerBrowser(browserDetails, tabsInfos, activeTab, timestamp) {
 async function getAlumnesActivity() {
   // Get alumnes status on db
   for (const alumne in allAlumnesStatus.alumnesStat) {
+    if (!allAlumnesStatus.alumnesStat[alumne]) continue;
     try {
       allAlumnesStatus.alumnesStat[alumne].status =
         await alumneService.getAlumneStatus(alumne);
     } catch (err) {
+      // No esborrem l'alumne: un error puntual consultant l'status a la BD
+      // no ha de trencar l'estat de connexió (machines) que ja tenim en memòria.
       logger.error(
-        "Error getting alumne=" + alumne + " status. Esborrant alumne",
+        "Error getting alumne=" + alumne + " status.",
         err
       );
-      allAlumnesStatus.alumnesStat[alumne] = undefined; // Esborra l'alumne
     }
   }
   return estructuraPublica(allAlumnesStatus.alumnesStat);
@@ -1023,16 +1025,26 @@ function updateMachine(
   timestamp,
   sessionData = undefined
 ) {
-  if (allAlumnesStatus.alumnesStat[alumne]) {
-    allAlumnesStatus.alumnesStat[alumne].updateMachine(
-      sid,
-      ip,
-      ssid,
-      timestamp,
-      sessionData
-    );
+  const declaredAlumne = allAlumnesStatus.alumnesStat[alumne];
+  if (declaredAlumne?.machines[sid]) {
+    declaredAlumne.updateMachine(sid, ip, ssid, timestamp, sessionData);
     logger.debug("Machine " + sid + " from " + alumne + " updated");
+    return;
   }
+
+  for (const registeredAlumne in allAlumnesStatus.alumnesStat) {
+    const registeredStatus = allAlumnesStatus.alumnesStat[registeredAlumne];
+    if (!registeredStatus?.machines[sid]) continue;
+
+    registeredStatus.updateMachine(sid, ip, ssid, timestamp, sessionData);
+    logger.warn(
+      "Machine " + sid + " registered as " + registeredAlumne +
+        " sent updateOS as " + alumne
+    );
+    return;
+  }
+
+  logger.warn("Ignoring updateOS from unregistered machine " + sid);
 }
 
 function sessionChangeMachine(sid, sessionData) {
