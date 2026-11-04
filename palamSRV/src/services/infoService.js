@@ -1261,6 +1261,35 @@ function normalizeIp(ip) {
 }
 
 /**
+ * Llista les màquines connectades dels alumnes d'un grup.
+ * Les màquines estan associades a l'alumne base, també amb sessió d'examen.
+ * @returns {Promise<{alumne: string, ip: string, sessionUser: string|undefined}[]|null>}
+ *   null si el grup no existeix
+ */
+async function getGrupConnectedIps(grup) {
+  const alumneService = require("./alumneService");
+  const grupList = await alumneService.getGrupAlumnesList();
+  if (!Object.prototype.hasOwnProperty.call(grupList, grup)) return null;
+
+  const ips = [];
+  for (const alumneId in grupList[grup].alumnes) {
+    const alumneStat = allAlumnesStatus.alumnesStat[alumneId];
+    if (!alumneStat) continue;
+    for (const sid in alumneStat.machines) {
+      const machine = alumneStat.machines[sid];
+      const ip = normalizeIp(machine.ip);
+      if (!machine.connected || !ip) continue;
+      const sessionUser =
+        machine.sessionActive && machine.sessionUser
+          ? machine.sessionUser
+          : undefined;
+      ips.push({ alumne: alumneId, ip, sessionUser });
+    }
+  }
+  return ips;
+}
+
+/**
  * Valida l'autenticació local (pont palam-dash → palamEXT).
  * Comprova si hi ha una màquina registrada amb el mateix alumne i IP.
  * @param {string} alumneId - Nom d'alumne
@@ -1318,4 +1347,5 @@ module.exports = {
   getAlumnesMachine,
   getSessionMetaForAlumne,
   validateLocalAuth,
+  getGrupConnectedIps,
 };

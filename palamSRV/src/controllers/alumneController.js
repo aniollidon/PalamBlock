@@ -1,6 +1,6 @@
 const alumneService = require("../services/alumneService");
 const { getActiveWhitelist } = require("../services/validacioService");
-const { validateLocalAuth } = require("../services/infoService");
+const { validateLocalAuth, getGrupConnectedIps } = require("../services/infoService");
 const logger = require("../logger").logger;
 
 const autentificaAlumneGoogleAPI = (req, res) => {
@@ -173,7 +173,31 @@ const getActiveWhitelistAPI = async (req, res) => {
   }
 };
 
+const getGrupIpsAPI = async (req, res) => {
+  const grup = req.params.grup;
+  try {
+    const ips = await getGrupConnectedIps(grup);
+    if (ips === null) {
+      return res
+        .status(404)
+        .send({ status: "FAILED", data: { error: "No existeix el grup " + grup } });
+    }
+    if (req.query.format === "text") {
+      return res
+        .type("text/plain")
+        .send(ips.map((e) => e.ip).join("\n") + (ips.length ? "\n" : ""));
+    }
+    res.send({ grup, ips });
+  } catch (error) {
+    logger.error("Error obtenint les IPs del grup:", error);
+    res
+      .status(500)
+      .send({ status: "FAILED", data: { error: error?.message || error } });
+  }
+};
+
 module.exports = {
+  getGrupIpsAPI,
   postAlumneAPI,
   autentificaAlumneAPI,
   autentificaAlumneGoogleAPI,

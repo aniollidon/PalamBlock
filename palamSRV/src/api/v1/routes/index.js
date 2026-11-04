@@ -13,6 +13,7 @@ router.post("/alumne", alumneController.postAlumneAPI);
 router.post("/alumne/auth", alumneController.autentificaAlumneAPI);
 router.post("/alumne/auth/google", alumneController.autentificaAlumneGoogleAPI);
 router.get("/alumne/active_whitelist", alumneController.getActiveWhitelistAPI);
+router.get("/grup/:grup/ips", alumneController.getGrupIpsAPI);
 router.post("/admin/login", adminController.autentificaAdminAPI);
 
 // Screenshots (historial de captures) — autenticació admin via query token
