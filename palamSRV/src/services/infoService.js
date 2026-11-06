@@ -355,10 +355,14 @@ class MachineStatus {
   updateSession(sessionData) {
     if (!sessionData || typeof sessionData !== "object") return;
 
-    this.sessionUser = normalizeTextValue(sessionData.user);
-    this.sessionDisplayName = normalizeTextValue(sessionData.displayName);
-    this.session = this.sessionUser || "undefined";
     this.sessionActive = Boolean(sessionData.active);
+    this.sessionUser = this.sessionActive
+      ? normalizeTextValue(sessionData.user)
+      : null;
+    this.sessionDisplayName = this.sessionActive
+      ? normalizeTextValue(sessionData.displayName)
+      : null;
+    this.session = this.sessionUser || "undefined";
     this.sessionUpdatedAt = new Date();
     this.sessionExpiresAt = sessionData.expiresAt
       ? new Date(sessionData.expiresAt)
@@ -1056,7 +1060,8 @@ function sessionChangeMachine(sid, sessionData) {
 
       // Persisteix l'historial de sessions
       const sessionsHistoryService = require('./sessionsHistoryService');
-      const machineId = sessionData.machineId || machine.ip || sid;
+      const machine = allAlumnesStatus.alumnesStat[alumne].machines[sid];
+      const machineId = sessionData?.machineId || machine?.ip || sid;
 
       if (sessionData && sessionData.active && sessionData.sessionId) {
         sessionsHistoryService.saveSession(alumne, machineId, {
@@ -1110,9 +1115,13 @@ function getSessionMetaForAlumne(alumne) {
 
   return {
     baseUser: selected.baseUser || alumne,
-    sessionUser: normalizeTextValue(selected.sessionUser),
-    displayName: normalizeTextValue(selected.displayName),
     sessionActive: Boolean(selected.sessionActive),
+    sessionUser: selected.sessionActive
+      ? normalizeTextValue(selected.sessionUser)
+      : null,
+    displayName: selected.sessionActive
+      ? normalizeTextValue(selected.displayName)
+      : null,
     sessionUpdatedAt: selected.sessionUpdatedAt || null,
     sessionExpiresAt: selected.sessionExpiresAt || null,
   };

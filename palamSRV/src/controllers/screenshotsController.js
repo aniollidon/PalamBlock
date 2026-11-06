@@ -83,6 +83,29 @@ function listScreenshots(req, res) {
 }
 
 /**
+ * GET /api/v1/screenshots/groups/:grup/sessions
+ * Descobreix les sessions de classe i uneix les captures en ordre cronològic.
+ */
+async function listClassScreenshotSessions(req, res) {
+  try {
+    const grup = netejaText(req.params.grup || '');
+    if (!grup) {
+      return res.status(400).json({ status: 'ERROR', message: 'Cal especificar grup' });
+    }
+
+    const data = await screenshotsService.listClassScreenshotSessions(grup);
+    if (!data) {
+      return res.status(404).json({ status: 'ERROR', message: 'Grup no trobat' });
+    }
+
+    res.json({ status: 'OK', data });
+  } catch (err) {
+    logger.error('[screenshots] Error descobrint sessions de classe:', err);
+    res.status(500).json({ status: 'ERROR', message: err.message });
+  }
+}
+
+/**
  * GET /api/v1/screenshots/:alumne/:machineId/:sessionId
  * Llista les imatges d'una sessió concreta.
  */
@@ -158,4 +181,10 @@ function serveScreenshot(req, res) {
   }
 }
 
-module.exports = { handleScreenshotUpload, listScreenshots, listSessionImages, serveScreenshot };
+module.exports = {
+  handleScreenshotUpload,
+  listScreenshots,
+  listClassScreenshotSessions,
+  listSessionImages,
+  serveScreenshot,
+};

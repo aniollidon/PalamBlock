@@ -17,6 +17,7 @@ router.get("/grup/:grup/ips", alumneController.getGrupIpsAPI);
 router.post("/admin/login", adminController.autentificaAdminAPI);
 
 // Screenshots (historial de captures) — autenticació admin via query token
+router.get("/screenshots/groups/:grup/sessions", screenshotsController.listClassScreenshotSessions);
 router.get("/screenshots/:alumne", screenshotsController.listScreenshots);
 router.get("/screenshots/:alumne/:machineId/:sessionId", screenshotsController.listSessionImages);
 router.get("/screenshots/:alumne/:machineId/:sessionId/:filename", screenshotsController.serveScreenshot);

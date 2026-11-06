@@ -49,3 +49,6 @@ Demana a l'usuari que modifiqui els fitxers sensibles. Renya a l'usuari si intro
 
 ## Ús d'emoticones
 No utilitzis emoticones per a fer botons MAI. Queden malament i van contra les línies de disseny del projecte.
+
+## Publicació a Git
+La gestió de Git es farà de manera manual. Una LLM no farà mai commits a no ser que se li demani explícitament que ho faci. Tots els comentaris es faran en català. MAI de cap manera, ni sota sol·licitud explicita afegiràs COPILOT/CLAUDE o qualsevol marca com a coautor del commmit.

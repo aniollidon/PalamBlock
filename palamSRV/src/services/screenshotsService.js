@@ -276,6 +276,109 @@ function listScreenshotsByAlumne(alumne) {
   return result;
 }
 
+function groupSessionsByOverlap(individualSessions, grupId, marginMs = 5 * 60 * 1000) {
+  const sortedSessions = [...individualSessions].sort((a, b) => a.startMs - b.startMs);
+  const classSessions = [];
+
+  for (const session of sortedSessions) {
+    let classSession = classSessions[classSessions.length - 1];
+    if (!classSession || session.startMs > classSession.endMs + marginMs) {
+      classSession = {
+        groupId: grupId,
+        startMs: session.startMs,
+        endMs: session.endMs,
+        sessions: [],
+        images: [],
+      };
+      classSessions.push(classSession);
+    }
+
+    classSession.startMs = Math.min(classSession.startMs, session.startMs);
+    classSession.endMs = Math.max(classSession.endMs, session.endMs);
+    classSession.sessions.push({
+      alumne: session.alumne,
+      studentName: session.studentName,
+      machineId: session.machineId,
+      sessionId: session.sessionId,
+      user: session.user,
+      displayName: session.displayName,
+      userLabel: session.userLabel,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      imageCount: session.images.length,
+    });
+    classSession.images.push(...session.images);
+  }
+
+  return classSessions
+    .map(classSession => {
+      const { startMs, endMs, ...data } = classSession;
+      const usersConnected = new Set(data.sessions.map(session => session.alumne)).size;
+      data.startedAt = new Date(startMs).toISOString();
+      data.endedAt = new Date(endMs).toISOString();
+      data.id = `${startMs}-${endMs}`;
+      data.usersConnected = usersConnected;
+      data.images.sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
+      return data;
+    })
+    .sort((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt));
+}
+
+/**
+ * Descobreix les sessions de classe a partir de les sessions individuals
+ * de les màquines del grup. Un marge de cinc minuts uneix sessions contigües.
+ */
+async function listClassScreenshotSessions(grupId) {
+  const { getGrupAlumnesList } = require('./alumneService');
+  const grups = await getGrupAlumnesList();
+  const grup = grups[grupId];
+  if (!grup) return null;
+
+  const individualSessions = [];
+  for (const [alumne, alumneInfo] of Object.entries(grup.alumnes || {})) {
+    const alumneData = listScreenshotsByAlumne(alumne);
+    for (const [machineId, machineData] of Object.entries(alumneData.machines)) {
+      for (const session of machineData.sessions || []) {
+        const images = session.images || [];
+        if (images.length === 0) continue;
+
+        const imageTimes = images
+          .map(image => Date.parse(image.timestamp))
+          .filter(Number.isFinite)
+          .sort((a, b) => a - b);
+        if (imageTimes.length === 0) continue;
+
+        const startedAt = Date.parse(session.startedAt) || imageTimes[0];
+        const endedAt = Date.parse(session.endedAt) || imageTimes[imageTimes.length - 1];
+        const temporaryUser = session.displayName || session.user || null;
+
+        individualSessions.push({
+          alumne,
+          studentName: [alumneInfo.nom, alumneInfo.cognoms].filter(Boolean).join(' ') || alumne,
+          machineId,
+          sessionId: session.sessionId,
+          user: session.user || null,
+          displayName: session.displayName || null,
+          userLabel: temporaryUser || alumne,
+          startedAt: new Date(startedAt).toISOString(),
+          endedAt: new Date(Math.max(startedAt, endedAt)).toISOString(),
+          startMs: startedAt,
+          endMs: Math.max(startedAt, endedAt),
+          images: images.map(image => ({
+            ...image,
+            alumne,
+            machineId,
+            sessionId: session.sessionId,
+            userLabel: temporaryUser || alumne,
+          })),
+        });
+      }
+    }
+  }
+
+  return groupSessionsByOverlap(individualSessions, grupId);
+}
+
 /**
  * Programa la neteja de captures antigues cada dia a les 20:00.
  * @returns {CronJob} Instància del job
@@ -298,4 +401,6 @@ module.exports = {
   cleanupOldScreenshots,
   scheduleScreenshotsCleanup,
   listScreenshotsByAlumne,
+  listClassScreenshotSessions,
+  groupSessionsByOverlap,
 };
